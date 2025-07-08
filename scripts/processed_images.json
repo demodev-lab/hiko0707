@@ -1,0 +1,32 @@
+{
+  "scripts/sample_images/sample_home.jpg": {
+    "hash": "043b7232ddedfafb5d910a15358876c7",
+    "processed_at": "2025-07-08T21:35:08.870349",
+    "hotdeal_id": "40373123-3aa3-4245-855d-9f86da21d796",
+    "original_size": 38543
+  },
+  "scripts/sample_images/sample_electronics.jpg": {
+    "hash": "79921bf7fc8693976ff36c511f5c48ff",
+    "processed_at": "2025-07-08T21:35:08.893218",
+    "hotdeal_id": "fe458013-f8f7-4ce3-b4d8-ca4a891d4ff0",
+    "original_size": 40623
+  },
+  "scripts/sample_images/sample_food.jpg": {
+    "hash": "69c029e49753513a8a5f782c01530ace",
+    "processed_at": "2025-07-08T21:35:08.916827",
+    "hotdeal_id": "653898e2-7ca3-457f-ad0c-c21246b7baa5",
+    "original_size": 41793
+  },
+  "scripts/sample_images/sample_sports.jpg": {
+    "hash": "f13c04450dbf99b6dd0aa5f08e9842f4",
+    "processed_at": "2025-07-08T21:35:08.941504",
+    "hotdeal_id": "7e3fd04d-205a-4542-bb3f-00e2ea3c88d6",
+    "original_size": 40749
+  },
+  "scripts/sample_images/sample_beauty.jpg": {
+    "hash": "51781707d69e0dee6113a27e2a73987f",
+    "processed_at": "2025-07-08T21:35:08.964478",
+    "hotdeal_id": "3e77bcf8-f119-47ea-8c1c-29d401b0cef2",
+    "original_size": 35705
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "playwright-server": {
+      "type": "stdio",
+      "command": "npx",
+      "args": [
+        "@executeautomation/playwright-mcp-server"
+      ],
+      "env": {}
+    }
+  }
+}
