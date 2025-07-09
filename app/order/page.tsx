@@ -57,7 +57,7 @@ export default function OrderPage() {
             </div>
             <h3 className="font-semibold mb-1">안전한 결제</h3>
             <p className="text-sm text-gray-600 text-center">
-              다양한 결제 수단을 통해 안전하게 결제할 수 있습니다
+              안전한 결제 시스템으로 보호됩니다
             </p>
           </div>
 
@@ -112,19 +112,19 @@ export default function OrderPage() {
               <li>주문서 작성 및 제출</li>
               <li>주문 확인 및 견적 안내</li>
               <li>결제 진행</li>
-              <li>상품 구매 및 한국 내 배송</li>
-              <li>국제 배송 발송</li>
-              <li>고객님께 배송 완료</li>
+              <li>상품 구매 및 포장</li>
+              <li>한국 내 배송지로 발송</li>
+              <li>배송 완료</li>
             </ol>
           </div>
           
           <div>
             <h3 className="font-medium mb-2">💰 수수료 안내</h3>
             <ul className="space-y-1 text-gray-600">
-              <li>• 대행 수수료: 상품금액의 10% (최소 5,000원)</li>
-              <li>• 한국 내 배송비: 3,000원</li>
-              <li>• 국제 배송비: 배송지와 방법에 따라 상이</li>
-              <li>• 관세 및 세금: 현지 법률에 따라 부과</li>
+              <li>• 대행 수수료: 상품금액의 8%</li>
+              <li>• 국내 배송비: 3,000원</li>
+              <li>• 추가 비용: 실제 구매 시 발생하는 차액</li>
+              <li>• 최종 금액은 실제 구매 후 안내</li>
             </ul>
           </div>
         </div>

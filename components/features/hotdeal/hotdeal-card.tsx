@@ -2,13 +2,15 @@
 
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
 import { Clock, Eye, Heart, MessageCircle, Truck } from 'lucide-react'
 import { HotDeal } from '@/types/hotdeal'
 import Link from 'next/link'
-import { HotDealImage } from '@/components/ui/optimized-image'
+import Image from 'next/image'
 import { useLanguage } from '@/lib/i18n/context'
 import { FavoriteButton } from '@/components/features/favorites/favorite-button'
 import { ShareIconButton } from '@/components/features/share/share-icon-button'
+import { BuyForMeButton } from '@/components/features/order/buy-for-me-button'
 import { formatCurrency, formatRelativeTime } from '@/lib/i18n/format'
 
 interface HotDealCardProps {
@@ -54,16 +56,18 @@ export function HotDealCard({ deal }: HotDealCardProps) {
         />
       </div>
       
+      {/* 이미지 영역 */}
       <Link href={`/hotdeals/${deal.id}`} className="block">
-        {/* 이미지 영역 */}
         <div className="relative aspect-[4/3] overflow-hidden bg-gray-100">
           {deal.imageUrl ? (
-            <HotDealImage
+            <Image
               src={deal.imageUrl}
               alt={deal.title}
+              fill
+              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
               className="object-cover group-hover:scale-105 transition-transform duration-300"
-              lazy={true}
-              showLoader={true}
+              priority={false}
+              unoptimized
             />
           ) : (
             <div className="w-full h-full flex items-center justify-center bg-gray-200">
@@ -92,9 +96,10 @@ export function HotDealCard({ deal }: HotDealCardProps) {
             </div>
           )}
         </div>
+      </Link>
       
-        {/* 콘텐츠 영역 */}
-        <div className="p-4">
+      {/* 콘텐츠 영역 */}
+      <div className="p-4">
           {/* 카테고리와 출처 */}
           <div className="flex items-center gap-2 mb-2">
             <Badge variant="secondary" className="text-xs">
@@ -104,32 +109,74 @@ export function HotDealCard({ deal }: HotDealCardProps) {
           </div>
         
           {/* 제목 - 2줄 제한 */}
-          <h3 className="font-medium text-sm mb-2 line-clamp-2 group-hover:text-blue-600 transition-colors">
-            {deal.title}
-          </h3>
+          <Link href={`/hotdeals/${deal.id}`}>
+            <h3 className="font-medium text-sm mb-2 line-clamp-2 hover:text-blue-600 transition-colors cursor-pointer break-words">
+              {deal.title}
+            </h3>
+          </Link>
         
           {/* 가격 정보 */}
-          <div className="mb-3">
-            <div className="flex items-baseline gap-2">
-              <span className="text-xl font-bold text-red-600">
-                {formatCurrency(deal.price, language)}
-              </span>
-              {deal.originalPrice && deal.originalPrice > deal.price && (
-                <span className="text-sm text-gray-400 line-through">
-                  {formatCurrency(deal.originalPrice, language)}
+          <Link href={`/hotdeals/${deal.id}`} className="block mb-3">
+            <div className="hover:opacity-80 transition-opacity cursor-pointer">
+              <div className="flex items-baseline gap-2">
+                <span className="text-xl font-bold text-red-600">
+                  {formatCurrency(deal.price, language)}
                 </span>
+                {deal.originalPrice && deal.originalPrice > deal.price && (
+                  <span className="text-sm text-gray-400 line-through">
+                    {formatCurrency(deal.originalPrice, language)}
+                  </span>
+                )}
+              </div>
+          
+              {/* 배송 정보 */}
+              {deal.shipping && (
+                <div className="flex items-center gap-1 mt-1">
+                  <Truck className="w-3 h-3 text-gray-400" />
+                  <span className="text-xs text-gray-600">
+                    {deal.shipping.isFree ? t('hotdeals.freeShipping') : deal.shipping.cost ? `${t('common.shippingFee')} ${formatCurrency(deal.shipping.cost, language)}` : t('common.shippingFee')}
+                  </span>
+                </div>
               )}
             </div>
-          
-            {/* 배송 정보 */}
-            {deal.shipping && (
-              <div className="flex items-center gap-1 mt-1">
-                <Truck className="w-3 h-3 text-gray-400" />
-                <span className="text-xs text-gray-600">
-                  {deal.shipping.isFree ? t('hotdeals.freeShipping') : deal.shipping.cost ? `${t('common.shippingFee')} ${formatCurrency(deal.shipping.cost, language)}` : t('common.shippingFee')}
-                </span>
-              </div>
-            )}
+          </Link>
+        
+          {/* 버튼들 */}
+          <div className="space-y-2 mb-3">
+            {/* 원본 링크 버튼 */}
+            <Link 
+              href={deal.originalUrl || '#'} 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="block"
+            >
+              <Button
+                variant="outline"
+                size="sm"
+                className="w-full text-gray-700 border-gray-300 hover:bg-gray-50"
+              >
+                🔗 원본 보기
+              </Button>
+            </Link>
+            
+            {/* Buy for Me 버튼 */}
+            <BuyForMeButton
+              hotdeal={{
+                id: deal.id,
+                title: deal.title,
+                price: deal.price.toString(),
+                originalPrice: deal.originalPrice?.toString(),
+                imageUrl: deal.imageUrl,
+                productUrl: deal.originalUrl || '',
+                discountRate: deal.discountRate?.toString(),
+                category: deal.category,
+                seller: deal.source,
+                deadline: deal.endDate ? (deal.endDate instanceof Date ? deal.endDate.toISOString() : String(deal.endDate)) : undefined
+              }}
+              variant="default"
+              size="sm"
+              className="w-full"
+            />
           </div>
         
           {/* 통계 정보 */}
@@ -157,7 +204,6 @@ export function HotDealCard({ deal }: HotDealCardProps) {
           </div>
         
         </div>
-      </Link>
     </Card>
   )
 }

@@ -56,4 +56,39 @@
   body {
     @apply bg-background text-foreground;
   }
+  html {
+    overflow-x: hidden;
+  }
+  body {
+    overflow-x: hidden;
+  }
+}
+
+/* 모바일 반응형 개선 */
+@layer components {
+  .container {
+    @apply px-4 mx-auto;
+  }
+  
+  /* 텍스트가 컨테이너를 벗어나지 않도록 */
+  .break-words {
+    word-break: break-word;
+    overflow-wrap: break-word;
+  }
+  
+  /* 이미지 반응형 */
+  img {
+    max-width: 100%;
+    height: auto;
+  }
+  
+  /* Safe area insets for mobile devices */
+  .safe-area-inset-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  
+  /* 가로 스크롤 방지 */
+  .overflow-x-hidden {
+    overflow-x: hidden !important;
+  }
 }

@@ -35,15 +35,11 @@ const orderFormSchema = z.object({
     fullName: z.string().min(1, '이름을 입력해주세요'),
     phoneNumber: z.string().min(1, '전화번호를 입력해주세요'),
     email: z.string().email('올바른 이메일을 입력해주세요'),
-    country: z.string().min(1, '국가를 선택해주세요'),
-    city: z.string().min(1, '도시를 입력해주세요'),
-    state: z.string().optional(),
     postalCode: z.string().min(1, '우편번호를 입력해주세요'),
     addressLine1: z.string().min(1, '주소를 입력해주세요'),
     addressLine2: z.string().optional()
   }),
-  shippingMethod: z.enum(['standard', 'express', 'economy']),
-  paymentMethod: z.enum(['card', 'bank_transfer', 'paypal', 'alipay', 'wechat_pay']),
+  paymentMethod: z.enum(['card', 'bank_transfer']),
   customerNotes: z.string().optional()
 })
 
@@ -77,14 +73,10 @@ export function OrderForm({ initialData, hotdealId, onSuccess }: OrderFormProps)
         fullName: '',
         phoneNumber: '',
         email: '',
-        country: '',
-        city: '',
-        state: '',
         postalCode: '',
         addressLine1: '',
         addressLine2: ''
       },
-      shippingMethod: initialData?.shippingMethod || 'standard',
       paymentMethod: initialData?.paymentMethod || 'card',
       customerNotes: initialData?.customerNotes || ''
     }
@@ -96,29 +88,15 @@ export function OrderForm({ initialData, hotdealId, onSuccess }: OrderFormProps)
   })
 
   const watchedItems = form.watch('items')
-  const watchedShippingMethod = form.watch('shippingMethod')
-  const watchedCountry = form.watch('shippingAddress.country')
 
   // 비용 계산
   const subtotal = watchedItems.reduce((sum, item) => {
     return sum + (item.price * item.quantity)
   }, 0)
 
-  const serviceFee = calculateServiceFee(subtotal)
-  const koreanShippingFee = 3000 // 기본값
-  
-  // estimateInternationalShipping에 전달할 타입 변환
-  const itemsForShipping = watchedItems.map(item => ({
-    quantity: item.quantity
-  }))
-  
-  const internationalShippingFee = estimateInternationalShipping(
-    itemsForShipping,
-    watchedShippingMethod,
-    watchedCountry
-  )
-  const taxAndDuties = Math.round(subtotal * 0.05) // 임시 5%
-  const totalAmount = subtotal + serviceFee + koreanShippingFee + internationalShippingFee + taxAndDuties
+  const serviceFee = Math.round(subtotal * 0.08) // 8% 서비스 수수료
+  const domesticShippingFee = 3000 // 국내 배송비
+  const totalAmount = subtotal + serviceFee + domesticShippingFee
 
   const onSubmit = async (data: OrderFormData) => {
     if (!currentUser) {
@@ -156,16 +134,6 @@ export function OrderForm({ initialData, hotdealId, onSuccess }: OrderFormProps)
     }
   }
 
-  const countries = [
-    { code: 'US', name: '미국' },
-    { code: 'CN', name: '중국' },
-    { code: 'JP', name: '일본' },
-    { code: 'VN', name: '베트남' },
-    { code: 'TH', name: '태국' },
-    { code: 'ID', name: '인도네시아' },
-    { code: 'SG', name: '싱가포르' },
-    { code: 'MY', name: '말레이시아' }
-  ]
 
   return (
     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
@@ -383,56 +351,6 @@ export function OrderForm({ initialData, hotdealId, onSuccess }: OrderFormProps)
               )}
             </div>
 
-            <div>
-              <Label htmlFor="shippingAddress.country">
-                {t('order.form.country')} *
-              </Label>
-              <Select
-                value={form.watch('shippingAddress.country')}
-                onValueChange={(value) => form.setValue('shippingAddress.country', value)}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="국가를 선택해주세요" />
-                </SelectTrigger>
-                <SelectContent>
-                  {countries.map((country) => (
-                    <SelectItem key={country.code} value={country.code}>
-                      {country.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              {form.formState.errors.shippingAddress?.country && (
-                <p className="text-sm text-red-500 mt-1">
-                  {form.formState.errors.shippingAddress.country.message}
-                </p>
-              )}
-            </div>
-
-            <div>
-              <Label htmlFor="shippingAddress.city">
-                {t('order.form.city')} *
-              </Label>
-              <Input
-                {...form.register('shippingAddress.city')}
-                placeholder="서울"
-              />
-              {form.formState.errors.shippingAddress?.city && (
-                <p className="text-sm text-red-500 mt-1">
-                  {form.formState.errors.shippingAddress.city.message}
-                </p>
-              )}
-            </div>
-
-            <div>
-              <Label htmlFor="shippingAddress.state">
-                {t('order.form.state')}
-              </Label>
-              <Input
-                {...form.register('shippingAddress.state')}
-                placeholder="경기도"
-              />
-            </div>
 
             <div>
               <Label htmlFor="shippingAddress.postalCode">
@@ -475,46 +393,22 @@ export function OrderForm({ initialData, hotdealId, onSuccess }: OrderFormProps)
             />
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="shippingMethod">
-                {t('order.form.shippingMethod')} *
-              </Label>
-              <Select
-                value={form.watch('shippingMethod')}
-                onValueChange={(value: ShippingMethod) => form.setValue('shippingMethod', value)}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="economy">{t('order.shipping.economy')}</SelectItem>
-                  <SelectItem value="standard">{t('order.shipping.standard')}</SelectItem>
-                  <SelectItem value="express">{t('order.shipping.express')}</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div>
-              <Label htmlFor="paymentMethod">
-                {t('order.form.paymentMethod')} *
-              </Label>
-              <Select
-                value={form.watch('paymentMethod')}
-                onValueChange={(value: PaymentMethod) => form.setValue('paymentMethod', value)}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="card">{t('order.payment.card')}</SelectItem>
-                  <SelectItem value="bank_transfer">{t('order.payment.bank_transfer')}</SelectItem>
-                  <SelectItem value="paypal">{t('order.payment.paypal')}</SelectItem>
-                  <SelectItem value="alipay">{t('order.payment.alipay')}</SelectItem>
-                  <SelectItem value="wechat_pay">{t('order.payment.wechat_pay')}</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+          <div>
+            <Label htmlFor="paymentMethod">
+              {t('order.form.paymentMethod')} *
+            </Label>
+            <Select
+              value={form.watch('paymentMethod')}
+              onValueChange={(value: PaymentMethod) => form.setValue('paymentMethod', value)}
+            >
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="card">신용/체크카드</SelectItem>
+                <SelectItem value="bank_transfer">계좌이체</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
 
           <div>
@@ -542,20 +436,12 @@ export function OrderForm({ initialData, hotdealId, onSuccess }: OrderFormProps)
             <span>₩{subtotal.toLocaleString()}</span>
           </div>
           <div className="flex justify-between">
-            <span>{t('order.cost.serviceFee')}</span>
+            <span>{t('order.cost.serviceFee')} (8%)</span>
             <span>₩{serviceFee.toLocaleString()}</span>
           </div>
           <div className="flex justify-between">
-            <span>{t('order.cost.koreanShipping')}</span>
-            <span>₩{koreanShippingFee.toLocaleString()}</span>
-          </div>
-          <div className="flex justify-between">
-            <span>{t('order.cost.internationalShipping')}</span>
-            <span>₩{internationalShippingFee.toLocaleString()}</span>
-          </div>
-          <div className="flex justify-between">
-            <span>{t('order.cost.taxAndDuties')}</span>
-            <span>₩{taxAndDuties.toLocaleString()}</span>
+            <span>국내 배송비</span>
+            <span>₩{domesticShippingFee.toLocaleString()}</span>
           </div>
           <Separator />
           <div className="flex justify-between text-lg font-semibold">

@@ -200,7 +200,29 @@ export const translations: Record<LanguageCode, any> = {
         address: '주소',
         detailAddress: '상세 주소',
         shippingAddress: '배송 주소',
+      },
+      buyForMe: {
+        title: '대신 사줘요',
+        description: '원하는 상품을 간편하게 주문하고 안전한 결제를 진행하세요',
+        orderDetails: '주문 상세정보',
+        options: '상품 옵션',
+        optionsPlaceholder: '색상, 사이즈 등 원하는 옵션',
+        namePlaceholder: '받는 분 성함',
+        selectCountry: '배송 국가를 선택해주세요',
+        addressPlaceholder: '상세 주소를 입력해주세요',
         specialRequests: '특별 요청사항',
+        specialRequestsPlaceholder: '배송 관련 특별 요청사항이 있다면 입력해주세요',
+        costEstimation: '예상 비용',
+        finalPriceNote: '최종 가격은 관리자 확인 후 결정됩니다',
+        submitRequest: '요청 제출하기',
+        requestSubmitted: '주문 요청이 성공적으로 제출되었습니다!',
+        requestFailed: '주문 요청 중 오류가 발생했습니다',
+        deliveryMethod: '배송 방법',
+      },
+      delivery: {
+        home: '집 배송',
+        convenienceStore: '편의점 택배',
+        office: '직장 배송',
       },
       urlParser: {
         title: '상품 자동 파싱',
@@ -221,6 +243,8 @@ export const translations: Record<LanguageCode, any> = {
         internationalShipping: '국제 배송비',
         taxAndDuties: '관세 및 세금',
         total: '총 결제 금액',
+        itemPrice: '상품 가격',
+        estimatedTotal: '예상 총액',
       },
       status: {
         pending: '주문 접수',
@@ -301,6 +325,7 @@ export const translations: Record<LanguageCode, any> = {
       termsText: '회원가입을 진행하시면',
       and: '및',
       termsTextEnd: '에 동의하는 것으로 간주됩니다.',
+      loginRequired: '로그인이 필요합니다',
     },
     // Search
     search: {
@@ -507,6 +532,29 @@ export const translations: Record<LanguageCode, any> = {
         shippingAddress: 'Shipping Address',
         specialRequests: 'Special Requests',
       },
+      buyForMe: {
+        title: 'Buy for Me',
+        description: 'Easily order your desired products and proceed with secure payment',
+        orderDetails: 'Order Details',
+        options: 'Product Options',
+        optionsPlaceholder: 'Color, size, and other desired options',
+        namePlaceholder: 'Recipient name',
+        selectCountry: 'Please select shipping country',
+        addressPlaceholder: 'Please enter detailed address',
+        specialRequests: 'Special Requests',
+        specialRequestsPlaceholder: 'Please enter any special shipping requests',
+        costEstimation: 'Cost Estimation',
+        finalPriceNote: 'Final price will be determined after admin confirmation',
+        submitRequest: 'Submit Request',
+        requestSubmitted: 'Order request has been successfully submitted!',
+        requestFailed: 'An error occurred while submitting the order request',
+        deliveryMethod: 'Delivery Method',
+      },
+      delivery: {
+        home: 'Home Delivery',
+        convenienceStore: 'Convenience Store Pickup',
+        office: 'Office Delivery',
+      },
       urlParser: {
         title: 'Auto Product Parser',
         description: 'Paste a product URL to automatically extract information',
@@ -526,6 +574,8 @@ export const translations: Record<LanguageCode, any> = {
         internationalShipping: 'International Shipping',
         taxAndDuties: 'Tax & Duties',
         total: 'Total Amount',
+        itemPrice: 'Item Price',
+        estimatedTotal: 'Estimated Total',
       },
       status: {
         pending: 'Pending',
@@ -606,17 +656,7 @@ export const translations: Record<LanguageCode, any> = {
       termsText: 'By signing up, you agree to our',
       and: 'and',
       termsTextEnd: '.',
-    },
-    // Search
-    search: {
-          'noSuggestions': 'ไม่พบคำแนะนำ',
-          'recentSearches': 'การค้นหาล่าสุด',
-          'popularSearches': 'การค้นหายอดนิยม',
-          'searchPlaceholder': 'ค้นหา...',
-          'clearRecentSearches': 'ล้างการค้นหาล่าสุด',
-          'searchResults': 'ผลการค้นหา',
-          'noResults': 'ไม่พบผลลัพธ์',
-          'showingResults': 'แสดง {count} ผลลัพธ์'
+      loginRequired: 'Login required',
     },
     // Search
     search: {
@@ -1197,17 +1237,6 @@ export const translations: Record<LanguageCode, any> = {
       alreadyHaveAccount: 'すでにアカウントをお持ちですか？',
       dontHaveAccount: 'アカウントをお持ちでないですか？',
       or: 'または',
-    },
-    // Search
-    search: {
-          'noSuggestions': 'ไม่พบคำแนะนำ',
-          'recentSearches': 'การค้นหาล่าสุด',
-          'popularSearches': 'การค้นหายอดนิยม',
-          'searchPlaceholder': 'ค้นหา...',
-          'clearRecentSearches': 'ล้างการค้นหาล่าสุด',
-          'searchResults': 'ผลการค้นหา',
-          'noResults': 'ไม่พบผลลัพธ์',
-          'showingResults': 'แสดง {count} ผลลัพธ์'
     },
     // Search
     search: {
@@ -2367,17 +2396,6 @@ export const translations: Record<LanguageCode, any> = {
           'searchResults': 'Результаты поиска',
           'noResults': 'Результаты не найдены',
           'showingResults': 'Показано {count} результатов'
-    },
-    // Search
-    search: {
-          'noSuggestions': 'ไม่พบคำแนะนำ',
-          'recentSearches': 'การค้นหาล่าสุด',
-          'popularSearches': 'การค้นหายอดนิยม',
-          'searchPlaceholder': 'ค้นหา...',
-          'clearRecentSearches': 'ล้างการค้นหาล่าสุด',
-          'searchResults': 'ผลการค้นหา',
-          'noResults': 'ไม่พบผลลัพธ์',
-          'showingResults': 'แสดง {count} ผลลัพธ์'
     },
     // Errors
     errors: {

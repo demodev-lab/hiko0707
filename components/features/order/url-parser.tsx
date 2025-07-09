@@ -33,21 +33,6 @@ export function UrlParser({ onProductParsed, initialUrl = '' }: UrlParserProps) 
   const [parsedProduct, setParsedProduct] = useState<ParsedProduct | null>(null)
   const [error, setError] = useState<string | null>(null)
 
-  // Auto-parse if URL is pasted
-  useEffect(() => {
-    const handlePaste = async (e: ClipboardEvent) => {
-      const pastedText = e.clipboardData?.getData('text')
-      if (pastedText && isValidUrl(pastedText)) {
-        setUrl(pastedText)
-        // Auto-parse after a short delay
-        setTimeout(() => handleParse(pastedText), 500)
-      }
-    }
-
-    window.addEventListener('paste', handlePaste)
-    return () => window.removeEventListener('paste', handlePaste)
-  }, [handleParse])
-
   const isValidUrl = (text: string): boolean => {
     try {
       new URL(text)
@@ -89,6 +74,21 @@ export function UrlParser({ onProductParsed, initialUrl = '' }: UrlParserProps) 
       setIsLoading(false)
     }
   }, [url, onProductParsed, t])
+
+  // Auto-parse if URL is pasted
+  useEffect(() => {
+    const handlePaste = async (e: ClipboardEvent) => {
+      const pastedText = e.clipboardData?.getData('text')
+      if (pastedText && isValidUrl(pastedText)) {
+        setUrl(pastedText)
+        // Auto-parse after a short delay
+        setTimeout(() => handleParse(pastedText), 500)
+      }
+    }
+
+    window.addEventListener('paste', handlePaste)
+    return () => window.removeEventListener('paste', handlePaste)
+  }, [handleParse])
 
   const getSupportedSites = () => {
     const sites = new Set<string>()

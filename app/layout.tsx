@@ -27,7 +27,7 @@ export default function RootLayout({
           dangerouslySetInnerHTML={{
             __html: `
               try {
-                const theme = localStorage.getItem('theme') || 'system'
+                const theme = localStorage.getItem('theme') || 'light'
                 const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
                 const shouldUseDark = theme === 'dark' || (theme === 'system' && systemPrefersDark)
                 

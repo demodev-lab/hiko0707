@@ -108,7 +108,7 @@ export function SearchBar({
     <div className={`relative ${className}`}>
       <form onSubmit={handleSubmit}>
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4 sm:w-5 sm:h-5" />
           <Input
             ref={inputRef}
             type="text"
@@ -118,7 +118,7 @@ export function SearchBar({
             onFocus={() => setIsFocused(true)}
             onBlur={() => setTimeout(() => setIsFocused(false), 200)}
             onKeyDown={handleKeyDown}
-            className="pl-10 pr-10 py-3 text-base"
+            className="pl-10 pr-10 py-2 sm:py-3 text-sm sm:text-base"
             autoComplete="off"
           />
           {query && (
@@ -127,7 +127,7 @@ export function SearchBar({
               onClick={handleClear}
               className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
             >
-              <X className="w-5 h-5" />
+              <X className="w-4 h-4 sm:w-5 sm:h-5" />
             </button>
           )}
         </div>

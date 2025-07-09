@@ -130,26 +130,6 @@ export function Footer() {
         </div>
       </div>
 
-      {/* 언어 지원 정보 */}
-      <div className="border-t border-gray-800">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <div className="text-center">
-            <p className="text-gray-400 text-sm mb-4">
-              7개 언어 지원: 한국어, English, 中文, Tiếng Việt, Монгол, ไทย, 日本語, Русский
-            </p>
-            <div className="flex justify-center space-x-8 text-xs text-gray-500">
-              <span>🇰🇷 한국어</span>
-              <span>🇺🇸 English</span>
-              <span>🇨🇳 中文</span>
-              <span>🇻🇳 Tiếng Việt</span>
-              <span>🇲🇳 Монгол</span>
-              <span>🇹🇭 ไทย</span>
-              <span>🇯🇵 日本語</span>
-              <span>🇷🇺 Русский</span>
-            </div>
-          </div>
-        </div>
-      </div>
 
       {/* 하단 저작권 */}
       <div className="border-t border-gray-800">

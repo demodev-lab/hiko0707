@@ -21,7 +21,7 @@ export function useTheme() {
 }
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setTheme] = useState<Theme>('system')
+  const [theme, setTheme] = useState<Theme>('light')
   const [actualTheme, setActualTheme] = useState<'light' | 'dark'>('light')
 
   // Get system theme preference
@@ -60,7 +60,10 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
         setTheme(savedTheme)
         updateActualTheme(savedTheme)
       } else {
-        updateActualTheme('system')
+        // 기본값을 light로 설정
+        setTheme('light')
+        updateActualTheme('light')
+        localStorage.setItem('theme', 'light')
       }
     }
   }, [])

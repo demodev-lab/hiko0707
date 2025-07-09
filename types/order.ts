@@ -1,6 +1,6 @@
 export type OrderStatus = 'pending' | 'confirmed' | 'purchasing' | 'shipping' | 'delivered' | 'cancelled'
 
-export type PaymentMethod = 'card' | 'bank_transfer' | 'paypal' | 'alipay' | 'wechat_pay'
+export type PaymentMethod = 'card' | 'bank_transfer'
 
 export type ShippingMethod = 'standard' | 'express' | 'economy'
 
@@ -8,9 +8,6 @@ export interface ShippingAddress {
   fullName: string
   phoneNumber: string
   email: string
-  country: string
-  city: string
-  state?: string
   postalCode: string
   addressLine1: string
   addressLine2?: string
@@ -35,15 +32,12 @@ export interface Order {
   items: OrderItem[]
   status: OrderStatus
   shippingAddress: ShippingAddress
-  shippingMethod: ShippingMethod
   paymentMethod: PaymentMethod
   
   // Price breakdown
   subtotal: number
-  serviceFee: number // 대행 수수료
-  koreanShippingFee: number // 한국 내 배송비
-  internationalShippingFee: number // 국제 배송비
-  taxAndDuties: number // 관세 및 세금
+  serviceFee: number // 대행 수수료 (8%)
+  domesticShippingFee: number // 국내 배송비
   totalAmount: number
   
   // Tracking
@@ -75,43 +69,12 @@ export interface OrderFormData {
     notes?: string
   }>
   shippingAddress: ShippingAddress
-  shippingMethod: ShippingMethod
   paymentMethod: PaymentMethod
   customerNotes?: string
 }
 
-// 서비스 수수료 계산 (10% + 최소 5,000원)
+// 서비스 수수료 계산 (8%)
 export function calculateServiceFee(subtotal: number): number {
-  const percentage = subtotal * 0.1
-  return Math.max(5000, Math.round(percentage))
+  return Math.round(subtotal * 0.08)
 }
 
-// 예상 국제 배송비 계산 (무게 기반)
-export function estimateInternationalShipping(
-  items: Array<{ quantity: number }>,
-  method: ShippingMethod,
-  country: string
-): number {
-  // 간단한 예시 - 실제로는 더 복잡한 계산 필요
-  const baseRate = {
-    standard: 20000,
-    express: 35000,
-    economy: 15000
-  }
-  
-  const countryMultiplier = {
-    US: 1.2,
-    CN: 0.8,
-    JP: 0.9,
-    VN: 0.7,
-    TH: 0.8,
-    ID: 0.85,
-    default: 1
-  }
-  
-  const base = baseRate[method]
-  const multiplier = countryMultiplier[country as keyof typeof countryMultiplier] || countryMultiplier.default
-  
-  const totalItems = items.reduce((sum, item) => sum + item.quantity, 0)
-  return Math.round(base * multiplier * Math.max(1, totalItems * 0.5))
-}

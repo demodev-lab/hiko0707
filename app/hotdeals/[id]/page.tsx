@@ -16,6 +16,7 @@ import { CommentSection } from '@/components/features/comments/comment-section'
 import { ShareButton } from '@/components/features/share/share-button'
 import { HotDeal } from '@/types/hotdeal'
 import { Loading } from '@/components/ui/loading'
+import { BuyForMeButton } from '@/components/features/order/buy-for-me-button'
 
 interface HotDealPageProps {
   params: Promise<{
@@ -106,15 +107,15 @@ export default function HotDealDetailPage({ params }: HotDealPageProps) {
   return (
     <div className="container mx-auto py-8 px-4 max-w-6xl">
       {/* 브레드크럼 */}
-      <nav className="flex items-center gap-2 text-sm text-gray-600 mb-4">
-        <Link href="/" className="hover:text-blue-600">홈</Link>
+      <nav className="flex items-center gap-2 text-xs sm:text-sm text-gray-600 mb-4 overflow-x-auto">
+        <Link href="/" className="hover:text-blue-600 whitespace-nowrap">홈</Link>
         <span>/</span>
-        <Link href="/hotdeals" className="hover:text-blue-600">핫딜</Link>
+        <Link href="/hotdeals" className="hover:text-blue-600 whitespace-nowrap">핫딜</Link>
         <span>/</span>
-        <span className="text-gray-900">{categoryLabels[deal.category]}</span>
+        <span className="text-gray-900 whitespace-nowrap">{categoryLabels[deal.category]}</span>
       </nav>
       
-      <div className="grid md:grid-cols-2 gap-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8">
         {/* 이미지 영역 */}
         <div className="space-y-4">
           <div className="relative aspect-square bg-gray-100 rounded-lg overflow-hidden">
@@ -173,46 +174,46 @@ export default function HotDealDetailPage({ params }: HotDealPageProps) {
             </div>
             
             {/* 제목 */}
-            <h1 className="text-2xl font-bold mb-2">{deal.title}</h1>
+            <h1 className="text-xl sm:text-2xl font-bold mb-2 break-words">{deal.title}</h1>
             
             {/* 메타 정보 */}
-            <div className="flex items-center gap-2 text-sm text-gray-600">
+            <div className="flex flex-wrap items-center gap-2 text-xs sm:text-sm text-gray-600">
               <span>{sourceLabels[deal.source]}</span>
               <span>•</span>
               <span className="flex items-center gap-1">
-                <Eye className="w-4 h-4" />
+                <Eye className="w-3 h-3 sm:w-4 sm:h-4" />
                 조회 {deal.viewCount.toLocaleString()}
               </span>
               <span>•</span>
               <span className="flex items-center gap-1">
-                <Clock className="w-4 h-4" />
+                <Clock className="w-3 h-3 sm:w-4 sm:h-4" />
                 {formatDistanceToNow(new Date(deal.crawledAt), { locale: ko, addSuffix: true })}
               </span>
             </div>
           </div>
           
           {/* 가격 정보 */}
-          <div className="bg-gray-50 p-6 rounded-lg">
+          <div className="bg-gray-50 p-4 sm:p-6 rounded-lg">
             <div className="space-y-3">
               {deal.originalPrice && deal.originalPrice > deal.price && (
                 <div className="flex items-center justify-between">
-                  <span className="text-gray-600">정가</span>
-                  <span className="text-gray-400 line-through">
+                  <span className="text-sm sm:text-base text-gray-600">정가</span>
+                  <span className="text-sm sm:text-base text-gray-400 line-through">
                     ₩{deal.originalPrice.toLocaleString()}
                   </span>
                 </div>
               )}
               <div className="flex items-center justify-between">
-                <span className="font-medium">판매가</span>
-                <span className="text-2xl font-bold text-red-600">
+                <span className="text-sm sm:text-base font-medium">판매가</span>
+                <span className="text-xl sm:text-2xl font-bold text-red-600">
                   ₩{deal.price.toLocaleString()}
                 </span>
               </div>
               {deal.shipping && (
                 <div className="flex items-center justify-between">
-                  <span className="text-gray-600">배송비</span>
-                  <span className="flex items-center gap-1">
-                    <Truck className="w-4 h-4" />
+                  <span className="text-sm sm:text-base text-gray-600">배송비</span>
+                  <span className="flex items-center gap-1 text-sm sm:text-base">
+                    <Truck className="w-3 h-3 sm:w-4 sm:h-4" />
                     {deal.shipping.isFree ? '무료배송' : 
                      deal.shipping.cost ? `₩${deal.shipping.cost.toLocaleString()}` : '배송비 별도'}
                   </span>
@@ -220,8 +221,8 @@ export default function HotDealDetailPage({ params }: HotDealPageProps) {
               )}
               {deal.shipping?.method && (
                 <div className="flex items-center justify-between">
-                  <span className="text-gray-600">배송방법</span>
-                  <span className="text-sm">{deal.shipping.method}</span>
+                  <span className="text-sm sm:text-base text-gray-600">배송방법</span>
+                  <span className="text-xs sm:text-sm">{deal.shipping.method}</span>
                 </div>
               )}
             </div>
@@ -246,24 +247,42 @@ export default function HotDealDetailPage({ params }: HotDealPageProps) {
             </div>
           )}
           
-          {/* 구매 버튼 */}
-          <div className="space-y-3">
+          {/* 구매 버튼 - 카드와 동일한 스타일 */}
+          <div className="space-y-2">
+            {/* 원본 링크 버튼 */}
             <Link 
-              href={deal.originalUrl}
+              href={deal.originalUrl || '#'}
               target="_blank"
               rel="noopener noreferrer"
               className="block"
             >
-              <Button className="w-full h-12 text-lg bg-blue-600 hover:bg-blue-700">
-                쇼핑몰로 이동
-                <ExternalLink className="w-4 h-4 ml-2" />
+              <Button
+                variant="outline"
+                size="default"
+                className="w-full text-gray-700 border-gray-300 hover:bg-gray-50"
+              >
+                🔗 원본 보기
               </Button>
             </Link>
-            <Link href={`/order?hotdeal=${deal.id}`}>
-              <Button variant="outline" className="w-full h-12 text-lg">
-                대신 사줘요 요청하기
-              </Button>
-            </Link>
+            
+            {/* Buy for Me 버튼 */}
+            <BuyForMeButton
+              hotdeal={{
+                id: deal.id,
+                title: deal.title,
+                price: deal.price.toString(),
+                originalPrice: deal.originalPrice?.toString(),
+                imageUrl: deal.imageUrl,
+                productUrl: deal.originalUrl || '',
+                discountRate: deal.discountRate?.toString(),
+                category: deal.category,
+                seller: deal.source,
+                deadline: deal.endDate ? (deal.endDate instanceof Date ? deal.endDate.toISOString() : String(deal.endDate)) : undefined
+              }}
+              variant="default"
+              size="default"
+              className="w-full"
+            />
           </div>
         </div>
       </div>
