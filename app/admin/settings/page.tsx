@@ -240,7 +240,7 @@ export default function AdminSettingsPage() {
                 <div className="flex items-center justify-between">
                   <div>
                     <Label>자동 승인</Label>
-                    <p className="text-sm text-gray-600">새로운 Buy for Me 요청을 자동으로 승인합니다</p>
+                    <p className="text-sm text-gray-600">새로운 대리 구매 요청을 자동으로 승인합니다</p>
                   </div>
                   <Switch
                     checked={settings.autoApprove}

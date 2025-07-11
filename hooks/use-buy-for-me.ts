@@ -37,7 +37,7 @@ export function useBuyForMe() {
     },
     onSuccess: (newRequest) => {
       queryClient.invalidateQueries({ queryKey: ['buyForMeRequests'] })
-      toast.success('Buy for Me 요청 성공! 관리자가 검토 후 견적서를 보내드립니다.')
+      toast.success('대리 구매 요청 성공! 관리자가 검토 후 견적서를 보내드립니다.')
       // 관리자에게 알림 발송
       notificationService.notifyNewRequest(newRequest)
     },
@@ -54,7 +54,13 @@ export function useBuyForMe() {
   // 견적 승인
   const approveQuoteMutation = useMutation({
     mutationFn: async (requestId: string) => {
-      return db.buyForMeRequests.approveQuote(requestId)
+      // 먼저 견적을 승인하고
+      const approvedRequest = await db.buyForMeRequests.approveQuote(requestId)
+      // 그다음 상태를 payment_pending으로 변경
+      if (approvedRequest) {
+        return db.buyForMeRequests.updateStatus(requestId, 'payment_pending')
+      }
+      return approvedRequest
     },
     onSuccess: (request) => {
       queryClient.invalidateQueries({ queryKey: ['buyForMeRequests'] })
@@ -73,7 +79,7 @@ export function useBuyForMe() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['buyForMeRequests'] })
-      toast.success('Buy for Me 요청이 취소되었습니다.')
+      toast.success('대리 구매 요청이 취소되었습니다.')
     },
   })
 

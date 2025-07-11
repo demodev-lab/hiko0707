@@ -22,7 +22,7 @@ import { Button } from '@/components/ui/button'
 const navigation = [
   { name: '대시보드', href: '/dashboard', icon: LayoutDashboard },
   { name: '핫딜', href: '/hotdeals', icon: TrendingUp },
-  { name: '대신 사줘요', href: '/order', icon: ShoppingBag },
+  { name: '대리 구매', href: '/order', icon: ShoppingBag },
   { name: '주문 내역', href: '/orders', icon: Package },
   { name: '결제 내역', href: '/dashboard/payments', icon: CreditCard },
   { name: '즐겨찾기', href: '/dashboard/favorites', icon: Heart },

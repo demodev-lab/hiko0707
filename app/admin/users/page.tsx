@@ -149,7 +149,7 @@ export default async function AdminUsersPage() {
                         </div>
                       </td>
                       <td className="p-3">{user.email}</td>
-                      <td className="p-3">{getRoleBadge(user.role)}</td>
+                      <td className="p-3">{getRoleBadge(user.role || 'customer')}</td>
                       <td className="p-3">{getStatusBadge(user.updatedAt)}</td>
                       <td className="p-3 text-sm text-gray-600">
                         {new Date(user.createdAt).toLocaleDateString('ko-KR')}

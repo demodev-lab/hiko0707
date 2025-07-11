@@ -46,11 +46,12 @@ export interface BuyForMeRequest {
     finalProductPrice: number
     serviceFee: number
     domesticShippingFee: number
-    internationalShippingFee: number
     totalAmount: number
     paymentMethod: string
+    paymentLink?: string         // 온라인 결제 링크
     quoteSentDate: Date
     quoteApprovedDate?: Date
+    notes?: string               // 추가 안내사항
   }
   
   // 주문 관련

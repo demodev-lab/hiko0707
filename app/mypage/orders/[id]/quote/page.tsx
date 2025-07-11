@@ -55,8 +55,9 @@ export default function QuoteConfirmPage() {
     setIsApproving(true)
     try {
       await approveQuote(request.id)
-      toast.success('견적이 승인되었습니다. 결제 안내가 곧 전송됩니다.')
-      router.push(`/mypage/orders/${request.id}`)
+      toast.success('견적이 승인되었습니다. 결제 페이지로 이동합니다.')
+      // 결제 페이지로 이동
+      router.push(`/mypage/orders/${request.id}/payment`)
     } catch (error) {
       toast.error('견적 승인 중 오류가 발생했습니다.')
     } finally {
@@ -137,12 +138,8 @@ export default function QuoteConfirmPage() {
                     <span className="font-medium">₩{request.quote.serviceFee.toLocaleString()}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span>국내 배송비</span>
-                    <span className="font-medium">₩{request.quote.domesticShippingFee.toLocaleString()}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>국제 배송비</span>
-                    <span className="font-medium">₩{request.quote.internationalShippingFee.toLocaleString()}</span>
+                    <span>배송비</span>
+                    <span className="font-medium">{request.quote.domesticShippingFee === 0 ? '무료배송' : `₩${request.quote.domesticShippingFee.toLocaleString()}`}</span>
                   </div>
                   <Separator />
                   <div className="flex justify-between text-lg font-semibold">
@@ -160,15 +157,27 @@ export default function QuoteConfirmPage() {
                 </h4>
                 <div className="bg-gray-50 p-4 rounded-lg">
                   <p className="font-medium">
-                    {request.quote.paymentMethod === 'credit_card' && '신용카드 (온라인 결제 링크)'}
+                    {request.quote.paymentMethod === 'card' && '신용카드 (온라인 결제)'}
                     {request.quote.paymentMethod === 'bank_transfer' && '무통장 입금'}
-                    {request.quote.paymentMethod === 'paypal' && 'PayPal'}
                   </p>
                   <p className="text-sm text-gray-600 mt-2">
                     견적을 승인하시면 선택하신 결제 방법에 대한 상세 안내를 드립니다.
                   </p>
                 </div>
               </div>
+              
+              {/* 추가 안내사항 */}
+              {request.quote.notes && (
+                <div className="space-y-3">
+                  <h4 className="font-medium flex items-center gap-2">
+                    <Info className="w-4 h-4" />
+                    추가 안내사항
+                  </h4>
+                  <div className="bg-blue-50 p-4 rounded-lg">
+                    <p className="text-sm text-blue-800">{request.quote.notes}</p>
+                  </div>
+                </div>
+              )}
 
             </CardContent>
           </Card>

@@ -11,7 +11,8 @@ import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
-import { Plus, Minus, Package, Truck, CreditCard, Link } from 'lucide-react'
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
+import { Plus, Minus, Package, Truck, CreditCard, Link, Info } from 'lucide-react'
 import { useLanguage } from '@/lib/i18n/context'
 import { useCreateOrder } from '@/hooks/use-orders'
 import { OrderFormData, ShippingMethod, PaymentMethod, calculateServiceFee } from '@/types/order'
@@ -110,22 +111,22 @@ export function OrderForm({ initialData, hotdealId, onSuccess }: OrderFormProps)
         userId: currentUser.id
       })
 
-      toast.success('주문이 성공적으로 접수되었습니다!')
+      toast.success('대리 구매 요청이 접수되었습니다!')
       
       // 알림 추가
       if (result) {
         notificationService.info(
-          '주문 접수 완료',
-          `주문번호 ${result.orderNumber}가 성공적으로 접수되었습니다. 결제를 진행해주세요.`,
-          `/order/${result.id}`
+          '대리 구매 요청 완료',
+          `대리 구매 요청이 접수되었습니다. 곧 견적서를 보내드리겠습니다.`,
+          `/mypage`
         )
         
-        // 결제 페이지로 리다이렉트
-        router.push(`/payment?orderId=${result.id}&amount=${totalAmount}&currency=KRW`)
+        // 마이페이지로 리다이렉트
+        router.push('/mypage')
       }
     } catch (error) {
       console.error('Order creation error:', error)
-      toast.error('주문 접수 중 오류가 발생했습니다.')
+      toast.error('대리 구매 요청 중 오류가 발생했습니다.')
     } finally {
       setIsSubmitting(false)
     }
@@ -134,50 +135,12 @@ export function OrderForm({ initialData, hotdealId, onSuccess }: OrderFormProps)
 
   return (
     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-      {/* URL 파서 */}
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Link className="w-5 h-5" />
-              <CardTitle>{t('order.urlParser.title')}</CardTitle>
-            </div>
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={() => setShowUrlParser(!showUrlParser)}
-            >
-              {showUrlParser ? t('common.hide') : t('common.show')}
-            </Button>
-          </div>
-        </CardHeader>
-        {showUrlParser && (
-          <CardContent>
-            <UrlParser
-              onProductParsed={(product: ParsedProduct) => {
-                // Add parsed product to form
-                append({
-                  productName: product.title,
-                  productUrl: product.sourceUrl,
-                  price: product.price,
-                  quantity: 1,
-                  options: product.options ? { options: product.options.join(', ') } : {},
-                  notes: product.description || ''
-                })
-                toast.success(t('order.urlParser.productAdded'))
-                setShowUrlParser(false)
-              }}
-            />
-          </CardContent>
-        )}
-      </Card>
 
       {/* 상품 정보 */}
       <Card>
         <CardHeader className="flex flex-row items-center gap-2">
           <Package className="w-5 h-5" />
-          <CardTitle>{t('order.form.productInfo')}</CardTitle>
+          <CardTitle>상품 정보</CardTitle>
         </CardHeader>
         <CardContent className="space-y-6">
           {fields.map((field, index) => (
@@ -192,7 +155,7 @@ export function OrderForm({ initialData, hotdealId, onSuccess }: OrderFormProps)
                     onClick={() => remove(index)}
                   >
                     <Minus className="w-4 h-4 mr-1" />
-                    {t('order.form.removeItem')}
+                    삭제
                   </Button>
                 )}
               </div>
@@ -200,7 +163,7 @@ export function OrderForm({ initialData, hotdealId, onSuccess }: OrderFormProps)
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor={`items.${index}.productName`}>
-                    {t('order.form.productName')} *
+                    상품명 *
                   </Label>
                   <Input
                     {...form.register(`items.${index}.productName`)}
@@ -215,7 +178,7 @@ export function OrderForm({ initialData, hotdealId, onSuccess }: OrderFormProps)
 
                 <div>
                   <Label htmlFor={`items.${index}.productUrl`}>
-                    {t('order.form.productUrl')}
+                    상품 URL (선택사항)
                   </Label>
                   <Input
                     {...form.register(`items.${index}.productUrl`)}
@@ -230,7 +193,7 @@ export function OrderForm({ initialData, hotdealId, onSuccess }: OrderFormProps)
 
                 <div>
                   <Label htmlFor={`items.${index}.price`}>
-                    {t('order.form.price')} (KRW) *
+                    예상 가격 (원) *
                   </Label>
                   <Input
                     type="number"
@@ -246,7 +209,7 @@ export function OrderForm({ initialData, hotdealId, onSuccess }: OrderFormProps)
 
                 <div>
                   <Label htmlFor={`items.${index}.quantity`}>
-                    {t('order.form.quantity')} *
+                    수량 *
                   </Label>
                   <Input
                     type="number"
@@ -264,11 +227,11 @@ export function OrderForm({ initialData, hotdealId, onSuccess }: OrderFormProps)
 
               <div>
                 <Label htmlFor={`items.${index}.notes`}>
-                  {t('order.form.notes')}
+                  상품 옵션 및 요청사항
                 </Label>
                 <Textarea
                   {...form.register(`items.${index}.notes`)}
-                  placeholder="옵션이나 특별 요청사항을 입력해주세요"
+                  placeholder="색상, 사이즈 등 옵션이나 특별 요청사항을 입력해주세요"
                   rows={2}
                 />
               </div>
@@ -289,7 +252,7 @@ export function OrderForm({ initialData, hotdealId, onSuccess }: OrderFormProps)
             className="w-full"
           >
             <Plus className="w-4 h-4 mr-1" />
-            {t('order.form.addItem')}
+            상품 추가
           </Button>
         </CardContent>
       </Card>
@@ -298,13 +261,13 @@ export function OrderForm({ initialData, hotdealId, onSuccess }: OrderFormProps)
       <Card>
         <CardHeader className="flex flex-row items-center gap-2">
           <Truck className="w-5 h-5" />
-          <CardTitle>{t('order.form.shippingInfo')}</CardTitle>
+          <CardTitle>배송 정보</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <Label htmlFor="shippingAddress.fullName">
-                {t('order.form.fullName')} *
+                수령인 이름 *
               </Label>
               <Input
                 {...form.register('shippingAddress.fullName')}
@@ -319,11 +282,11 @@ export function OrderForm({ initialData, hotdealId, onSuccess }: OrderFormProps)
 
             <div>
               <Label htmlFor="shippingAddress.phoneNumber">
-                {t('order.form.phoneNumber')} *
+                전화번호 *
               </Label>
               <Input
                 {...form.register('shippingAddress.phoneNumber')}
-                placeholder="+82-10-1234-5678"
+                placeholder="010-1234-5678"
               />
               {form.formState.errors.shippingAddress?.phoneNumber && (
                 <p className="text-sm text-red-500 mt-1">
@@ -334,7 +297,7 @@ export function OrderForm({ initialData, hotdealId, onSuccess }: OrderFormProps)
 
             <div>
               <Label htmlFor="shippingAddress.email">
-                {t('order.form.email')} *
+                이메일 *
               </Label>
               <Input
                 type="email"
@@ -351,7 +314,7 @@ export function OrderForm({ initialData, hotdealId, onSuccess }: OrderFormProps)
 
             <div>
               <Label htmlFor="shippingAddress.postalCode">
-                {t('order.form.postalCode')} *
+                우편번호 *
               </Label>
               <Input
                 {...form.register('shippingAddress.postalCode')}
@@ -367,7 +330,7 @@ export function OrderForm({ initialData, hotdealId, onSuccess }: OrderFormProps)
 
           <div>
             <Label htmlFor="shippingAddress.addressLine1">
-              {t('order.form.addressLine1')} *
+              주소 *
             </Label>
             <Input
               {...form.register('shippingAddress.addressLine1')}
@@ -382,39 +345,22 @@ export function OrderForm({ initialData, hotdealId, onSuccess }: OrderFormProps)
 
           <div>
             <Label htmlFor="shippingAddress.addressLine2">
-              {t('order.form.addressLine2')}
+              상세 주소
             </Label>
             <Input
               {...form.register('shippingAddress.addressLine2')}
-              placeholder="상세주소"
+              placeholder="101동 202호"
             />
           </div>
 
-          <div>
-            <Label htmlFor="paymentMethod">
-              {t('order.form.paymentMethod')} *
-            </Label>
-            <Select
-              value={form.watch('paymentMethod')}
-              onValueChange={(value: PaymentMethod) => form.setValue('paymentMethod', value)}
-            >
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="card">신용/체크카드</SelectItem>
-                <SelectItem value="bank_transfer">계좌이체</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
 
           <div>
             <Label htmlFor="customerNotes">
-              {t('order.form.customerNotes')}
+              특별 요청사항
             </Label>
             <Textarea
               {...form.register('customerNotes')}
-              placeholder="특별한 요청사항이 있으시면 입력해주세요"
+              placeholder="특별한 요청사항이 있으시면 남겨주세요. (예: 선물 포장, 특정 배송 요청 등)"
               rows={3}
             />
           </div>
@@ -425,26 +371,18 @@ export function OrderForm({ initialData, hotdealId, onSuccess }: OrderFormProps)
       <Card>
         <CardHeader className="flex flex-row items-center gap-2">
           <CreditCard className="w-5 h-5" />
-          <CardTitle>결제 정보</CardTitle>
+          <CardTitle>예상 비용</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-3">
-          <div className="flex justify-between">
-            <span>{t('order.cost.subtotal')}</span>
-            <span>₩{subtotal.toLocaleString()}</span>
-          </div>
-          <div className="flex justify-between">
-            <span>{t('order.cost.serviceFee')} (8%)</span>
-            <span>₩{serviceFee.toLocaleString()}</span>
-          </div>
-          <div className="flex justify-between">
-            <span>국내 배송비</span>
-            <span>₩{domesticShippingFee.toLocaleString()}</span>
-          </div>
-          <Separator />
-          <div className="flex justify-between text-lg font-semibold">
-            <span>{t('order.cost.total')}</span>
-            <span>₩{totalAmount.toLocaleString()}</span>
-          </div>
+        <CardContent>
+          <Alert>
+            <Info className="h-4 w-4" />
+            <AlertTitle>예상 비용 안내</AlertTitle>
+            <AlertDescription className="space-y-1 text-sm">
+              <p>• 실제 구매 시 상품 옵션, 배송비 등에 따라 최종 금액이 달라질 수 있습니다</p>
+              <p>• 정확한 견적은 관리자가 실제 쇼핑몰에서 확인 후 보내드립니다</p>
+              <p>• 서비스 수수료는 최종 상품 금액의 10%입니다</p>
+            </AlertDescription>
+          </Alert>
         </CardContent>
       </Card>
 
@@ -455,14 +393,14 @@ export function OrderForm({ initialData, hotdealId, onSuccess }: OrderFormProps)
           className="flex-1"
           onClick={() => window.history.back()}
         >
-          {t('common.cancel')}
+          취소
         </Button>
         <Button
           type="submit"
           className="flex-1"
           disabled={isSubmitting}
         >
-          {isSubmitting ? t('common.loading') : t('common.submit')}
+          {isSubmitting ? '요청 중...' : '구매 요청하기'}
         </Button>
       </div>
     </form>

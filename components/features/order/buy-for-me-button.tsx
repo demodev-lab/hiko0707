@@ -3,7 +3,6 @@
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { ShoppingBag } from 'lucide-react'
-import { useLanguage } from '@/lib/i18n/context'
 import { BuyForMeModal } from './buy-for-me-modal'
 
 interface HotDeal {
@@ -32,7 +31,6 @@ export function BuyForMeButton({
   size = 'default',
   className = ''
 }: BuyForMeButtonProps) {
-  const { t } = useLanguage()
   const [modalOpen, setModalOpen] = useState(false)
 
   const handleClick = (e: React.MouseEvent) => {
@@ -50,7 +48,7 @@ export function BuyForMeButton({
         className={className}
       >
         <ShoppingBag className="w-4 h-4 mr-2" />
-        {t('order.buyForMe.title')}
+        대리 구매 신청
       </Button>
 
       <BuyForMeModal

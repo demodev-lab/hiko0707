@@ -78,8 +78,8 @@ export default async function AdminOrdersPage() {
                   {orders.map((order) => (
                     <tr key={order.id} className="border-b hover:bg-gray-50">
                       <td className="p-3 font-mono text-sm">{order.id}</td>
-                      <td className="p-3">{order.customerName}</td>
-                      <td className="p-3">{order.productName}</td>
+                      <td className="p-3">{order.shippingAddress.fullName}</td>
+                      <td className="p-3">{order.items[0]?.productName || '상품 없음'}</td>
                       <td className="p-3 font-semibold">₩{order.totalAmount.toLocaleString()}</td>
                       <td className="p-3">{getStatusBadge(order.status)}</td>
                       <td className="p-3 text-sm text-gray-600">

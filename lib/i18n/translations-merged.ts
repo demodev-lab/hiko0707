@@ -166,7 +166,7 @@ export const translations: Record<LanguageCode, any> = {
     // Order
     order: {
       title: '대신 사줘요',
-      subtitle: '원하는 상품을 안전하고 빠르게 대신 구매해드립니다',
+      subtitle: '원하는 상품을 안전하고 빠르게 대리 구매해드립니다',
       form: {
         title: '주문서 작성',
         productInfo: '상품 정보',

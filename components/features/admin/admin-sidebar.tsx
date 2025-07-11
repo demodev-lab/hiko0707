@@ -5,14 +5,8 @@ import { usePathname } from 'next/navigation'
 import { cn } from '@/lib/utils'
 import {
   LayoutDashboard,
-  Package,
-  Users,
   TrendingUp,
-  Settings,
-  BarChart,
-  Bell,
   LogOut,
-  FileText,
   ShoppingBag
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -24,44 +18,14 @@ const navigation = [
     icon: LayoutDashboard
   },
   {
-    name: 'Buy for Me',
+    name: '대리 구매',
     href: '/admin/buy-for-me',
     icon: ShoppingBag
-  },
-  {
-    name: '주문 관리',
-    href: '/admin/orders',
-    icon: Package
-  },
-  {
-    name: '사용자 관리',
-    href: '/admin/users',
-    icon: Users
   },
   {
     name: '핫딜 관리',
     href: '/admin/hotdeals',
     icon: TrendingUp
-  },
-  {
-    name: '통계 분석',
-    href: '/admin/analytics',
-    icon: BarChart
-  },
-  {
-    name: '게시물 관리',
-    href: '/admin/posts',
-    icon: FileText
-  },
-  {
-    name: '알림 설정',
-    href: '/admin/notifications',
-    icon: Bell
-  },
-  {
-    name: '시스템 설정',
-    href: '/admin/settings',
-    icon: Settings
   }
 ]
 

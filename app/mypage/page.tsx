@@ -14,15 +14,8 @@ import {
   User,
   Mail,
   Phone,
-  Calendar,
-  ShoppingBag,
-  Clock,
-  CheckCircle,
-  XCircle,
   Eye,
-  LogOut,
-  Settings,
-  ChevronRight
+  LogOut
 } from 'lucide-react'
 import Link from 'next/link'
 import { BuyForMeRequest } from '@/types/buy-for-me'
@@ -198,56 +191,18 @@ export default function MyPage() {
                   </div>
                 </div>
               </div>
-              <div className="flex items-center gap-2">
-                <Button variant="outline" size="sm">
-                  <Settings className="w-4 h-4 mr-2" />
-                  설정
-                </Button>
-                <Button variant="outline" size="sm" onClick={handleLogout}>
-                  <LogOut className="w-4 h-4 mr-2" />
-                  로그아웃
-                </Button>
-              </div>
+              <Button variant="outline" size="sm" onClick={handleLogout}>
+                <LogOut className="w-4 h-4 mr-2" />
+                로그아웃
+              </Button>
             </div>
           </div>
 
-          {/* 통계 카드 */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">전체 주문</CardTitle>
-                <ShoppingBag className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{requests.length}</div>
-              </CardContent>
-            </Card>
-            
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">진행 중</CardTitle>
-                <Clock className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{activeRequests.length}</div>
-              </CardContent>
-            </Card>
-            
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">완료</CardTitle>
-                <CheckCircle className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{completedRequests.length}</div>
-              </CardContent>
-            </Card>
-          </div>
 
-          {/* Buy for Me 주문 목록 */}
+          {/* 대리 구매 주문 목록 */}
           <Card>
             <CardHeader>
-              <CardTitle>Buy for Me 주문 내역</CardTitle>
+              <CardTitle>대리 구매 주문 내역</CardTitle>
             </CardHeader>
             <CardContent>
               <Tabs value={activeTab} onValueChange={setActiveTab}>
@@ -270,7 +225,7 @@ export default function MyPage() {
                     <div className="text-center py-12">
                       <Package className="w-12 h-12 text-gray-400 mx-auto mb-4" />
                       <p className="text-gray-600">진행 중인 주문이 없습니다.</p>
-                      <Link href="/">
+                      <Link href="/hotdeals">
                         <Button className="mt-4">
                           핫딜 보러가기
                         </Button>
@@ -288,7 +243,7 @@ export default function MyPage() {
                 <TabsContent value="completed" className="space-y-4 mt-6">
                   {completedRequests.length === 0 ? (
                     <div className="text-center py-12">
-                      <CheckCircle className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                      <Package className="w-12 h-12 text-gray-400 mx-auto mb-4" />
                       <p className="text-gray-600">완료된 주문이 없습니다.</p>
                     </div>
                   ) : (
@@ -303,30 +258,6 @@ export default function MyPage() {
             </CardContent>
           </Card>
 
-          {/* 기타 마이페이지 기능 */}
-          <Card>
-            <CardContent className="p-0">
-              <Link href="/mypage/settings" className="block">
-                <div className="flex items-center justify-between p-4 hover:bg-gray-50 transition-colors">
-                  <div className="flex items-center gap-3">
-                    <Settings className="w-5 h-5 text-gray-600" />
-                    <span className="font-medium">계정 설정</span>
-                  </div>
-                  <ChevronRight className="w-5 h-5 text-gray-400" />
-                </div>
-              </Link>
-              <div className="border-t" />
-              <Link href="/mypage/addresses" className="block">
-                <div className="flex items-center justify-between p-4 hover:bg-gray-50 transition-colors">
-                  <div className="flex items-center gap-3">
-                    <Package className="w-5 h-5 text-gray-600" />
-                    <span className="font-medium">배송지 관리</span>
-                  </div>
-                  <ChevronRight className="w-5 h-5 text-gray-400" />
-                </div>
-              </Link>
-            </CardContent>
-          </Card>
         </div>
       </div>
     </ProtectedRoute>

@@ -15,10 +15,10 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { 
   ShoppingBag, 
   User, 
@@ -26,9 +26,8 @@ import {
   MessageSquare, 
   CreditCard,
   Package,
-  Globe
+  Info
 } from 'lucide-react'
-import { useLanguage } from '@/lib/i18n/context'
 import { useAuth } from '@/hooks/use-auth'
 import { useBuyForMe } from '@/hooks/use-buy-for-me'
 import { toast } from 'sonner'
@@ -71,19 +70,17 @@ interface BuyForMeModalProps {
 }
 
 export function BuyForMeModal({ open, onOpenChange, hotdeal }: BuyForMeModalProps) {
-  const { t } = useLanguage()
   const { currentUser } = useAuth()
   const { createRequest, isCreating } = useBuyForMe()
   const router = useRouter()
-  const [isSubmitting, setIsSubmitting] = useState(false)
 
   const form = useForm<BuyForMeFormData>({
     resolver: zodResolver(buyForMeSchema),
     defaultValues: {
       quantity: 1,
       shippingInfo: {
-        fullName: '',
-        phoneNumber: '',
+        fullName: currentUser?.name || '',
+        phoneNumber: currentUser?.phone || '',
         email: currentUser?.email || '',
         address: '',
         postalCode: '',
@@ -92,24 +89,22 @@ export function BuyForMeModal({ open, onOpenChange, hotdeal }: BuyForMeModalProp
     }
   })
 
-
   const onSubmit = async (data: BuyForMeFormData) => {
     if (!currentUser) {
-      toast.error(t('auth.loginRequired'))
+      toast.error('로그인이 필요합니다')
       router.push('/login')
       return
     }
 
     if (!hotdeal) {
-      toast.error('Product information is missing')
+      toast.error('상품 정보를 찾을 수 없습니다')
       return
     }
 
     const estimatedPrice = parseInt(hotdeal.price.replace(/[^0-9]/g, '')) || 0
     const subtotal = estimatedPrice * data.quantity
-    const serviceFee = calculateServiceFee(hotdeal.price, data.quantity)
-    const domesticShipping = 3000
-    const estimatedTotal = subtotal + serviceFee + domesticShipping
+    const serviceFee = Math.round(subtotal * 0.1) // 10% 서비스 수수료 (예상)
+    const estimatedTotal = subtotal + serviceFee + 3000 // 배송비 포함 예상 금액
 
     // Create Buy for Me request
     const requestData = {
@@ -120,7 +115,7 @@ export function BuyForMeModal({ open, onOpenChange, hotdeal }: BuyForMeModalProp
         originalPrice: parseInt(hotdeal.originalPrice?.replace(/[^0-9]/g, '') || '0'),
         discountedPrice: estimatedPrice,
         discountRate: parseInt(hotdeal.discountRate?.replace(/[^0-9]/g, '') || '0'),
-        shippingFee: domesticShipping,
+        shippingFee: 3000, // 기본 배송비 (실제는 견적서에서 확정)
         imageUrl: hotdeal.imageUrl,
         originalUrl: hotdeal.productUrl,
         siteName: hotdeal.seller || 'Unknown'
@@ -144,26 +139,13 @@ export function BuyForMeModal({ open, onOpenChange, hotdeal }: BuyForMeModalProp
       onSuccess: () => {
         onOpenChange(false)
         form.reset()
-        // Redirect to request status page
-        router.push('/my-orders')
+        // Redirect to my page to see the request status
+        router.push('/mypage')
       }
     })
   }
 
-  const calculateServiceFee = (priceStr: string, quantity: number) => {
-    const price = parseInt(priceStr.replace(/[^0-9]/g, '')) || 0
-    const subtotal = price * quantity
-    return Math.round(subtotal * 0.08) // 8% service fee
-  }
-
   if (!hotdeal) return null
-
-  const estimatedPrice = parseInt(hotdeal.price.replace(/[^0-9]/g, '')) || 0
-  const quantity = form.watch('quantity') || 1
-  const subtotal = estimatedPrice * quantity
-  const serviceFee = calculateServiceFee(hotdeal.price, quantity)
-  const domesticShipping = 3000 // 한국 내 기본 배송비
-  const estimatedTotal = subtotal + serviceFee + domesticShipping
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -171,10 +153,10 @@ export function BuyForMeModal({ open, onOpenChange, hotdeal }: BuyForMeModalProp
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-base sm:text-lg">
             <ShoppingBag className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600" />
-            {t('order.buyForMe.title')}
+            대리 구매 신청
           </DialogTitle>
           <DialogDescription className="text-sm">
-            {t('order.buyForMe.description')}
+            상품 정보와 배송지를 입력하면, HiKo가 대리 구매를 진행합니다.
           </DialogDescription>
         </DialogHeader>
 
@@ -229,12 +211,12 @@ export function BuyForMeModal({ open, onOpenChange, hotdeal }: BuyForMeModalProp
           <div className="space-y-3 sm:space-y-4">
             <h4 className="font-medium flex items-center gap-2 text-sm sm:text-base">
               <Package className="w-3 h-3 sm:w-4 sm:h-4" />
-              {t('order.buyForMe.orderDetails')}
+              주문 정보
             </h4>
             
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
               <div>
-                <Label htmlFor="quantity" className="text-sm">{t('order.form.quantity')} *</Label>
+                <Label htmlFor="quantity" className="text-sm">수량 *</Label>
                 <Input
                   type="number"
                   min="1"
@@ -250,10 +232,10 @@ export function BuyForMeModal({ open, onOpenChange, hotdeal }: BuyForMeModalProp
               </div>
               
               <div>
-                <Label htmlFor="productOptions" className="text-sm">{t('order.buyForMe.options')}</Label>
+                <Label htmlFor="productOptions" className="text-sm">상품 옵션</Label>
                 <Input
                   {...form.register('productOptions')}
-                  placeholder={t('order.buyForMe.optionsPlaceholder')}
+                  placeholder="색상, 사이즈 등"
                   className="text-sm"
                 />
               </div>
@@ -264,12 +246,12 @@ export function BuyForMeModal({ open, onOpenChange, hotdeal }: BuyForMeModalProp
           <div className="space-y-3 sm:space-y-4">
             <h4 className="font-medium flex items-center gap-2 text-sm sm:text-base">
               <MapPin className="w-3 h-3 sm:w-4 sm:h-4" />
-              {t('order.form.shippingInfo')}
+              배송 정보
             </h4>
             
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
               <div>
-                <Label htmlFor="shippingInfo.fullName" className="text-sm">{t('order.form.fullName')} *</Label>
+                <Label htmlFor="shippingInfo.fullName" className="text-sm">수령인 이름 *</Label>
                 <Input
                   {...form.register('shippingInfo.fullName')}
                   placeholder="홍길동"
@@ -283,7 +265,7 @@ export function BuyForMeModal({ open, onOpenChange, hotdeal }: BuyForMeModalProp
               </div>
 
               <div>
-                <Label htmlFor="shippingInfo.phoneNumber" className="text-sm">{t('order.form.phoneNumber')} *</Label>
+                <Label htmlFor="shippingInfo.phoneNumber" className="text-sm">전화번호 *</Label>
                 <Input
                   {...form.register('shippingInfo.phoneNumber')}
                   placeholder="010-1234-5678"
@@ -297,7 +279,7 @@ export function BuyForMeModal({ open, onOpenChange, hotdeal }: BuyForMeModalProp
               </div>
 
               <div>
-                <Label htmlFor="shippingInfo.email" className="text-sm">{t('order.form.email')} *</Label>
+                <Label htmlFor="shippingInfo.email" className="text-sm">이메일 *</Label>
                 <Input
                   type="email"
                   {...form.register('shippingInfo.email')}
@@ -312,7 +294,7 @@ export function BuyForMeModal({ open, onOpenChange, hotdeal }: BuyForMeModalProp
               </div>
 
               <div>
-                <Label htmlFor="shippingInfo.postalCode" className="text-sm">{t('order.form.postalCode')} *</Label>
+                <Label htmlFor="shippingInfo.postalCode" className="text-sm">우편번호 *</Label>
                 <Input
                   {...form.register('shippingInfo.postalCode')}
                   placeholder="12345"
@@ -327,7 +309,7 @@ export function BuyForMeModal({ open, onOpenChange, hotdeal }: BuyForMeModalProp
             </div>
 
             <div>
-              <Label htmlFor="shippingInfo.address" className="text-sm">{t('order.form.addressLine1')} *</Label>
+              <Label htmlFor="shippingInfo.address" className="text-sm">주소 *</Label>
               <Input
                 {...form.register('shippingInfo.address')}
                 placeholder="서울시 강남구 테헤란로 123"
@@ -341,61 +323,39 @@ export function BuyForMeModal({ open, onOpenChange, hotdeal }: BuyForMeModalProp
             </div>
 
             <div>
-              <Label htmlFor="shippingInfo.detailAddress" className="text-sm">{t('order.form.addressLine2')}</Label>
+              <Label htmlFor="shippingInfo.detailAddress" className="text-sm">상세 주소</Label>
               <Input
                 {...form.register('shippingInfo.detailAddress')}
                 placeholder="101동 202호"
                 className="text-sm"
               />
             </div>
-
           </div>
 
           {/* Special Requests */}
           <div className="space-y-3 sm:space-y-4">
             <h4 className="font-medium flex items-center gap-2 text-sm sm:text-base">
               <MessageSquare className="w-3 h-3 sm:w-4 sm:h-4" />
-              {t('order.buyForMe.specialRequests')}
+              특별 요청사항
             </h4>
             <Textarea
               {...form.register('specialRequests')}
-              placeholder={t('order.buyForMe.specialRequestsPlaceholder')}
+              placeholder="특별한 요청사항이 있으시면 남겨주세요. (예: 선물 포장, 특정 배송 요청 등)"
               rows={3}
               className="text-sm"
             />
           </div>
 
-          {/* Cost Estimation */}
-          <Card>
-            <CardContent className="p-3 sm:p-4 space-y-3">
-              <h4 className="font-medium flex items-center gap-2 text-sm sm:text-base">
-                <CreditCard className="w-3 h-3 sm:w-4 sm:h-4" />
-                {t('order.buyForMe.costEstimation')}
-              </h4>
-              <div className="space-y-2 text-xs sm:text-sm">
-                <div className="flex justify-between">
-                  <span>{t('order.cost.itemPrice')} × {quantity}</span>
-                  <span>₩{subtotal.toLocaleString()}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>{t('order.cost.serviceFee')} (8%)</span>
-                  <span>₩{serviceFee.toLocaleString()}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>{t('order.cost.koreanShipping')}</span>
-                  <span>₩{domesticShipping.toLocaleString()}</span>
-                </div>
-                <Separator />
-                <div className="flex justify-between font-medium text-sm sm:text-base">
-                  <span>{t('order.cost.estimatedTotal')}</span>
-                  <span>₩{estimatedTotal.toLocaleString()}</span>
-                </div>
-                <p className="text-[10px] sm:text-xs text-gray-500">
-                  * {t('order.buyForMe.finalPriceNote')}
-                </p>
-              </div>
-            </CardContent>
-          </Card>
+          {/* 안내 메시지 */}
+          <Alert>
+            <Info className="h-4 w-4" />
+            <AlertTitle>대리 구매 안내</AlertTitle>
+            <AlertDescription className="space-y-1 text-sm">
+              <p>• 신청 접수 후 관리자가 실제 쇼핑몰에서 가격을 확인합니다</p>
+              <p>• 옵션, 수량에 따른 정확한 견적서를 보내드립니다</p>
+              <p>• 견적 승인 후 결제를 진행하시면 됩니다</p>
+            </AlertDescription>
+          </Alert>
 
           {/* Action Buttons */}
           <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
@@ -405,14 +365,14 @@ export function BuyForMeModal({ open, onOpenChange, hotdeal }: BuyForMeModalProp
               className="w-full sm:flex-1 text-sm"
               onClick={() => onOpenChange(false)}
             >
-              {t('common.cancel')}
+              취소
             </Button>
             <Button
               type="submit"
               className="w-full sm:flex-1 text-sm"
               disabled={isCreating}
             >
-              {isCreating ? t('common.loading') : t('order.buyForMe.submitRequest')}
+              {isCreating ? '요청 중...' : '구매 요청하기'}
             </Button>
           </div>
         </form>

@@ -170,6 +170,13 @@ export default function OrderDetailPage() {
                           </Button>
                         </Link>
                       )}
+                      {request.status === 'payment_pending' && (
+                        <Link href={`/mypage/orders/${request.id}/payment`}>
+                          <Button size="sm" className="mt-2">
+                            결제하기
+                          </Button>
+                        </Link>
+                      )}
                     </div>
                   </div>
                 )}
@@ -325,12 +332,8 @@ export default function OrderDetailPage() {
                     <span className="font-medium">₩{request.quote.serviceFee.toLocaleString()}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span>국내 배송비</span>
-                    <span className="font-medium">₩{request.quote.domesticShippingFee.toLocaleString()}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>국제 배송비</span>
-                    <span className="font-medium">₩{request.quote.internationalShippingFee.toLocaleString()}</span>
+                    <span>배송비</span>
+                    <span className="font-medium">{request.quote.domesticShippingFee === 0 ? '무료배송' : `₩${request.quote.domesticShippingFee.toLocaleString()}`}</span>
                   </div>
                   <Separator />
                   <div className="flex justify-between text-lg font-semibold">
@@ -357,8 +360,8 @@ export default function OrderDetailPage() {
                     <span className="font-medium">₩{request.estimatedServiceFee.toLocaleString()}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span>국내 배송비</span>
-                    <span className="font-medium">₩{request.productInfo.shippingFee.toLocaleString()}</span>
+                    <span>배송비</span>
+                    <span className="font-medium">{request.productInfo.shippingFee === 0 ? '무료배송' : `₩${request.productInfo.shippingFee.toLocaleString()}`}</span>
                   </div>
                   <Separator />
                   <div className="flex justify-between text-lg font-semibold">

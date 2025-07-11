@@ -63,13 +63,10 @@ export function Header() {
               핫딜
             </Link>
             <Link href="/order" className="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 font-medium transition-colors">
-              대신사줘
+              대리 구매
             </Link>
-            <Link href="/dashboard" className="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 font-medium transition-colors">
-              대시보드
-            </Link>
-            <Link href="/about" className="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 font-medium transition-colors">
-              소개
+            <Link href="/mypage" className="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 font-medium transition-colors">
+              마이페이지
             </Link>
           </nav>
 
@@ -239,21 +236,14 @@ export function Header() {
               className="block px-3 py-2 text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-gray-800 rounded-md transition-colors"
               onClick={() => setIsMobileMenuOpen(false)}
             >
-              대신사줘
+              대리 구매
             </Link>
             <Link
-              href="/dashboard"
+              href="/mypage"
               className="block px-3 py-2 text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-gray-800 rounded-md transition-colors"
               onClick={() => setIsMobileMenuOpen(false)}
             >
-              대시보드
-            </Link>
-            <Link
-              href="/about"
-              className="block px-3 py-2 text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-gray-800 rounded-md transition-colors"
-              onClick={() => setIsMobileMenuOpen(false)}
-            >
-              소개
+              마이페이지
             </Link>
           </div>
         </div>

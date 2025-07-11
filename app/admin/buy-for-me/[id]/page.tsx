@@ -126,7 +126,7 @@ export default function BuyForMeDetailPage() {
                 목록으로
               </Button>
             </Link>
-            <h1 className="text-2xl font-bold">Buy for Me 요청 상세</h1>
+            <h1 className="text-2xl font-bold">대리 구매 요청 상세</h1>
           </div>
           <Badge className={statusColors[request.status]}>
             {statusLabels[request.status]}
@@ -280,8 +280,8 @@ export default function BuyForMeDetailPage() {
                 <span className="font-medium">₩{request.estimatedServiceFee.toLocaleString()}</span>
               </div>
               <div className="flex justify-between">
-                <span>국내 배송비</span>
-                <span className="font-medium">₩{request.productInfo.shippingFee.toLocaleString()}</span>
+                <span>배송비</span>
+                <span className="font-medium">{request.productInfo.shippingFee === 0 ? '무료배송' : `₩${request.productInfo.shippingFee.toLocaleString()}`}</span>
               </div>
               <Separator />
               <div className="flex justify-between text-lg font-semibold">
@@ -308,18 +308,32 @@ export default function BuyForMeDetailPage() {
                       <span>₩{request.quote.serviceFee.toLocaleString()}</span>
                     </div>
                     <div className="flex justify-between text-sm">
-                      <span>국내 배송비</span>
-                      <span>₩{request.quote.domesticShippingFee.toLocaleString()}</span>
-                    </div>
-                    <div className="flex justify-between text-sm">
-                      <span>국제 배송비</span>
-                      <span>₩{request.quote.internationalShippingFee.toLocaleString()}</span>
+                      <span>배송비</span>
+                      <span>{request.quote.domesticShippingFee === 0 ? '무료배송' : `₩${request.quote.domesticShippingFee.toLocaleString()}`}</span>
                     </div>
                     <Separator />
                     <div className="flex justify-between font-semibold">
                       <span>최종 견적 금액</span>
                       <span className="text-blue-600">₩{request.quote.totalAmount.toLocaleString()}</span>
                     </div>
+                    {request.quote.notes && (
+                      <div className="mt-3 p-3 bg-gray-50 rounded text-sm text-gray-600">
+                        {request.quote.notes}
+                      </div>
+                    )}
+                    {request.quote.paymentLink && (
+                      <div className="mt-3">
+                        <p className="text-sm text-gray-600 mb-2">결제 링크:</p>
+                        <a 
+                          href={request.quote.paymentLink}
+                          target="_blank"
+                          rel="noopener noreferrer" 
+                          className="text-blue-600 hover:underline break-all"
+                        >
+                          {request.quote.paymentLink}
+                        </a>
+                      </div>
+                    )}
                   </div>
                 </div>
               </>

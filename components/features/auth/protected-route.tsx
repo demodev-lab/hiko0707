@@ -35,16 +35,19 @@ export function ProtectedRoute({
     }
   }, [isAuthenticated, currentUser, isLoading, requiredRole, fallbackPath, router])
 
+  // Loading 상태
   if (isLoading) {
-    return <PageLoading message="권한을 확인하는 중..." />
+    return <PageLoading />
   }
 
+  // 인증되지 않은 경우
   if (!isAuthenticated) {
-    return <PageLoading message="로그인 페이지로 이동 중..." />
+    return <PageLoading />
   }
 
+  // 관리자 권한이 필요한데 관리자가 아닌 경우
   if (requiredRole === 'admin' && currentUser?.role !== 'admin') {
-    return <PageLoading message="대시보드로 이동 중..." />
+    return <PageLoading />
   }
 
   return <>{children}</>
@@ -69,11 +72,11 @@ export function PublicOnlyRoute({
   }, [isAuthenticated, isLoading, redirectPath, router])
 
   if (isLoading) {
-    return <PageLoading message="로딩 중..." />
+    return <PageLoading />
   }
 
   if (isAuthenticated) {
-    return <PageLoading message="대시보드로 이동 중..." />
+    return <PageLoading />
   }
 
   return <>{children}</>

@@ -142,7 +142,7 @@ export default function BuyForMeAdminPage() {
     <ProtectedRoute requiredRole="admin">
       <div className="space-y-6">
         <div>
-          <h1 className="text-3xl font-bold">Buy for Me 요청 관리</h1>
+          <h1 className="text-3xl font-bold">대리 구매 요청 관리</h1>
           <p className="text-muted-foreground mt-2">
             고객들의 구매 대행 요청을 관리하고 처리합니다.
           </p>

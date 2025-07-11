@@ -42,12 +42,12 @@ interface PageLoadingProps {
   message?: string
 }
 
-export function PageLoading({ message = '페이지를 불러오는 중...' }: PageLoadingProps) {
+export function PageLoading({ message }: PageLoadingProps) {
   return (
     <div className="min-h-screen flex items-center justify-center">
       <div className="text-center">
         <LoadingSpinner size="lg" className="mx-auto mb-4" />
-        <p className="text-xl text-gray-600">{message}</p>
+        {message && <p className="text-xl text-gray-600">{message}</p>}
       </div>
     </div>
   )

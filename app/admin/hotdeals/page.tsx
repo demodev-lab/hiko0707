@@ -18,10 +18,8 @@ export default async function AdminHotdealsPage() {
     switch (status) {
       case 'active':
         return <Badge className="bg-green-600">활성</Badge>
-      case 'expired':
+      case 'ended':
         return <Badge variant="destructive">만료</Badge>
-      case 'pending':
-        return <Badge variant="secondary">대기</Badge>
       default:
         return <Badge variant="outline">{status}</Badge>
     }
@@ -46,8 +44,8 @@ export default async function AdminHotdealsPage() {
   const stats = {
     total: hotdeals.length,
     active: hotdeals.filter(h => h.status === 'active').length,
-    expired: hotdeals.filter(h => h.status === 'expired').length,
-    pending: hotdeals.filter(h => h.status === 'pending').length
+    expired: hotdeals.filter(h => h.status === 'ended').length,
+    pending: 0 // HotDeal 타입에 pending 상태가 없음
   }
 
   return (

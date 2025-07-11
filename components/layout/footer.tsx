@@ -58,7 +58,7 @@ export function Footer() {
                 핫딜 보기
               </Link>
               <Link href="/order" className="block text-gray-300 hover:text-white transition-colors">
-                대신 사줘요
+                대리 구매
               </Link>
               <Link href="/dashboard" className="block text-gray-300 hover:text-white transition-colors">
                 대시보드

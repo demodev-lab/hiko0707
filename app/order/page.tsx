@@ -44,9 +44,9 @@ export default function OrderPage() {
     <div className="container mx-auto px-4 py-8">
       {/* 헤더 */}
       <div className="text-center mb-8">
-        <h1 className="text-3xl font-bold mb-2">대신 사줘요</h1>
+        <h1 className="text-3xl font-bold mb-2">대리 구매</h1>
         <p className="text-gray-600 mb-6">
-          한국의 온라인 쇼핑몰에서 원하는 상품을 안전하고 빠르게 대신 구매해드립니다
+          한국의 온라인 쇼핑몰에서 원하는 상품을 안전하고 빠르게 대리 구매해드립니다
         </p>
 
         {/* 서비스 특징 */}

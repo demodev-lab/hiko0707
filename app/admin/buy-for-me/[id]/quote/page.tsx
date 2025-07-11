@@ -33,7 +33,8 @@ import {
   CreditCard,
   FileText,
   Info,
-  DollarSign
+  DollarSign,
+  Globe
 } from 'lucide-react'
 import Link from 'next/link'
 import Image from 'next/image'
@@ -41,8 +42,10 @@ import Image from 'next/image'
 const quoteSchema = z.object({
   finalProductPrice: z.number().min(0, '상품 금액은 0 이상이어야 합니다'),
   serviceFee: z.number().min(0, '서비스 수수료는 0 이상이어야 합니다'),
-  domesticShippingFee: z.number().min(0, '국내 배송비는 0 이상이어야 합니다'),
-  internationalShippingFee: z.number().min(0, '국제 배송비는 0 이상이어야 합니다'),
+  shippingFeeType: z.enum(['free', 'paid'], {
+    required_error: '배송비 유형을 선택해주세요',
+  }),
+  domesticShippingFee: z.number().min(0, '배송비는 0 이상이어야 합니다'),
   paymentMethod: z.enum(['card', 'bank_transfer'], {
     required_error: '결제 방법을 선택해주세요',
   }),
@@ -64,8 +67,8 @@ export default function QuoteCreatePage() {
     defaultValues: {
       finalProductPrice: 0,
       serviceFee: 0,
+      shippingFeeType: 'paid',
       domesticShippingFee: 0,
-      internationalShippingFee: 0,
       paymentMethod: 'card',
       notes: '',
     },
@@ -77,12 +80,11 @@ export default function QuoteCreatePage() {
         const data = await db.buyForMeRequests.findById(params.id as string)
         if (data) {
           setRequest(data)
-          // 기본값 설정
-          form.setValue('finalProductPrice', data.productInfo.discountedPrice * data.quantity)
-          form.setValue('domesticShippingFee', data.productInfo.shippingFee)
-          // 서비스 수수료 자동 계산 (상품 금액의 10%)
-          const productTotal = data.productInfo.discountedPrice * data.quantity
-          form.setValue('serviceFee', Math.round(productTotal * 0.1))
+          // 기본값은 비워두고 관리자가 직접 입력하도록 함
+          form.setValue('finalProductPrice', 0)
+          form.setValue('shippingFeeType', 'paid')
+          form.setValue('domesticShippingFee', 0)
+          form.setValue('serviceFee', 0)
         }
         setIsLoading(false)
       }
@@ -95,19 +97,33 @@ export default function QuoteCreatePage() {
 
     setIsSubmitting(true)
     try {
+      const shippingFee = data.shippingFeeType === 'free' ? 0 : data.domesticShippingFee
       const totalAmount = 
         data.finalProductPrice + 
         data.serviceFee + 
-        data.domesticShippingFee + 
-        data.internationalShippingFee
+        shippingFee
+
+      // 결제 링크 생성 (신용카드 결제 선택 시)
+      let paymentLink = undefined
+      if (data.paymentMethod === 'card') {
+        // 실제 환경에서는 결제 서비스 API를 호출하여 결제 링크를 생성
+        // 여기서는 데모용으로 가상의 링크 생성
+        const paymentId = Date.now().toString(36) + Math.random().toString(36).substr(2)
+        paymentLink = `https://pay.hiko.kr/checkout/${paymentId}`
+      }
 
       const updatedRequest: BuyForMeRequest = {
         ...request,
         status: 'quote_sent',
         quote: {
-          ...data,
+          finalProductPrice: data.finalProductPrice,
+          serviceFee: data.serviceFee,
+          domesticShippingFee: shippingFee,
           totalAmount,
+          paymentMethod: data.paymentMethod,
           quoteSentDate: new Date(),
+          paymentLink,
+          notes: data.notes,
         },
       }
 
@@ -154,11 +170,11 @@ export default function QuoteCreatePage() {
   }
 
   const watchedValues = form.watch()
+  const shippingFee = watchedValues.shippingFeeType === 'free' ? 0 : watchedValues.domesticShippingFee
   const totalAmount = 
     watchedValues.finalProductPrice + 
     watchedValues.serviceFee + 
-    watchedValues.domesticShippingFee + 
-    watchedValues.internationalShippingFee
+    shippingFee
 
   return (
     <ProtectedRoute requiredRole="admin">
@@ -200,13 +216,53 @@ export default function QuoteCreatePage() {
               <div className="flex-1 space-y-2">
                 <h3 className="font-semibold">{request.productInfo.title}</h3>
                 <div className="text-sm text-gray-600">
-                  <p>원가: ₩{request.productInfo.originalPrice.toLocaleString()}</p>
-                  <p>할인가: ₩{request.productInfo.discountedPrice.toLocaleString()}</p>
                   <p>수량: {request.quantity}개</p>
                   {request.productOptions && (
                     <p>옵션: {request.productOptions}</p>
                   )}
                 </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* 참고 정보 (크롤링된 가격) */}
+        <Card className="bg-amber-50 border-amber-200">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-amber-800">
+              <Info className="w-5 h-5" />
+              참고 정보 (크롤링 시점 가격)
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-2 text-sm">
+              <div className="flex justify-between">
+                <span className="text-gray-600">크롤링된 원가</span>
+                <span className="font-medium">₩{request.productInfo.originalPrice.toLocaleString()}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-600">크롤링된 할인가</span>
+                <span className="font-medium text-blue-600">₩{request.productInfo.discountedPrice.toLocaleString()}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-600">예상 금액 ({request.quantity}개)</span>
+                <span className="font-medium">₩{(request.productInfo.discountedPrice * request.quantity).toLocaleString()}</span>
+              </div>
+              <Separator className="my-2" />
+              <p className="text-xs text-amber-700">
+                <strong>⚠️ 주의:</strong> 실제 구매 시점의 가격은 다를 수 있습니다. 
+                반드시 쇼핑몰에서 실제 가격을 확인하고 입력해주세요.
+              </p>
+              <div className="mt-3 pt-3 border-t border-amber-200">
+                <a 
+                  href={request.productInfo.originalUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-xs text-blue-600 hover:underline flex items-center gap-1"
+                >
+                  <Globe className="w-3 h-3" />
+                  쇼핑몰에서 실제 가격 확인하기
+                </a>
               </div>
             </div>
           </CardContent>
@@ -242,7 +298,8 @@ export default function QuoteCreatePage() {
                         </div>
                       </FormControl>
                       <FormDescription>
-                        실제 구매 사이트에서 확인한 최종 상품 금액을 입력하세요
+                        실제 쇼핑몰에서 확인한 최종 상품 금액을 입력하세요. 
+                        옵션 가격이 포함된 총 금액입니다.
                       </FormDescription>
                       <FormMessage />
                     </FormItem>
@@ -254,7 +311,23 @@ export default function QuoteCreatePage() {
                   name="serviceFee"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>서비스 수수료</FormLabel>
+                      <div className="flex items-center justify-between">
+                        <FormLabel>서비스 수수료</FormLabel>
+                        {watchedValues.finalProductPrice > 0 && (
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            className="text-xs"
+                            onClick={() => {
+                              const suggestedFee = Math.round(watchedValues.finalProductPrice * 0.1)
+                              form.setValue('serviceFee', suggestedFee)
+                            }}
+                          >
+                            10% 자동 계산 (₩{Math.round(watchedValues.finalProductPrice * 0.1).toLocaleString()})
+                          </Button>
+                        )}
+                      </div>
                       <FormControl>
                         <div className="relative">
                           <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">₩</span>
@@ -275,57 +348,82 @@ export default function QuoteCreatePage() {
                   )}
                 />
 
+                {/* 배송비 유형 선택 */}
                 <FormField
                   control={form.control}
-                  name="domesticShippingFee"
+                  name="shippingFeeType"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>국내 배송비</FormLabel>
+                      <FormLabel>배송비</FormLabel>
                       <FormControl>
-                        <div className="relative">
-                          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">₩</span>
-                          <Input
-                            type="number"
-                            placeholder="0"
-                            className="pl-8"
-                            {...field}
-                            onChange={(e) => field.onChange(Number(e.target.value))}
-                          />
+                        <div className="space-y-3">
+                          <div className="flex items-center space-x-3">
+                            <input
+                              type="radio"
+                              id="free"
+                              name="shippingFeeType"
+                              value="free"
+                              checked={field.value === 'free'}
+                              onChange={() => {
+                                field.onChange('free')
+                                form.setValue('domesticShippingFee', 0)
+                              }}
+                              className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500"
+                            />
+                            <Label htmlFor="free" className="font-normal cursor-pointer">
+                              무료배송
+                            </Label>
+                          </div>
+                          <div className="flex items-center space-x-3">
+                            <input
+                              type="radio"
+                              id="paid"
+                              name="shippingFeeType"
+                              value="paid"
+                              checked={field.value === 'paid'}
+                              onChange={() => field.onChange('paid')}
+                              className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500"
+                            />
+                            <Label htmlFor="paid" className="font-normal cursor-pointer">
+                              유료배송
+                            </Label>
+                          </div>
                         </div>
                       </FormControl>
-                      <FormDescription>
-                        판매자 → HiKo 물류센터 배송비
-                      </FormDescription>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
 
-                <FormField
-                  control={form.control}
-                  name="internationalShippingFee"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>국제 배송비</FormLabel>
-                      <FormControl>
-                        <div className="relative">
-                          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">₩</span>
-                          <Input
-                            type="number"
-                            placeholder="0"
-                            className="pl-8"
-                            {...field}
-                            onChange={(e) => field.onChange(Number(e.target.value))}
-                          />
-                        </div>
-                      </FormControl>
-                      <FormDescription>
-                        HiKo 물류센터 → 고객 주소 국제 배송비
-                      </FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                {/* 배송비 금액 입력 (유료배송 선택 시) */}
+                {watchedValues.shippingFeeType === 'paid' && (
+                  <FormField
+                    control={form.control}
+                    name="domesticShippingFee"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>배송비 금액</FormLabel>
+                        <FormControl>
+                          <div className="relative">
+                            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">₩</span>
+                            <Input
+                              type="number"
+                              placeholder="0"
+                              className="pl-8"
+                              {...field}
+                              onChange={(e) => field.onChange(Number(e.target.value))}
+                            />
+                          </div>
+                        </FormControl>
+                        <FormDescription>
+                          구매 사이트의 배송비를 입력하세요
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                )}
+
 
                 <Separator />
 
