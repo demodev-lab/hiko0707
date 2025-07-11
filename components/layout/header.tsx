@@ -1,28 +1,28 @@
 'use client'
 
 import Link from 'next/link'
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { Menu, X, Search, Globe, User, ShoppingBag, Heart, ChevronDown } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { NotificationBell } from '@/components/features/notifications/notification-bell'
 import { ThemeToggle } from '@/components/features/theme/theme-toggle'
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
 import { Input } from '@/components/ui/input'
-import { useLanguage } from '@/lib/i18n/context'
+import { Card } from '@/components/ui/card'
 import { languages } from '@/lib/i18n/config'
+import { useAuth } from '@/hooks/use-auth'
+import { useRouter } from 'next/navigation'
 
 export function Header() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
-  const { language, setLanguage, t } = useLanguage()
+  const [langMenuOpen, setLangMenuOpen] = useState(false)
+  const [userMenuOpen, setUserMenuOpen] = useState(false)
+  const { currentUser, logout } = useAuth()
+  const router = useRouter()
+  const langMenuRef = useRef<HTMLDivElement>(null)
+  const userMenuRef = useRef<HTMLDivElement>(null)
 
-  const currentLang = languages.find(lang => lang.code === language) || languages[0]
+  const currentLang = languages[0] // 기본 언어 (한국어)
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault()
@@ -30,6 +30,21 @@ export function Header() {
       window.location.href = `/search?q=${encodeURIComponent(searchQuery)}`
     }
   }
+
+  // Close dropdowns when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (langMenuRef.current && !langMenuRef.current.contains(event.target as Node)) {
+        setLangMenuOpen(false)
+      }
+      if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {
+        setUserMenuOpen(false)
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
 
   return (
     <header className="sticky top-0 z-50 w-full bg-white/95 dark:bg-gray-900/95 backdrop-blur supports-[backdrop-filter]:bg-white/60 supports-[backdrop-filter]:dark:bg-gray-900/60 border-b border-gray-200 dark:border-gray-800">
@@ -45,16 +60,16 @@ export function Header() {
           {/* 데스크톱 네비게이션 */}
           <nav className="hidden md:flex items-center space-x-8">
             <Link href="/hotdeals" className="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 font-medium transition-colors">
-              {t('header.hotdeals')}
+              핫딜
             </Link>
             <Link href="/order" className="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 font-medium transition-colors">
-              {t('header.orderForMe')}
+              대신사줘
             </Link>
             <Link href="/dashboard" className="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 font-medium transition-colors">
-              {t('common.dashboard')}
+              대시보드
             </Link>
             <Link href="/about" className="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 font-medium transition-colors">
-              {t('common.about')}
+              소개
             </Link>
           </nav>
 
@@ -64,7 +79,7 @@ export function Header() {
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
               <Input
                 type="text"
-                placeholder={`${t('header.hotdeals')} ${t('common.search')}...`}
+                placeholder="핫딜 검색..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="pl-10 pr-4"
@@ -74,28 +89,38 @@ export function Header() {
 
           {/* 우측 메뉴 */}
           <div className="flex items-center space-x-4">
-            {/* 언어 선택 - 더 단순하게 */}
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="sm" className="flex items-center gap-1 px-2">
-                  <Globe className="w-4 h-4" />
-                  <span className="text-sm font-medium">{currentLang.code.toUpperCase()}</span>
-                  <ChevronDown className="w-3 h-3" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-40">
-                {languages.map((lang) => (
-                  <DropdownMenuItem
-                    key={lang.code}
-                    onClick={() => setLanguage(lang.code)}
-                    className={`${language === lang.code ? 'bg-blue-50 dark:bg-blue-900/20' : ''}`}
-                  >
-                    <span className="mr-2 text-lg">{lang.flag}</span>
-                    <span className="text-sm">{lang.code.toUpperCase()}</span>
-                  </DropdownMenuItem>
-                ))}
-              </DropdownMenuContent>
-            </DropdownMenu>
+            {/* 언어 선택 - native dropdown */}
+            <div className="relative" ref={langMenuRef}>
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="flex items-center gap-1 px-2"
+                onClick={() => setLangMenuOpen(!langMenuOpen)}
+              >
+                <Globe className="w-4 h-4" />
+                <span className="text-sm font-medium">{currentLang.code.toUpperCase()}</span>
+                <ChevronDown className="w-3 h-3" />
+              </Button>
+              {langMenuOpen && (
+                <Card className="absolute right-0 top-full mt-1 w-40 py-1 shadow-lg z-50">
+                  {languages.map((lang) => (
+                    <button
+                      key={lang.code}
+                      onClick={() => {
+                        console.log('Language changed to:', lang.code)
+                        setLangMenuOpen(false)
+                      }}
+                      className={`w-full px-3 py-2 text-left text-sm hover:bg-gray-100 dark:hover:bg-gray-800 flex items-center ${
+                        currentLang.code === lang.code ? 'bg-blue-50 dark:bg-blue-900/20' : ''
+                      }`}
+                    >
+                      <span className="mr-2 text-lg">{lang.flag}</span>
+                      <span className="text-sm">{lang.code.toUpperCase()}</span>
+                    </button>
+                  ))}
+                </Card>
+              )}
+            </div>
 
             {/* 테마 토글 */}
             <ThemeToggle />
@@ -104,44 +129,70 @@ export function Header() {
             <NotificationBell />
 
             {/* 사용자 메뉴 */}
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
+            {currentUser ? (
+              <div className="relative" ref={userMenuRef}>
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="flex items-center space-x-2"
+                  onClick={() => setUserMenuOpen(!userMenuOpen)}
+                >
+                  <User className="w-5 h-5" />
+                  <span className="hidden sm:inline-block">{currentUser.name}</span>
+                </Button>
+                {userMenuOpen && (
+                  <Card className="absolute right-0 top-full mt-1 w-48 py-1 shadow-lg z-50">
+                    {currentUser.role === 'admin' ? (
+                      <Link 
+                        href="/admin"
+                        className="flex items-center w-full px-3 py-2 text-left text-sm hover:bg-gray-100 dark:hover:bg-gray-800"
+                        onClick={() => setUserMenuOpen(false)}
+                      >
+                        <User className="w-4 h-4 mr-2" />
+                        관리자 대시보드
+                      </Link>
+                    ) : (
+                      <>
+                        <Link 
+                          href="/mypage"
+                          className="flex items-center w-full px-3 py-2 text-left text-sm hover:bg-gray-100 dark:hover:bg-gray-800"
+                          onClick={() => setUserMenuOpen(false)}
+                        >
+                          <User className="w-4 h-4 mr-2" />
+                          마이페이지
+                        </Link>
+                        <Link 
+                          href="/mypage"
+                          className="flex items-center w-full px-3 py-2 text-left text-sm hover:bg-gray-100 dark:hover:bg-gray-800"
+                          onClick={() => setUserMenuOpen(false)}
+                        >
+                          <ShoppingBag className="w-4 h-4 mr-2" />
+                          내 주문 내역
+                        </Link>
+                      </>
+                    )}
+                    <div className="border-t border-gray-200 dark:border-gray-700 my-1"></div>
+                    <button 
+                      className="flex items-center w-full px-3 py-2 text-left text-sm text-red-600 hover:bg-gray-100 dark:hover:bg-gray-800"
+                      onClick={() => {
+                        logout()
+                        router.push('/login')
+                        setUserMenuOpen(false)
+                      }}
+                    >
+                      로그아웃
+                    </button>
+                  </Card>
+                )}
+              </div>
+            ) : (
+              <Link href="/login">
                 <Button variant="ghost" size="sm" className="flex items-center space-x-2">
                   <User className="w-5 h-5" />
-                  <span className="hidden sm:inline-block">{t('common.account')}</span>
+                  <span className="hidden sm:inline-block">로그인</span>
                 </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-48">
-                <DropdownMenuItem asChild>
-                  <Link href="/dashboard">
-                    <User className="w-4 h-4 mr-2" />
-                    {t('common.dashboard')}
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link href="/favorites">
-                    <Heart className="w-4 h-4 mr-2" />
-                    {t('header.favorites')}
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link href="/dashboard/orders">
-                    <ShoppingBag className="w-4 h-4 mr-2" />
-                    {t('header.myOrders')}
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link href="/dashboard/payments">
-                    <ShoppingBag className="w-4 h-4 mr-2" />
-                    {t('header.payments')}
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem className="text-red-600">
-                  {t('common.logout')}
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+              </Link>
+            )}
 
             {/* 모바일 메뉴 버튼 */}
             <Button
@@ -162,7 +213,7 @@ export function Header() {
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
               <Input
                 type="text"
-                placeholder={`${t('header.hotdeals')} ${t('common.search')}...`}
+                placeholder="핫딜 검색..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="pl-10 pr-4 text-sm"
@@ -181,28 +232,28 @@ export function Header() {
               className="block px-3 py-2 text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-gray-800 rounded-md transition-colors"
               onClick={() => setIsMobileMenuOpen(false)}
             >
-              {t('header.hotdeals')}
+              핫딜
             </Link>
             <Link
               href="/order"
               className="block px-3 py-2 text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-gray-800 rounded-md transition-colors"
               onClick={() => setIsMobileMenuOpen(false)}
             >
-              {t('header.orderForMe')}
+              대신사줘
             </Link>
             <Link
               href="/dashboard"
               className="block px-3 py-2 text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-gray-800 rounded-md transition-colors"
               onClick={() => setIsMobileMenuOpen(false)}
             >
-              {t('common.dashboard')}
+              대시보드
             </Link>
             <Link
               href="/about"
               className="block px-3 py-2 text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-gray-800 rounded-md transition-colors"
               onClick={() => setIsMobileMenuOpen(false)}
             >
-              {t('common.about')}
+              소개
             </Link>
           </div>
         </div>

@@ -1,21 +1,20 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useMemo } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { db } from '@/lib/db/database-service'
 import { SearchBar } from '@/components/features/search/search-bar'
 import { HotDealCard } from '@/components/features/hotdeal/hotdeal-card'
+import { HotDealFilters } from '@/components/features/filter/hotdeal-filters'
 import { Loading } from '@/components/ui/loading'
 import { EmptyState } from '@/components/ui/error'
 import { Badge } from '@/components/ui/badge'
 import { TrendingUp, Package, Zap, Percent } from 'lucide-react'
 import { HotDeal } from '@/types/hotdeal'
 import { Card } from '@/components/ui/card'
-import { useLanguage } from '@/lib/i18n/context'
 
 export default function HotDealsPage() {
   const searchParams = useSearchParams()
-  const { t } = useLanguage()
   const [hotdeals, setHotdeals] = useState<HotDeal[]>([])
   const [filteredDeals, setFilteredDeals] = useState<HotDeal[]>([])
   const [loading, setLoading] = useState(true)
@@ -26,12 +25,21 @@ export default function HotDealsPage() {
     highDiscount: 0
   })
 
-  // Get filter params
-  const category = searchParams.get('category')
-  const source = searchParams.get('source')
+  // Get filter params - memoized to prevent infinite loops
+  const categories = useMemo(() => 
+    searchParams.get('categories')?.split(',').filter(Boolean) || [], 
+    [searchParams]
+  )
+  const sources = useMemo(() => 
+    searchParams.get('sources')?.split(',').filter(Boolean) || [], 
+    [searchParams]
+  )
   const sort = searchParams.get('sort') || 'latest'
-  const minPrice = searchParams.get('minPrice')
-  const maxPrice = searchParams.get('maxPrice')
+  const priceMin = searchParams.get('priceMin')
+  const priceMax = searchParams.get('priceMax')
+  const freeShipping = searchParams.get('freeShipping') === 'true'
+  const discountOnly = searchParams.get('discountOnly') === 'true'
+  const todayOnly = searchParams.get('todayOnly') === 'true'
   const page = parseInt(searchParams.get('page') || '1')
 
   useEffect(() => {
@@ -67,25 +75,35 @@ export default function HotDealsPage() {
     let filtered = [...hotdeals]
 
     // Apply filters
-    if (category) {
-      filtered = filtered.filter(d => d.category === category)
+    if (categories.length > 0) {
+      filtered = filtered.filter(d => d.category && categories.includes(d.category))
     }
-    if (source) {
-      filtered = filtered.filter(d => d.source === source)
+    if (sources.length > 0) {
+      filtered = filtered.filter(d => d.source && sources.includes(d.source))
     }
-    if (minPrice) {
-      filtered = filtered.filter(d => d.price >= parseInt(minPrice))
+    if (priceMin) {
+      filtered = filtered.filter(d => d.price >= parseInt(priceMin))
     }
-    if (maxPrice) {
-      filtered = filtered.filter(d => d.price <= parseInt(maxPrice))
+    if (priceMax) {
+      filtered = filtered.filter(d => d.price <= parseInt(priceMax))
+    }
+    if (freeShipping) {
+      filtered = filtered.filter(d => d.shipping?.isFree)
+    }
+    if (discountOnly) {
+      filtered = filtered.filter(d => d.discountRate && d.discountRate > 0)
+    }
+    if (todayOnly) {
+      const today = new Date().toDateString()
+      filtered = filtered.filter(d => new Date(d.crawledAt).toDateString() === today)
     }
 
     // Apply sorting
     switch (sort) {
-      case 'price_asc':
+      case 'price_low':
         filtered.sort((a, b) => a.price - b.price)
         break
-      case 'price_desc':
+      case 'price_high':
         filtered.sort((a, b) => b.price - a.price)
         break
       case 'popular':
@@ -99,7 +117,7 @@ export default function HotDealsPage() {
     }
 
     setFilteredDeals(filtered)
-  }, [hotdeals, category, source, sort, minPrice, maxPrice])
+  }, [hotdeals, categories, sources, sort, priceMin, priceMax, freeShipping, discountOnly, todayOnly])
 
   // Pagination
   const itemsPerPage = 12
@@ -109,14 +127,14 @@ export default function HotDealsPage() {
 
   const statsData = [
     {
-      title: t('hotdeals.activeDeals'),
+      title: '활성 딜',
       value: stats.active,
       icon: TrendingUp,
       color: 'text-blue-600',
       bgColor: 'bg-blue-100',
     },
     {
-      title: t('hotdeals.todayRegistered') || t('hotdeals.activeDeals'),
+      title: '오늘 등록',
       value: stats.today,
       icon: Zap,
       color: 'text-yellow-600',
@@ -132,9 +150,9 @@ export default function HotDealsPage() {
     <div className="container mx-auto px-4 py-8">
       {/* 헤더 */}
       <div className="mb-6 sm:mb-8">
-        <h1 className="text-2xl sm:text-3xl font-bold mb-2">🔥 {t('hotdeals.title')}</h1>
+        <h1 className="text-2xl sm:text-3xl font-bold mb-2">🔥 핫딜</h1>
         <p className="text-sm sm:text-base text-gray-600">
-          {t('hotdeals.subtitle')}
+          실시간 한국 쇼핑 정보를 확인하세요
         </p>
       </div>
 
@@ -160,8 +178,16 @@ export default function HotDealsPage() {
         <SearchBar className="max-w-2xl mx-auto" />
       </div>
 
-      {/* 핫딜 목록 */}
-      {paginatedDeals.length > 0 ? (
+      {/* 필터와 핫딜 목록 */}
+      <div className="flex flex-col lg:flex-row gap-6">
+        {/* 필터 사이드바 */}
+        <div className="lg:w-80">
+          <HotDealFilters />
+        </div>
+
+        {/* 핫딜 목록 */}
+        <div className="flex-1">
+          {paginatedDeals.length > 0 ? (
         <>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6 mb-8">
             {paginatedDeals.map((deal) => (
@@ -169,56 +195,61 @@ export default function HotDealsPage() {
             ))}
           </div>
 
-          {/* 페이지네이션 */}
-          {totalPages > 1 && (
-            <div className="flex justify-center items-center gap-1 sm:gap-2">
-              {page > 1 && (
-                <a
-                  href={`?page=${page - 1}${category ? `&category=${category}` : ''}${source ? `&source=${source}` : ''}${sort ? `&sort=${sort}` : ''}`}
-                  className="px-3 sm:px-4 py-2 border rounded-md hover:bg-gray-50 text-sm sm:text-base"
-                >
-                  {t('common.previous')}
-                </a>
-              )}
-              
-              <div className="flex gap-1">
-                {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                  const pageNum = Math.max(1, Math.min(page - 2, totalPages - 4)) + i
-                  if (pageNum > totalPages) return null
-                  
-                  return (
-                    <a
-                      key={pageNum}
-                      href={`?page=${pageNum}${category ? `&category=${category}` : ''}${source ? `&source=${source}` : ''}${sort ? `&sort=${sort}` : ''}`}
-                      className={`px-2.5 sm:px-3 py-2 rounded-md text-sm sm:text-base ${
-                        pageNum === page
-                          ? 'bg-blue-600 text-white'
-                          : 'border hover:bg-gray-50'
-                      }`}
-                    >
-                      {pageNum}
-                    </a>
-                  )
-                })}
-              </div>
+            {/* 페이지네이션 */}
+            {totalPages > 1 && (
+              <div className="flex justify-center items-center gap-1 sm:gap-2">
+                {page > 1 && (
+                  <a
+                    href={`?page=${page - 1}${searchParams.toString().replace(/page=\d+&?/, '')}`}
+                    className="px-3 sm:px-4 py-2 border rounded-md hover:bg-gray-50 text-sm sm:text-base"
+                  >
+                    이전
+                  </a>
+                )}
+                
+                <div className="flex gap-1">
+                  {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                    const pageNum = Math.max(1, Math.min(page - 2, totalPages - 4)) + i
+                    if (pageNum > totalPages) return null
+                    
+                    const params = new URLSearchParams(searchParams.toString())
+                    params.set('page', pageNum.toString())
+                    
+                    return (
+                      <a
+                        key={pageNum}
+                        href={`?${params.toString()}`}
+                        className={`px-2.5 sm:px-3 py-2 rounded-md text-sm sm:text-base ${
+                          pageNum === page
+                            ? 'bg-blue-600 text-white'
+                            : 'border hover:bg-gray-50'
+                        }`}
+                      >
+                        {pageNum}
+                      </a>
+                    )
+                  })}
+                </div>
 
-              {page < totalPages && (
-                <a
-                  href={`?page=${page + 1}${category ? `&category=${category}` : ''}${source ? `&source=${source}` : ''}${sort ? `&sort=${sort}` : ''}`}
-                  className="px-3 sm:px-4 py-2 border rounded-md hover:bg-gray-50 text-sm sm:text-base"
-                >
-                  {t('common.next')}
-                </a>
-              )}
-            </div>
-          )}
-        </>
-      ) : (
-        <EmptyState
-          title={t('hotdeals.noDeals') || t('common.noResults')}
-          message={t('hotdeals.noDealsMessage') || t('common.noResults')}
-        />
-      )}
+                {page < totalPages && (
+                  <a
+                    href={`?page=${page + 1}${searchParams.toString().replace(/page=\d+&?/, '')}`}
+                    className="px-3 sm:px-4 py-2 border rounded-md hover:bg-gray-50 text-sm sm:text-base"
+                  >
+                    다음
+                  </a>
+                )}
+              </div>
+            )}
+          </>
+        ) : (
+          <EmptyState
+            title="핫딜이 없습니다"
+            message="조건에 맞는 핫딜을 찾을 수 없습니다. 필터를 조정해보세요."
+          />
+        )}
+        </div>
+      </div>
     </div>
   )
 }

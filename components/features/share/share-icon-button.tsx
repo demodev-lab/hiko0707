@@ -1,13 +1,8 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
+import { Card } from '@/components/ui/card'
 import { Share2, Link, Facebook, Twitter, Mail, MessageCircle, Check } from 'lucide-react'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
@@ -26,11 +21,31 @@ export function ShareIconButton({
   className
 }: ShareIconButtonProps) {
   const [copied, setCopied] = useState(false)
+  const [isOpen, setIsOpen] = useState(false)
+  const dropdownRef = useRef<HTMLDivElement>(null)
   const shareText = description || title
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsOpen(false)
+      }
+    }
+
+    if (isOpen) {
+      document.addEventListener('mousedown', handleClickOutside)
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [isOpen])
   
   const handleShare = async (platform: string, e: React.MouseEvent) => {
     e.preventDefault()
     e.stopPropagation()
+    setIsOpen(false) // Close dropdown after selection
     
     const encodedUrl = encodeURIComponent(url)
     const encodedTitle = encodeURIComponent(title)
@@ -77,58 +92,75 @@ export function ShareIconButton({
   }
   
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button
-          variant="ghost"
-          size="icon"
-          className={cn(
-            "h-8 w-8",
-            className
-          )}
-          onClick={(e) => {
-            e.preventDefault()
-            e.stopPropagation()
-          }}
-        >
-          <Share2 className="w-4 h-4" />
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-48">
-        <DropdownMenuItem onClick={(e) => handleShare('copy', e)}>
-          {copied ? (
-            <>
-              <Check className="w-4 h-4 mr-2 text-green-600" />
-              복사됨!
-            </>
-          ) : (
-            <>
-              <Link className="w-4 h-4 mr-2" />
-              링크 복사
-            </>
-          )}
-        </DropdownMenuItem>
-        
-        <DropdownMenuItem onClick={(e) => handleShare('kakao', e)}>
-          <MessageCircle className="w-4 h-4 mr-2" />
-          카카오톡
-        </DropdownMenuItem>
-        
-        <DropdownMenuItem onClick={(e) => handleShare('facebook', e)}>
-          <Facebook className="w-4 h-4 mr-2" />
-          페이스북
-        </DropdownMenuItem>
-        
-        <DropdownMenuItem onClick={(e) => handleShare('twitter', e)}>
-          <Twitter className="w-4 h-4 mr-2" />
-          트위터
-        </DropdownMenuItem>
-        
-        <DropdownMenuItem onClick={(e) => handleShare('email', e)}>
-          <Mail className="w-4 h-4 mr-2" />
-          이메일
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
+    <div className="relative" ref={dropdownRef}>
+      <Button
+        variant="ghost"
+        size="icon"
+        className={cn(
+          "h-8 w-8",
+          className
+        )}
+        onClick={(e) => {
+          e.preventDefault()
+          e.stopPropagation()
+          setIsOpen(!isOpen)
+        }}
+      >
+        <Share2 className="w-4 h-4" />
+      </Button>
+      
+      {isOpen && (
+        <Card className="absolute right-0 top-full mt-1 w-48 py-1 shadow-lg z-50">
+          <button
+            className="flex items-center w-full px-3 py-2 text-left text-sm hover:bg-gray-100 dark:hover:bg-gray-800"
+            onClick={(e) => handleShare('copy', e)}
+          >
+            {copied ? (
+              <>
+                <Check className="w-4 h-4 mr-2 text-green-600" />
+                복사됨!
+              </>
+            ) : (
+              <>
+                <Link className="w-4 h-4 mr-2" />
+                링크 복사
+              </>
+            )}
+          </button>
+          
+          <button
+            className="flex items-center w-full px-3 py-2 text-left text-sm hover:bg-gray-100 dark:hover:bg-gray-800"
+            onClick={(e) => handleShare('kakao', e)}
+          >
+            <MessageCircle className="w-4 h-4 mr-2" />
+            카카오톡
+          </button>
+          
+          <button
+            className="flex items-center w-full px-3 py-2 text-left text-sm hover:bg-gray-100 dark:hover:bg-gray-800"
+            onClick={(e) => handleShare('facebook', e)}
+          >
+            <Facebook className="w-4 h-4 mr-2" />
+            페이스북
+          </button>
+          
+          <button
+            className="flex items-center w-full px-3 py-2 text-left text-sm hover:bg-gray-100 dark:hover:bg-gray-800"
+            onClick={(e) => handleShare('twitter', e)}
+          >
+            <Twitter className="w-4 h-4 mr-2" />
+            트위터
+          </button>
+          
+          <button
+            className="flex items-center w-full px-3 py-2 text-left text-sm hover:bg-gray-100 dark:hover:bg-gray-800"
+            onClick={(e) => handleShare('email', e)}
+          >
+            <Mail className="w-4 h-4 mr-2" />
+            이메일
+          </button>
+        </Card>
+      )}
+    </div>
   )
 }

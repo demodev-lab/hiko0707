@@ -222,17 +222,12 @@ export function OrderDetail({ order }: OrderDetailProps) {
                   {order.shippingAddress.addressLine2 && (
                     <p className="ml-4">{order.shippingAddress.addressLine2}</p>
                   )}
-                  <p>{order.shippingAddress.city}, {order.shippingAddress.state || ''} {order.shippingAddress.postalCode}</p>
-                  <p>{order.shippingAddress.country}</p>
+                  <p>{order.shippingAddress.postalCode}</p>
                 </div>
               </div>
 
               <Separator />
 
-              <div>
-                <h4 className="font-semibold mb-2">배송 방법</h4>
-                <p className="text-sm">{t(`order.shipping.${order.shippingMethod}`)}</p>
-              </div>
 
               {/* 배송 추적 */}
               {(order.koreanTrackingNumber || order.internationalTrackingNumber) && (
@@ -307,16 +302,8 @@ export function OrderDetail({ order }: OrderDetailProps) {
                 <span>₩{order.serviceFee.toLocaleString()}</span>
               </div>
               <div className="flex justify-between">
-                <span>{t('order.cost.koreanShipping')}</span>
-                <span>₩{order.koreanShippingFee.toLocaleString()}</span>
-              </div>
-              <div className="flex justify-between">
-                <span>{t('order.cost.internationalShipping')}</span>
-                <span>₩{order.internationalShippingFee.toLocaleString()}</span>
-              </div>
-              <div className="flex justify-between">
-                <span>{t('order.cost.taxAndDuties')}</span>
-                <span>₩{order.taxAndDuties.toLocaleString()}</span>
+                <span>{t('order.cost.domesticShipping')}</span>
+                <span>₩{order.domesticShippingFee.toLocaleString()}</span>
               </div>
               <Separator />
               <div className="flex justify-between text-lg font-semibold">

@@ -27,8 +27,8 @@ export function ProtectedRoute({
         return
       }
 
-      // 관리자 권한이 필요한 경우 체크 (현재 User 타입에 role이 없으므로 임시로 이메일로 체크)
-      if (requiredRole === 'admin' && currentUser?.email !== 'admin@example.com') {
+      // 관리자 권한이 필요한 경우 체크
+      if (requiredRole === 'admin' && currentUser?.role !== 'admin') {
         router.push(ROUTES.DASHBOARD)
         return
       }
@@ -43,7 +43,7 @@ export function ProtectedRoute({
     return <PageLoading message="로그인 페이지로 이동 중..." />
   }
 
-  if (requiredRole === 'admin' && currentUser?.email !== 'admin@example.com') {
+  if (requiredRole === 'admin' && currentUser?.role !== 'admin') {
     return <PageLoading message="대시보드로 이동 중..." />
   }
 

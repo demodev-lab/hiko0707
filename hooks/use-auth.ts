@@ -1,31 +1,62 @@
 'use client'
 
 import { useAtom } from 'jotai'
-import { useCallback } from 'react'
+import { useCallback, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { currentUserAtom, isAuthenticatedAtom, isLoadingAuthAtom } from '@/states/auth-store'
+import { currentUserAtom, setCurrentUserAtom, isAuthenticatedAtom, isLoadingAuthAtom } from '@/states/auth-store'
 import { db } from '@/lib/db/database-service'
 import { User } from '@/lib/db/local/models'
 import { ROUTES } from '@/lib/constants'
 
 export function useAuth() {
-  const [currentUser, setCurrentUser] = useAtom(currentUserAtom)
+  const [currentUser] = useAtom(currentUserAtom)
+  const [, setCurrentUser] = useAtom(setCurrentUserAtom)
   const [isAuthenticated] = useAtom(isAuthenticatedAtom)
   const [isLoading, setIsLoading] = useAtom(isLoadingAuthAtom)
   const router = useRouter()
+
+  // 클라이언트 사이드에서 로컬 스토리지에서 사용자 정보 복원
+  useEffect(() => {
+    if (typeof window !== 'undefined' && !currentUser) {
+      const savedUser = localStorage.getItem('currentUser')
+      if (savedUser) {
+        try {
+          const user = JSON.parse(savedUser)
+          setCurrentUser(user)
+        } catch (error) {
+          localStorage.removeItem('currentUser')
+        }
+      }
+    }
+  }, [currentUser, setCurrentUser])
 
   const login = useCallback(async (email: string, password: string) => {
     try {
       setIsLoading(true)
       const user = await db.users.findByEmail(email)
       
-      if (!user) {
+      if (!user && email !== 'admin@hiko.kr') {
         throw new Error('등록되지 않은 이메일입니다')
       }
       
       // TODO: 실제 프로덕션에서는 bcrypt 등으로 비밀번호 해싱 필요
       // 현재는 개발용으로 단순 비교
-      if (user.email === email) {
+      // 데모용 관리자 계정 하드코딩
+      if (email === 'admin@hiko.kr' && password === 'admin123') {
+        const adminUser = user || await db.users.create({
+          email: 'admin@hiko.kr',
+          name: '관리자',
+          role: 'admin',
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        })
+        setCurrentUser(adminUser)
+        router.push(ROUTES.ADMIN)
+        return adminUser
+      }
+      
+      // 일반 사용자 로그인 (데모용으로 비밀번호 체크 생략)
+      if (user && user.email === email) {
         setCurrentUser(user)
         router.push(ROUTES.DASHBOARD)
         return user
@@ -40,7 +71,7 @@ export function useAuth() {
     }
   }, [setCurrentUser, setIsLoading, router])
 
-  const register = useCallback(async (userData: Omit<User, 'id'>) => {
+  const register = useCallback(async (userData: Omit<User, 'id'> & { password: string }) => {
     try {
       setIsLoading(true)
       
@@ -49,8 +80,9 @@ export function useAuth() {
         throw new Error('이미 등록된 이메일입니다')
       }
       
+      const { password, ...userDataWithoutPassword } = userData
       const newUser = await db.users.create({
-        ...userData,
+        ...userDataWithoutPassword,
         // TODO: 실제 프로덕션에서는 비밀번호 해싱 필요
         createdAt: new Date(),
         updatedAt: new Date(),

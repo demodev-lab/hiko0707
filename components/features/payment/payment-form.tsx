@@ -62,7 +62,6 @@ export function PaymentForm({
 }: PaymentFormProps) {
   const { t } = useLanguage()
   const { currentUser } = useAuth()
-  const { addNotification } = useNotifications()
   const { data: paymentMethods = [], isLoading: methodsLoading } = usePaymentMethods()
   const createPayment = useCreatePayment()
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -125,12 +124,7 @@ export function PaymentForm({
       toast.success('결제가 처리되었습니다!')
       
       // 알림 추가
-      addNotification({
-        type: 'payment',
-        title: '결제 완료',
-        message: `₩${amount.toLocaleString()} 결제가 성공적으로 완료되었습니다.`,
-        link: `/payment/success?paymentId=${result.id}`
-      })
+      toast.success(`₩${amount.toLocaleString()} 결제가 성공적으로 완료되었습니다.`)
       
       if (onSuccess) {
         onSuccess(result.id)

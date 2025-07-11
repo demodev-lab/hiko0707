@@ -234,20 +234,11 @@ export default function OrderDetailPage() {
                       {order.shippingAddress.addressLine2 && (
                         <>{order.shippingAddress.addressLine2}<br /></>
                       )}
-                      {order.shippingAddress.city}, {order.shippingAddress.state} {order.shippingAddress.postalCode}<br />
-                      {order.shippingAddress.country}
+                      {order.shippingAddress.postalCode}
                     </span>
                   </p>
                 </div>
                 
-                <div>
-                  <p className="text-sm text-gray-600 mb-1">배송 방법</p>
-                  <p className="font-medium">
-                    {order.shippingMethod === 'express' && '특급 배송 (1-3일)'}
-                    {order.shippingMethod === 'standard' && '일반 배송 (5-7일)'}
-                    {order.shippingMethod === 'economy' && '경제 배송 (10-14일)'}
-                  </p>
-                </div>
 
                 {order.internationalTrackingNumber && (
                   <div>
@@ -285,16 +276,8 @@ export default function OrderDetailPage() {
                     <span>₩{order.serviceFee.toLocaleString()}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-600">한국 내 배송비</span>
-                    <span>₩{order.koreanShippingFee.toLocaleString()}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">국제 배송비</span>
-                    <span>₩{order.internationalShippingFee.toLocaleString()}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">관세 및 세금</span>
-                    <span>₩{order.taxAndDuties.toLocaleString()}</span>
+                    <span className="text-gray-600">국내 배송비</span>
+                    <span>₩{order.domesticShippingFee.toLocaleString()}</span>
                   </div>
                   
                   <Separator />
@@ -309,9 +292,6 @@ export default function OrderDetailPage() {
                     <p className="font-medium">
                       {order.paymentMethod === 'card' && '신용/체크카드'}
                       {order.paymentMethod === 'bank_transfer' && '계좌이체'}
-                      {order.paymentMethod === 'paypal' && 'PayPal'}
-                      {order.paymentMethod === 'alipay' && 'Alipay'}
-                      {order.paymentMethod === 'wechat_pay' && 'WeChat Pay'}
                     </p>
                   </div>
                 </div>

@@ -17,6 +17,7 @@ export const mockUsers: User[] = [
     id: '1',
     email: 'john@example.com',
     name: 'John Doe',
+    role: 'customer',
     avatar: 'https://avatar.vercel.sh/john',
     createdAt: new Date('2024-01-01'),
     updatedAt: new Date('2024-01-01')
@@ -25,6 +26,7 @@ export const mockUsers: User[] = [
     id: '2',
     email: 'jane@example.com',
     name: 'Jane Smith',
+    role: 'customer',
     avatar: 'https://avatar.vercel.sh/jane',
     createdAt: new Date('2024-01-02'),
     updatedAt: new Date('2024-01-02')
@@ -34,6 +36,7 @@ export const mockUsers: User[] = [
     id: '3',
     email: 'david@example.com',
     name: 'David Wang',
+    role: 'customer',
     avatar: 'https://avatar.vercel.sh/david',
     createdAt: new Date('2024-01-05'),
     updatedAt: new Date('2024-01-05')
@@ -42,6 +45,7 @@ export const mockUsers: User[] = [
     id: '4',
     email: 'maria@example.com',
     name: 'Maria Garcia',
+    role: 'customer',
     avatar: 'https://avatar.vercel.sh/maria',
     createdAt: new Date('2024-01-10'),
     updatedAt: new Date('2024-01-10')
@@ -50,9 +54,20 @@ export const mockUsers: User[] = [
     id: '5',
     email: 'nguyen@example.com',
     name: 'Nguyen Tran',
+    role: 'customer',
     avatar: 'https://avatar.vercel.sh/nguyen',
     createdAt: new Date('2024-01-15'),
     updatedAt: new Date('2024-01-15')
+  },
+  // 관리자 계정
+  {
+    id: '99',
+    email: 'admin@hiko.kr',
+    name: '관리자',
+    role: 'admin',
+    avatar: 'https://avatar.vercel.sh/admin',
+    createdAt: new Date('2024-01-01'),
+    updatedAt: new Date('2024-01-01')
   }
 ]
 

@@ -14,13 +14,12 @@ import { Separator } from '@/components/ui/separator'
 import { Plus, Minus, Package, Truck, CreditCard, Link } from 'lucide-react'
 import { useLanguage } from '@/lib/i18n/context'
 import { useCreateOrder } from '@/hooks/use-orders'
-import { OrderFormData, ShippingMethod, PaymentMethod, calculateServiceFee, estimateInternationalShipping } from '@/types/order'
+import { OrderFormData, ShippingMethod, PaymentMethod, calculateServiceFee } from '@/types/order'
 import { toast } from 'sonner'
 import { useAuth } from '@/hooks/use-auth'
 import { useRouter } from 'next/navigation'
-import { useNotifications } from '@/contexts/notification-context'
-import { UrlParser } from './url-parser'
-import { ParsedProduct } from '@/lib/parsers/shopping-sites'
+import { notificationService } from '@/lib/notifications/notification-service'
+import { UrlParser, ParsedProduct } from './url-parser'
 
 const orderFormSchema = z.object({
   items: z.array(z.object({
@@ -53,7 +52,6 @@ export function OrderForm({ initialData, hotdealId, onSuccess }: OrderFormProps)
   const { t } = useLanguage()
   const router = useRouter()
   const { currentUser } = useAuth()
-  const { addNotification } = useNotifications()
   const createOrder = useCreateOrder()
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [showUrlParser, setShowUrlParser] = useState(false)
@@ -116,12 +114,11 @@ export function OrderForm({ initialData, hotdealId, onSuccess }: OrderFormProps)
       
       // 알림 추가
       if (result) {
-        addNotification({
-          type: 'order',
-          title: '주문 접수 완료',
-          message: `주문번호 ${result.orderNumber}가 성공적으로 접수되었습니다. 결제를 진행해주세요.`,
-          link: `/order/${result.id}`
-        })
+        notificationService.info(
+          '주문 접수 완료',
+          `주문번호 ${result.orderNumber}가 성공적으로 접수되었습니다. 결제를 진행해주세요.`,
+          `/order/${result.id}`
+        )
         
         // 결제 페이지로 리다이렉트
         router.push(`/payment?orderId=${result.id}&amount=${totalAmount}&currency=KRW`)

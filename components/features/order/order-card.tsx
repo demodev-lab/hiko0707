@@ -137,7 +137,7 @@ export function OrderCard({ order, onClick }: OrderCardProps) {
                   상품: ₩{order.subtotal.toLocaleString()}
                 </div>
                 <div className="text-sm text-gray-600">
-                  수수료: ₩{(order.serviceFee + order.koreanShippingFee + order.internationalShippingFee).toLocaleString()}
+                  수수료: ₩{(order.serviceFee + order.domesticShippingFee).toLocaleString()}
                 </div>
                 <div className="text-lg font-bold text-blue-600">
                   총 ₩{order.totalAmount.toLocaleString()}

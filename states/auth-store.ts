@@ -1,6 +1,42 @@
 import { atom } from 'jotai'
 import { User } from '@/lib/db/local/models'
 
+// 로컬 스토리지에서 사용자 정보를 가져오는 함수
+const getUserFromStorage = (): User | null => {
+  if (typeof window === 'undefined') return null
+  try {
+    const user = localStorage.getItem('currentUser')
+    return user ? JSON.parse(user) : null
+  } catch {
+    return null
+  }
+}
+
+// 로컬 스토리지에 사용자 정보를 저장하는 함수
+const setUserToStorage = (user: User | null) => {
+  if (typeof window === 'undefined') return
+  try {
+    if (user) {
+      localStorage.setItem('currentUser', JSON.stringify(user))
+    } else {
+      localStorage.removeItem('currentUser')
+    }
+  } catch {
+    // 로컬 스토리지 오류 무시
+  }
+}
+
+// 초기값을 null로 설정 (SSR 호환성을 위해)
 export const currentUserAtom = atom<User | null>(null)
+
+// 사용자 상태 변경 시 로컬 스토리지에도 저장
+export const setCurrentUserAtom = atom(
+  null,
+  (get, set, user: User | null) => {
+    set(currentUserAtom, user)
+    setUserToStorage(user)
+  }
+)
+
 export const isAuthenticatedAtom = atom((get) => get(currentUserAtom) !== null)
 export const isLoadingAuthAtom = atom(false)

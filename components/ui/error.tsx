@@ -103,7 +103,7 @@ export function ApiError({ error, onRetry, className }: ApiErrorProps) {
         <AlertTriangle className="w-5 h-5 text-red-600 mt-0.5" />
         <div className="flex-1">
           <h3 className="text-sm font-medium text-red-800">
-            데이터를 불러올 수 없습니다
+            오류가 발생했습니다
           </h3>
           <p className="text-sm text-red-700 mt-1">{error}</p>
           {onRetry && (
@@ -114,7 +114,7 @@ export function ApiError({ error, onRetry, className }: ApiErrorProps) {
               className="mt-2 text-red-700 border-red-300 hover:bg-red-100"
             >
               <RefreshCw className="w-4 h-4 mr-1" />
-              다시 시도
+              확인
             </Button>
           )}
         </div>

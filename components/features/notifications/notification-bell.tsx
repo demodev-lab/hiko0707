@@ -1,17 +1,18 @@
 'use client'
 
-import { useState } from 'react'
-import { Bell, Check, Trash2, ExternalLink } from 'lucide-react'
+import { useState, useRef, useEffect } from 'react'
+import { Bell, Check, Trash2, ExternalLink, CheckCircle, Info, AlertCircle, AlertTriangle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import {
+import { Badge } from '@/components/ui/badge'
+import { Card } from '@/components/ui/card'
+import { 
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuLabel,
   DropdownMenuItem,
+  DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { Badge } from '@/components/ui/badge'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { useNotifications } from '@/contexts/notification-context'
 import { formatDistanceToNow } from 'date-fns'
@@ -28,27 +29,41 @@ export function NotificationBell() {
   } = useNotifications()
   
   const [isOpen, setIsOpen] = useState(false)
+  const dropdownRef = useRef<HTMLDivElement>(null)
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsOpen(false)
+      }
+    }
+
+    if (isOpen) {
+      document.addEventListener('mousedown', handleClickOutside)
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [isOpen])
 
   const getNotificationIcon = (type: string) => {
     switch (type) {
-      case 'order':
-        return '📦'
-      case 'payment':
-        return '💳'
-      case 'shipping':
-        return '🚚'
-      case 'promotion':
-        return '🎉'
-      case 'system':
-        return '⚙️'
+      case 'success':
+        return <CheckCircle className="w-4 h-4 text-green-600" />
+      case 'error':
+        return <AlertCircle className="w-4 h-4 text-red-600" />
+      case 'warning':
+        return <AlertTriangle className="w-4 h-4 text-yellow-600" />
       default:
-        return '📢'
+        return <Info className="w-4 h-4 text-blue-600" />
     }
   }
 
   const handleNotificationClick = (notification: any) => {
     markAsRead(notification.id)
-    if (notification.link) {
+    if (notification.actionUrl) {
       setIsOpen(false)
     }
   }
@@ -97,7 +112,7 @@ export function NotificationBell() {
                 onClick={() => handleNotificationClick(notification)}
               >
                 <div className="flex w-full gap-3">
-                  <span className="text-2xl flex-shrink-0">
+                  <span className="flex-shrink-0">
                     {getNotificationIcon(notification.type)}
                   </span>
                   <div className="flex-1 min-w-0">
@@ -110,15 +125,15 @@ export function NotificationBell() {
                           {notification.message}
                         </p>
                         <p className="text-xs text-gray-400 mt-1">
-                          {formatDistanceToNow(notification.createdAt, { 
+                          {formatDistanceToNow(notification.timestamp, { 
                             addSuffix: true, 
                             locale: ko 
                           })}
                         </p>
                       </div>
                       <div className="flex items-center gap-1">
-                        {notification.link && (
-                          <Link href={notification.link} onClick={(e) => e.stopPropagation()}>
+                        {notification.actionUrl && (
+                          <Link href={notification.actionUrl} onClick={(e) => e.stopPropagation()}>
                             <ExternalLink className="w-3 h-3 text-gray-400 hover:text-gray-600" />
                           </Link>
                         )}

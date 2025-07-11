@@ -1,7 +1,6 @@
 'use client'
 
 import { useState } from 'react'
-import { useLanguage } from '@/lib/i18n/context'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Button } from '@/components/ui/button'
@@ -22,6 +21,8 @@ import { Order } from '@/types/order'
 import { OrdersTable } from '@/components/features/admin/orders-table'
 import { StatsCard } from '@/components/features/admin/stats-card'
 import { RevenueChart } from '@/components/features/admin/revenue-chart'
+import { useBuyForMeAdmin } from '@/hooks/use-buy-for-me'
+import Link from 'next/link'
 
 interface AdminDashboardProps {
   stats: {
@@ -37,8 +38,14 @@ interface AdminDashboardProps {
 }
 
 export function AdminDashboard({ stats, recentOrders }: AdminDashboardProps) {
-  const { t } = useLanguage()
   const [isRefreshing, setIsRefreshing] = useState(false)
+  const { allRequests } = useBuyForMeAdmin()
+  
+  const buyForMeStats = {
+    total: allRequests.length,
+    pending: allRequests.filter(r => r.status === 'pending_review').length,
+    active: allRequests.filter(r => ['quote_sent', 'quote_approved', 'payment_pending', 'payment_completed', 'purchasing', 'shipping'].includes(r.status)).length
+  }
 
   const handleRefresh = async () => {
     setIsRefreshing(true)
@@ -126,10 +133,41 @@ export function AdminDashboard({ stats, recentOrders }: AdminDashboardProps) {
             <StatsCard key={stat.title} {...stat} />
           ))}
         </div>
+        
+        {/* Buy for Me 알림 카드 */}
+        {buyForMeStats.pending > 0 && (
+          <Card className="mb-8 border-yellow-200 bg-yellow-50">
+            <CardContent className="py-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <AlertCircle className="w-5 h-5 text-yellow-600" />
+                  <div>
+                    <p className="font-medium text-yellow-900">
+                      새로운 Buy for Me 요청이 {buyForMeStats.pending}건 있습니다
+                    </p>
+                    <p className="text-sm text-yellow-700">
+                      검토가 필요한 구매 대행 요청을 확인해주세요
+                    </p>
+                  </div>
+                </div>
+                <Link href="/admin/buy-for-me">
+                  <Button size="sm" variant="outline" className="border-yellow-600 text-yellow-700 hover:bg-yellow-100">
+                    <ShoppingBag className="w-4 h-4 mr-2" />
+                    요청 확인
+                  </Button>
+                </Link>
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         {/* 탭 */}
         <Tabs defaultValue="orders" className="space-y-4">
           <TabsList>
+            <TabsTrigger value="buy-for-me">
+              <ShoppingBag className="w-4 h-4 mr-2" />
+              Buy for Me ({buyForMeStats.total})
+            </TabsTrigger>
             <TabsTrigger value="orders">
               <Package className="w-4 h-4 mr-2" />
               주문 관리
@@ -147,6 +185,59 @@ export function AdminDashboard({ stats, recentOrders }: AdminDashboardProps) {
               핫딜 관리
             </TabsTrigger>
           </TabsList>
+          
+          <TabsContent value="buy-for-me" className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center justify-between">
+                  <span>Buy for Me 요청 현황</span>
+                  <Link href="/admin/buy-for-me">
+                    <Button variant="outline" size="sm">
+                      전체 보기
+                    </Button>
+                  </Link>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="text-center p-4 bg-yellow-50 rounded-lg">
+                    <p className="text-2xl font-bold text-yellow-700">{buyForMeStats.pending}</p>
+                    <p className="text-sm text-gray-600 mt-1">검토 대기</p>
+                  </div>
+                  <div className="text-center p-4 bg-blue-50 rounded-lg">
+                    <p className="text-2xl font-bold text-blue-700">{buyForMeStats.active}</p>
+                    <p className="text-sm text-gray-600 mt-1">진행 중</p>
+                  </div>
+                  <div className="text-center p-4 bg-green-50 rounded-lg">
+                    <p className="text-2xl font-bold text-green-700">{buyForMeStats.total}</p>
+                    <p className="text-sm text-gray-600 mt-1">전체 요청</p>
+                  </div>
+                </div>
+                <div className="mt-4 space-y-2">
+                  {allRequests.slice(0, 5).map((request) => (
+                    <div key={request.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                      <div>
+                        <p className="font-medium text-sm">{request.productInfo.title}</p>
+                        <p className="text-xs text-gray-500">
+                          {request.shippingInfo.name} · {new Date(request.requestDate).toLocaleDateString('ko-KR')}
+                        </p>
+                      </div>
+                      <Badge variant="outline" className="text-xs">
+                        {request.status === 'pending_review' ? '검토 대기' : 
+                         request.status === 'quote_sent' ? '견적 발송' :
+                         request.status === 'purchasing' ? '구매 진행' : '기타'}
+                      </Badge>
+                    </div>
+                  ))}
+                  {allRequests.length === 0 && (
+                    <div className="text-center py-8 text-gray-500">
+                      아직 Buy for Me 요청이 없습니다.
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
 
           <TabsContent value="orders" className="space-y-4">
             <Card>

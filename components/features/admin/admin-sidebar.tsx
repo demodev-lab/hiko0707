@@ -12,7 +12,8 @@ import {
   BarChart,
   Bell,
   LogOut,
-  FileText
+  FileText,
+  ShoppingBag
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 
@@ -21,6 +22,11 @@ const navigation = [
     name: '대시보드',
     href: '/admin',
     icon: LayoutDashboard
+  },
+  {
+    name: 'Buy for Me',
+    href: '/admin/buy-for-me',
+    icon: ShoppingBag
   },
   {
     name: '주문 관리',
@@ -99,13 +105,15 @@ export function AdminSidebar() {
             <p className="text-xs text-gray-400">admin@hiko.kr</p>
           </div>
         </div>
-        <Button
-          variant="ghost"
-          className="w-full justify-start text-gray-300 hover:text-white hover:bg-gray-800"
-        >
-          <LogOut className="w-4 h-4 mr-2" />
-          로그아웃
-        </Button>
+        <Link href="/login">
+          <Button
+            variant="ghost"
+            className="w-full justify-start text-gray-300 hover:text-white hover:bg-gray-800"
+          >
+            <LogOut className="w-4 h-4 mr-2" />
+            로그아웃
+          </Button>
+        </Link>
       </div>
     </div>
   )

@@ -30,6 +30,7 @@ import {
 } from 'lucide-react'
 import { useLanguage } from '@/lib/i18n/context'
 import { useAuth } from '@/hooks/use-auth'
+import { useBuyForMe } from '@/hooks/use-buy-for-me'
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
@@ -72,6 +73,7 @@ interface BuyForMeModalProps {
 export function BuyForMeModal({ open, onOpenChange, hotdeal }: BuyForMeModalProps) {
   const { t } = useLanguage()
   const { currentUser } = useAuth()
+  const { createRequest, isCreating } = useBuyForMe()
   const router = useRouter()
   const [isSubmitting, setIsSubmitting] = useState(false)
 
@@ -103,49 +105,49 @@ export function BuyForMeModal({ open, onOpenChange, hotdeal }: BuyForMeModalProp
       return
     }
 
-    setIsSubmitting(true)
-    try {
-      // Create Buy for Me request
-      const requestData = {
-        userId: currentUser.id,
-        hotdealId: hotdeal.id,
-        productInfo: {
-          title: hotdeal.title,
-          price: hotdeal.price,
-          originalPrice: hotdeal.originalPrice,
-          imageUrl: hotdeal.imageUrl,
-          productUrl: hotdeal.productUrl,
-          seller: hotdeal.seller,
-          category: hotdeal.category
-        },
-        quantity: data.quantity,
-        productOptions: data.productOptions,
-        shippingInfo: data.shippingInfo,
-        specialRequests: data.specialRequests,
-        status: 'pending_review', // 관리자 검토 대기
-        requestDate: new Date().toISOString(),
-        estimatedServiceFee: calculateServiceFee(hotdeal.price, data.quantity)
-      }
+    const estimatedPrice = parseInt(hotdeal.price.replace(/[^0-9]/g, '')) || 0
+    const subtotal = estimatedPrice * data.quantity
+    const serviceFee = calculateServiceFee(hotdeal.price, data.quantity)
+    const domesticShipping = 3000
+    const estimatedTotal = subtotal + serviceFee + domesticShipping
 
-      // Mock API call - replace with actual API
-      console.log('Buy for Me request:', requestData)
-      
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 1000))
-
-      toast.success(t('order.buyForMe.requestSubmitted'))
-      onOpenChange(false)
-      form.reset()
-
-      // Redirect to request status page
-      router.push('/my-orders')
-      
-    } catch (error) {
-      console.error('Buy for Me request error:', error)
-      toast.error(t('order.buyForMe.requestFailed'))
-    } finally {
-      setIsSubmitting(false)
+    // Create Buy for Me request
+    const requestData = {
+      userId: currentUser.id,
+      hotdealId: hotdeal.id,
+      productInfo: {
+        title: hotdeal.title,
+        originalPrice: parseInt(hotdeal.originalPrice?.replace(/[^0-9]/g, '') || '0'),
+        discountedPrice: estimatedPrice,
+        discountRate: parseInt(hotdeal.discountRate?.replace(/[^0-9]/g, '') || '0'),
+        shippingFee: domesticShipping,
+        imageUrl: hotdeal.imageUrl,
+        originalUrl: hotdeal.productUrl,
+        siteName: hotdeal.seller || 'Unknown'
+      },
+      quantity: data.quantity,
+      productOptions: data.productOptions,
+      shippingInfo: {
+        name: data.shippingInfo.fullName,
+        phone: data.shippingInfo.phoneNumber,
+        email: data.shippingInfo.email,
+        postalCode: data.shippingInfo.postalCode,
+        address: data.shippingInfo.address,
+        detailAddress: data.shippingInfo.detailAddress || ''
+      },
+      specialRequests: data.specialRequests,
+      estimatedServiceFee: serviceFee,
+      estimatedTotalAmount: estimatedTotal
     }
+
+    createRequest(requestData, {
+      onSuccess: () => {
+        onOpenChange(false)
+        form.reset()
+        // Redirect to request status page
+        router.push('/my-orders')
+      }
+    })
   }
 
   const calculateServiceFee = (priceStr: string, quantity: number) => {
@@ -408,9 +410,9 @@ export function BuyForMeModal({ open, onOpenChange, hotdeal }: BuyForMeModalProp
             <Button
               type="submit"
               className="w-full sm:flex-1 text-sm"
-              disabled={isSubmitting}
+              disabled={isCreating}
             >
-              {isSubmitting ? t('common.loading') : t('order.buyForMe.submitRequest')}
+              {isCreating ? t('common.loading') : t('order.buyForMe.submitRequest')}
             </Button>
           </div>
         </form>

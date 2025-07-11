@@ -51,13 +51,10 @@ export function useCreateOrder() {
         })),
         status: 'pending',
         shippingAddress: orderData.shippingAddress,
-        shippingMethod: orderData.shippingMethod,
         paymentMethod: orderData.paymentMethod,
         subtotal: orderData.items.reduce((sum, item) => sum + (item.price * item.quantity), 0),
         serviceFee: 0, // 계산 후 업데이트
-        koreanShippingFee: 0, // 계산 후 업데이트
-        internationalShippingFee: 0, // 계산 후 업데이트
-        taxAndDuties: 0, // 계산 후 업데이트
+        domesticShippingFee: 0, // 계산 후 업데이트
         totalAmount: 0, // 계산 후 업데이트
         orderNumber,
         customerNotes: orderData.customerNotes,
@@ -67,16 +64,9 @@ export function useCreateOrder() {
 
       // 비용 계산
       const subtotal = order.subtotal
-      order.serviceFee = Math.max(5000, Math.round(subtotal * 0.1))
-      order.koreanShippingFee = 3000 // 기본값
-      order.internationalShippingFee = estimateInternationalShipping(
-        order.items,
-        order.shippingMethod,
-        order.shippingAddress.country
-      )
-      order.taxAndDuties = Math.round(subtotal * 0.05) // 임시 5%
-      order.totalAmount = subtotal + order.serviceFee + order.koreanShippingFee + 
-                         order.internationalShippingFee + order.taxAndDuties
+      order.serviceFee = Math.max(5000, Math.round(subtotal * 0.08)) // 8% 수수료
+      order.domesticShippingFee = 3000 // 기본값
+      order.totalAmount = subtotal + order.serviceFee + order.domesticShippingFee
 
       return await db.orders.create(order)
     },
