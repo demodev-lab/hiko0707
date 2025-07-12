@@ -66,11 +66,23 @@ export function formatDate(
 
 // Format relative time (e.g., "2 hours ago")
 export function formatRelativeTime(
-  date: Date | string,
+  date: Date | string | undefined | null,
   language: LanguageCode
 ): string {
   const config = currencyConfig[language]
+  
+  // 안전한 날짜 처리
+  if (!date) {
+    return '방금 전'
+  }
+  
   const dateObj = typeof date === 'string' ? new Date(date) : date
+  
+  // 유효한 Date 객체인지 확인
+  if (!dateObj || isNaN(dateObj.getTime())) {
+    return '방금 전'
+  }
+  
   const now = new Date()
   const diffMs = now.getTime() - dateObj.getTime()
   const diffMins = Math.floor(diffMs / 60000)

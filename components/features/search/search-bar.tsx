@@ -42,6 +42,11 @@ export function SearchBar({
   const inputRef = useRef<HTMLInputElement>(null)
   const suggestionsRef = useRef<HTMLDivElement>(null)
   
+  // Update query when defaultValue changes
+  useEffect(() => {
+    setQuery(defaultValue)
+  }, [defaultValue])
+  
   const { suggestions, isLoading } = useSearchSuggestions(query)
   const { recentSearches, addRecentSearch, removeRecentSearch } = useRecentSearches()
   

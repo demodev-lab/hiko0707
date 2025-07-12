@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { db } from '@/lib/db/database-service'
 import { User, Post, Comment } from '@/lib/db/local/models'
+import { HotDeal } from '@/types/hotdeal'
 
 export function useUsers() {
   const [users, setUsers] = useState<User[]>([])
@@ -206,4 +207,74 @@ export function useComments(postId?: string) {
   }, [loadComments])
 
   return { comments, loading, error, createComment, deleteComment, refetch: loadComments }
+}
+
+export function useHotDeals() {
+  const [hotdeals, setHotDeals] = useState<HotDeal[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<Error | null>(null)
+
+  const loadHotDeals = useCallback(async () => {
+    try {
+      setLoading(true)
+      const data = await db.hotdeals.findAll()
+      setHotDeals(data)
+      setError(null)
+    } catch (err) {
+      setError(err as Error)
+      console.error('Failed to load hotdeals:', err)
+    } finally {
+      setLoading(false)
+    }
+  }, [])
+
+  useEffect(() => {
+    loadHotDeals()
+  }, [loadHotDeals])
+
+  const createHotDeal = useCallback(async (hotdealData: Omit<HotDeal, 'id'>) => {
+    try {
+      const newHotDeal = await db.hotdeals.create(hotdealData)
+      await loadHotDeals()
+      return newHotDeal
+    } catch (err) {
+      console.error('Failed to create hotdeal:', err)
+      throw err
+    }
+  }, [loadHotDeals])
+
+  const updateHotDeal = useCallback(async (id: string, hotdealData: Partial<HotDeal>) => {
+    try {
+      const updatedHotDeal = await db.hotdeals.update(id, hotdealData)
+      await loadHotDeals()
+      return updatedHotDeal
+    } catch (err) {
+      console.error('Failed to update hotdeal:', err)
+      throw err
+    }
+  }, [loadHotDeals])
+
+  const deleteHotDeal = useCallback(async (id: string) => {
+    try {
+      const result = await db.hotdeals.delete(id)
+      await loadHotDeals()
+      return result
+    } catch (err) {
+      console.error('Failed to delete hotdeal:', err)
+      throw err
+    }
+  }, [loadHotDeals])
+
+  const deleteAllHotDeals = useCallback(async () => {
+    try {
+      await db.hotdeals.deleteAll()
+      await loadHotDeals()
+      return true
+    } catch (err) {
+      console.error('Failed to delete all hotdeals:', err)
+      throw err
+    }
+  }, [loadHotDeals])
+
+  return { hotdeals, loading, error, createHotDeal, updateHotDeal, deleteHotDeal, deleteAllHotDeals, refetch: loadHotDeals }
 }

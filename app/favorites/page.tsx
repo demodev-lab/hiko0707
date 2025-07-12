@@ -58,8 +58,9 @@ export default function FavoritesPage() {
             <Image
               src={favorite.metadata.image}
               alt={favorite.metadata.title || 'Item'}
-              fill
-              className="object-cover"
+              width={160}
+              height={160}
+              className="w-full h-full object-cover"
             />
           ) : (
             <div className="w-full h-full flex items-center justify-center">

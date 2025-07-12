@@ -7,6 +7,7 @@ export interface HotDealComment {
   content: string
   parentId?: string // For nested comments
   likeCount: number
+  likedByUsers?: string[] // Array of user IDs who liked this comment
   createdAt: Date
   updatedAt: Date
   isDeleted?: boolean
@@ -75,6 +76,7 @@ export class HotDealCommentRepository extends BaseRepository<HotDealComment> {
     const comment: Omit<HotDealComment, 'id'> = {
       ...data,
       likeCount: 0,
+      likedByUsers: [],
       createdAt: now,
       updatedAt: now,
       isDeleted: false
@@ -127,21 +129,35 @@ export class HotDealCommentRepository extends BaseRepository<HotDealComment> {
     return true
   }
 
-  async likeComment(id: string): Promise<HotDealComment | null> {
+  async likeComment(id: string, userId: string): Promise<HotDealComment | null> {
     const comment = await this.findById(id)
     if (!comment || comment.isDeleted) return null
     
+    const likedByUsers = comment.likedByUsers || []
+    if (likedByUsers.includes(userId)) {
+      // Already liked
+      return comment
+    }
+    
     return await this.update(id, {
-      likeCount: comment.likeCount + 1
+      likeCount: comment.likeCount + 1,
+      likedByUsers: [...likedByUsers, userId]
     })
   }
 
-  async unlikeComment(id: string): Promise<HotDealComment | null> {
+  async unlikeComment(id: string, userId: string): Promise<HotDealComment | null> {
     const comment = await this.findById(id)
     if (!comment || comment.isDeleted) return null
     
+    const likedByUsers = comment.likedByUsers || []
+    if (!likedByUsers.includes(userId)) {
+      // Not liked
+      return comment
+    }
+    
     return await this.update(id, {
-      likeCount: Math.max(0, comment.likeCount - 1)
+      likeCount: Math.max(0, comment.likeCount - 1),
+      likedByUsers: likedByUsers.filter(uid => uid !== userId)
     })
   }
 
@@ -150,7 +166,7 @@ export class HotDealCommentRepository extends BaseRepository<HotDealComment> {
     return comments.length
   }
 
-  async getNestedComments(hotdealId: string): Promise<HotDealComment[]> {
+  async getNestedComments(hotdealId: string): Promise<(HotDealComment & { replies?: HotDealComment[] })[]> {
     const allComments = await this.findAllWithUsers(hotdealId)
     
     // Organize comments into a tree structure

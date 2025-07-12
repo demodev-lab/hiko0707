@@ -29,7 +29,7 @@ export function ProtectedRoute({
 
       // 관리자 권한이 필요한 경우 체크
       if (requiredRole === 'admin' && currentUser?.role !== 'admin') {
-        router.push(ROUTES.DASHBOARD)
+        router.push(ROUTES.HOTDEALS)
         return
       }
     }
@@ -60,7 +60,7 @@ interface PublicOnlyRouteProps {
 
 export function PublicOnlyRoute({ 
   children, 
-  redirectPath = ROUTES.DASHBOARD 
+  redirectPath = ROUTES.HOTDEALS 
 }: PublicOnlyRouteProps) {
   const { isAuthenticated, isLoading } = useAuth()
   const router = useRouter()

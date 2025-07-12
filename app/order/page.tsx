@@ -2,16 +2,19 @@
 
 import { useEffect, useState } from 'react'
 import { OrderForm } from '@/components/features/order/order-form'
-import { ShoppingBag, Shield, Zap } from 'lucide-react'
+import { ShoppingBag, Shield, Zap, Calculator } from 'lucide-react'
 import { useSearchParams } from 'next/navigation'
 import { db } from '@/lib/db/database-service'
 import { HotDeal } from '@/types/hotdeal'
+import { Button } from '@/components/ui/button'
+import { CurrencyCalculatorModal } from '@/components/features/currency-calculator-modal'
 
 export default function OrderPage() {
   const searchParams = useSearchParams()
   const hotdealId = searchParams.get('hotdeal')
   const [hotdealData, setHotdealData] = useState<HotDeal | null>(null)
   const [loading, setLoading] = useState(true)
+  const [currencyModalOpen, setCurrencyModalOpen] = useState(false)
 
   useEffect(() => {
     async function fetchHotdeal() {
@@ -45,9 +48,18 @@ export default function OrderPage() {
       {/* 헤더 */}
       <div className="text-center mb-8">
         <h1 className="text-3xl font-bold mb-2">대리 구매</h1>
-        <p className="text-gray-600 mb-6">
+        <p className="text-gray-600 mb-4">
           한국의 온라인 쇼핑몰에서 원하는 상품을 안전하고 빠르게 대리 구매해드립니다
         </p>
+        <Button 
+          onClick={() => setCurrencyModalOpen(true)}
+          variant="outline" 
+          size="default" 
+          className="gap-2"
+        >
+          <Calculator className="w-4 h-4" />
+          환율 계산기
+        </Button>
 
         {/* 서비스 특징 */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
@@ -129,6 +141,12 @@ export default function OrderPage() {
           </div>
         </div>
       </div>
+      
+      {/* 환율 계산기 모달 */}
+      <CurrencyCalculatorModal 
+        open={currencyModalOpen} 
+        onOpenChange={setCurrencyModalOpen} 
+      />
     </div>
   )
 }

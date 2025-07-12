@@ -4,6 +4,10 @@ import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { ShoppingBag } from 'lucide-react'
 import { BuyForMeModal } from './buy-for-me-modal'
+import { useAuth } from '@/hooks/use-auth'
+import { useRouter } from 'next/navigation'
+// import { RoleBasedContent } from '@/components/auth/role-based-content' // 사용하지 않음
+import { toast } from 'sonner'
 
 interface HotDeal {
   id: string
@@ -32,10 +36,19 @@ export function BuyForMeButton({
   className = ''
 }: BuyForMeButtonProps) {
   const [modalOpen, setModalOpen] = useState(false)
+  const { currentUser, isAuthenticated } = useAuth()
+  const router = useRouter()
 
   const handleClick = (e: React.MouseEvent) => {
     e.preventDefault()
     e.stopPropagation()
+    
+    if (!isAuthenticated) {
+      toast.info('대리구매 서비스 이용을 위해 로그인이 필요합니다.')
+      router.push('/login')
+      return
+    }
+    
     setModalOpen(true)
   }
 

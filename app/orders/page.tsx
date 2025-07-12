@@ -10,6 +10,7 @@ import { Package, Clock, CheckCircle, XCircle, TrendingUp, ShoppingBag } from 'l
 import Link from 'next/link'
 import { db } from '@/lib/db/database-service'
 import { formatDate } from '@/lib/utils'
+import { ServiceJsonLd } from '@/components/seo/json-ld'
 
 export const metadata: Metadata = {
   title: '주문 내역 - HiKo',
@@ -173,6 +174,7 @@ async function OrderList() {
 export default function OrdersPage() {
   return (
     <ProtectedRoute>
+      <ServiceJsonLd />
       <div className="flex-1 space-y-6 p-4 md:p-8 pt-6">
         <div className="flex items-center justify-between">
           <div>

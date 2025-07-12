@@ -4,6 +4,38 @@ import { HotDeal, HotDealCategory, HotDealSource } from '@/types/hotdeal'
 export class HotDealRepository extends BaseRepository<HotDeal> {
   protected tableName = 'hotdeals'
 
+  // 기존 데이터에 sourcePostId가 없는 경우를 처리하는 메서드
+  async findBySourceAndPostId(source: HotDealSource, sourcePostId: string): Promise<HotDeal | null> {
+    const items = await this.findAll()
+    console.log(`🔍 중복 체크: ${source} 소스에서 ${sourcePostId} 찾는 중 (전체 ${items.length}개)`)
+    
+    // sourcePostId가 있는 경우 정확한 매칭
+    const exactMatch = items.find(item => 
+      item.source === source && 
+      item.sourcePostId === sourcePostId
+    )
+    
+    if (exactMatch) {
+      console.log(`✅ 정확한 매칭 발견: ${exactMatch.title}`)
+      return exactMatch
+    }
+    
+    // sourcePostId가 없는 기존 데이터의 경우 originalUrl로 매칭 시도
+    const urlMatch = items.find(item => 
+      item.source === source && 
+      !item.sourcePostId && // sourcePostId가 없는 기존 데이터
+      item.originalUrl.includes(sourcePostId) // URL에 게시글 번호 포함 여부 확인
+    )
+    
+    if (urlMatch) {
+      console.log(`✅ URL 매칭 발견: ${urlMatch.title} (URL: ${urlMatch.originalUrl})`)
+      return urlMatch
+    }
+    
+    console.log(`❌ 매칭 실패: ${source} ${sourcePostId} - 새로운 핫딜로 추가`)
+    return null
+  }
+
   async findByCategory(category: HotDealCategory): Promise<HotDeal[]> {
     const items = await this.findAll()
     return items.filter(item => item.category === category)

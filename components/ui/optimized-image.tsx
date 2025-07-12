@@ -1,165 +1,164 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import Image, { ImageProps } from 'next/image'
-import { Loader2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 interface OptimizedImageProps extends Omit<ImageProps, 'onLoad' | 'onError'> {
   fallbackSrc?: string
   showLoader?: boolean
+  blurDataURL?: string
+  className?: string
   containerClassName?: string
   onLoadComplete?: () => void
   onError?: () => void
-  lazy?: boolean
 }
 
 export function OptimizedImage({
   src,
   alt,
-  fallbackSrc = '/images/placeholder.jpg',
+  fallbackSrc = 'https://via.placeholder.com/400x300/f3f4f6/6b7280?text=이미지+없음',
   showLoader = true,
-  containerClassName,
+  blurDataURL,
   className,
+  containerClassName,
   onLoadComplete,
   onError,
-  lazy = true,
   ...props
 }: OptimizedImageProps) {
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState(false)
-  const [imageSrc, setImageSrc] = useState(src)
-  const [inView, setInView] = useState(!lazy)
-  const imgRef = useRef<HTMLDivElement>(null)
+  const [isLoading, setIsLoading] = useState(true)
+  const [hasError, setHasError] = useState(false)
+  const [currentSrc, setCurrentSrc] = useState(src)
 
-  // Intersection Observer for lazy loading
+  // src가 변경되면 상태 초기화
   useEffect(() => {
-    if (!lazy || inView) return
+    setCurrentSrc(src)
+    setIsLoading(true)
+    setHasError(false)
+  }, [src])
 
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setInView(true)
-          observer.disconnect()
-        }
-      },
-      {
-        rootMargin: '100px 0px', // Load images 100px before they're visible
-        threshold: 0.1
-      }
-    )
-
-    if (imgRef.current) {
-      observer.observe(imgRef.current)
-    }
-
-    return () => observer.disconnect()
-  }, [lazy, inView])
-
-  const handleLoad = () => {
-    setLoading(false)
+  const handleLoad = useCallback(() => {
+    console.log('✅ Image loaded successfully:', currentSrc, { alt, width: props.width, height: props.height })
+    setIsLoading(false)
     onLoadComplete?.()
-  }
+  }, [onLoadComplete, currentSrc, alt, props.width, props.height])
 
-  const handleError = () => {
-    setLoading(false)
-    setError(true)
-    if (fallbackSrc && imageSrc !== fallbackSrc) {
-      setImageSrc(fallbackSrc)
-      setError(false)
-    } else {
-      onError?.()
+  const handleError = useCallback(() => {
+    console.log('❌ Image failed to load:', currentSrc)
+    console.log('❌ Image error details:', {
+      src: currentSrc,
+      alt,
+      fallbackSrc,
+      hasError
+    })
+    setIsLoading(false)
+    setHasError(true)
+    if (fallbackSrc && currentSrc !== fallbackSrc) {
+      console.log('🔄 Trying fallback image:', fallbackSrc)
+      setCurrentSrc(fallbackSrc)
+      setHasError(false)
     }
-  }
+    onError?.()
+  }, [fallbackSrc, currentSrc, onError, alt, hasError])
 
-  // Generate blur data URL for placeholder
-  const blurDataURL = "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwCdABmX/9k="
+  // 기본 blur placeholder 생성
+  const defaultBlurDataURL = blurDataURL || generateBlurDataURL()
 
   return (
-    <div ref={imgRef} className={cn("relative overflow-hidden", containerClassName)}>
-      {/* Loading placeholder */}
-      {loading && showLoader && inView && (
-        <div className="absolute inset-0 flex items-center justify-center bg-gray-100">
-          <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
+    <div className={cn('relative overflow-hidden', containerClassName)}>
+      <Image
+        {...props}
+        src={currentSrc}
+        alt={alt}
+        className={cn(
+          'transition-opacity duration-300',
+          isLoading && showLoader ? 'opacity-0' : 'opacity-100',
+          className
+        )}
+        onLoad={handleLoad}
+        onError={handleError}
+        placeholder="blur"
+        blurDataURL={defaultBlurDataURL}
+        priority={props.priority}
+        quality={props.quality || 85}
+        sizes={props.sizes || '(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw'}
+        unoptimized={currentSrc.startsWith('/images/')}
+      />
+      
+      {/* 로딩 스켈레톤 */}
+      {isLoading && showLoader && (
+        <div className="absolute inset-0 bg-gray-200 dark:bg-gray-800 animate-pulse flex items-center justify-center">
+          <div className="w-8 h-8 border-2 border-gray-300 border-t-blue-600 rounded-full animate-spin"></div>
         </div>
       )}
-
-      {/* Error fallback */}
-      {error && !loading && (
-        <div className="absolute inset-0 flex items-center justify-center bg-gray-100">
-          <div className="text-center text-gray-500">
-            <div className="w-8 h-8 mx-auto mb-2 bg-gray-300 rounded" />
-            <span className="text-xs">이미지를 불러올 수 없습니다</span>
+      
+      {/* 에러 상태 */}
+      {hasError && !fallbackSrc && (
+        <div className="absolute inset-0 bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
+          <div className="text-center text-gray-500 dark:text-gray-400">
+            <svg className="w-12 h-12 mx-auto mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
+            <p className="text-sm">이미지를 불러올 수 없습니다</p>
           </div>
         </div>
-      )}
-
-      {/* Lazy loading placeholder */}
-      {!inView && lazy && (
-        <div className="absolute inset-0 bg-gray-100 animate-pulse" />
-      )}
-
-      {/* Actual image */}
-      {inView && (
-        <Image
-          {...props}
-          src={imageSrc}
-          alt={alt}
-          className={cn(
-            "transition-opacity duration-300",
-            loading ? "opacity-0" : "opacity-100",
-            className
-          )}
-          onLoad={handleLoad}
-          onError={handleError}
-          placeholder="blur"
-          blurDataURL={blurDataURL}
-          loading={lazy ? "lazy" : "eager"}
-          quality={85} // Optimize for file size vs quality
-        />
       )}
     </div>
   )
 }
 
-// Specialized component for hotdeal cards
-export function HotDealImage({
-  src,
-  alt,
-  className,
-  ...props
-}: Omit<OptimizedImageProps, 'sizes'>) {
-  return (
-    <OptimizedImage
-      src={src}
-      alt={alt}
-      className={className}
-      fill
-      sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-      {...props}
-    />
-  )
+// 기본 blur placeholder 생성 함수
+function generateBlurDataURL(): string {
+  // 10x10 픽셀의 회색 이미지를 base64로 인코딩
+  const svg = `
+    <svg width="10" height="10" viewBox="0 0 10 10" xmlns="http://www.w3.org/2000/svg">
+      <rect width="10" height="10" fill="#f3f4f6"/>
+    </svg>
+  `
+  const base64 = Buffer.from(svg).toString('base64')
+  return `data:image/svg+xml;base64,${base64}`
 }
 
-// Specialized component for avatars
-export function AvatarImage({
-  src,
-  alt,
-  size = 40,
-  className,
-  ...props
-}: Omit<OptimizedImageProps, 'width' | 'height' | 'fill'> & {
-  size?: number
-}) {
-  return (
-    <OptimizedImage
-      src={src}
-      alt={alt}
-      width={size}
-      height={size}
-      className={cn("rounded-full", className)}
-      sizes={`${size}px`}
-      {...props}
-    />
-  )
+// 이미지 포맷 최적화를 위한 헬퍼 함수
+export function getOptimizedImageUrl(src: string, options?: {
+  width?: number
+  height?: number
+  quality?: number
+  format?: 'webp' | 'avif' | 'jpeg' | 'png'
+}): string {
+  if (!src) return src
+  
+  // 외부 URL인 경우 그대로 반환
+  if (src.startsWith('http') || src.startsWith('//')) {
+    return src
+  }
+  
+  // Next.js Image Optimization API 사용
+  const params = new URLSearchParams()
+  if (options?.width) params.set('w', options.width.toString())
+  if (options?.height) params.set('h', options.height.toString())
+  if (options?.quality) params.set('q', options.quality.toString())
+  if (options?.format) params.set('f', options.format)
+  
+  const queryString = params.toString()
+  return queryString ? `${src}?${queryString}` : src
+}
+
+// 이미지 사이즈 계산 헬퍼
+export function calculateImageDimensions(
+  originalWidth: number,
+  originalHeight: number,
+  maxWidth: number,
+  maxHeight?: number
+): { width: number; height: number } {
+  const aspectRatio = originalWidth / originalHeight
+  let width = Math.min(originalWidth, maxWidth)
+  let height = width / aspectRatio
+  
+  if (maxHeight && height > maxHeight) {
+    height = maxHeight
+    width = height * aspectRatio
+  }
+  
+  return { width: Math.round(width), height: Math.round(height) }
 }

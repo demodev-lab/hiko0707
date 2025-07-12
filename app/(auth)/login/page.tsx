@@ -18,7 +18,7 @@ export default function LoginPage() {
       if (currentUser.role === 'admin') {
         router.push('/admin')
       } else {
-        router.push('/dashboard')
+        router.push('/hotdeals')
       }
     }
   }, [currentUser, router])

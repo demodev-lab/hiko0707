@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>데이터 리셋</title>
+</head>
+<body>
+    <h1>localStorage 데이터 리셋</h1>
+    <button onclick="resetData()">데이터 리셋하고 메인페이지로 이동</button>
+    
+    <script>
+        function resetData() {
+            console.log('🧹 localStorage 클리어 중...')
+            localStorage.clear()
+            
+            console.log('🔄 메인페이지로 이동...')
+            window.location.href = '/'
+        }
+        
+        // 자동 실행
+        setTimeout(() => {
+            resetData()
+        }, 1000)
+    </script>
+</body>
+</html>

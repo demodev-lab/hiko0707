@@ -1,7 +1,6 @@
 'use client'
 
-import { useEffect } from 'react'
-import { PageError } from '@/components/ui/error'
+import { ErrorFallback } from '@/components/common/error-fallback'
 
 export default function Error({
   error,
@@ -10,10 +9,5 @@ export default function Error({
   error: Error & { digest?: string }
   reset: () => void
 }) {
-  useEffect(() => {
-    // 에러 로깅 (예: Sentry, LogRocket 등)
-    console.error('Application error:', error)
-  }, [error])
-
-  return <PageError error={error} reset={reset} />
+  return <ErrorFallback error={error} reset={reset} type="page" />
 }

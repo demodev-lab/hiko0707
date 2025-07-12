@@ -17,12 +17,12 @@ export default function RegisterPage() {
 
   useEffect(() => {
     if (isAuthenticated) {
-      router.push('/dashboard')
+      router.push('/hotdeals')
     }
   }, [isAuthenticated, router])
 
   const handleSuccess = () => {
-    router.push('/dashboard')
+    router.push('/hotdeals')
   }
 
   return (

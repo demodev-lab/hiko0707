@@ -1,18 +1,19 @@
-'use client'
-
-import { useState } from 'react'
-import { Search, ChevronDown, ShoppingBag, Truck, CreditCard, Globe, User, MessageCircle } from 'lucide-react'
-import { Input } from '@/components/ui/input'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from '@/components/ui/accordion'
-import { Badge } from '@/components/ui/badge'
+import { ShoppingBag, Truck, CreditCard, Globe, User, MessageCircle, Mail } from 'lucide-react'
+import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
+import { FAQClient } from './faq-client'
+import { FAQJsonLd } from '@/components/seo/json-ld'
+
+// ISR 설정 - 24시간마다 재생성 (FAQ는 자주 변경되지 않음)
+export const revalidate = 86400 // 24 hours
+
+// 페이지 메타데이터
+export const metadata = {
+  title: '자주 묻는 질문 | HiKo',
+  description: 'HiKo 서비스 이용에 대한 자주 묻는 질문과 답변을 확인하세요. 서비스 이용, 핫딜, 구매대행, 배송, 결제 등 모든 궁금증을 해결해드립니다.',
+  keywords: 'FAQ, 자주 묻는 질문, 도움말, 고객지원, HiKo 가이드',
+}
 
 interface FAQItem {
   id: string
@@ -178,8 +179,6 @@ const faqData: FAQItem[] = [
   }
 ]
 
-const categories = ['전체', '서비스 이용', '핫딜 정보', '구매 대행', '배송', '결제', '계정', '기타']
-
 const categoryIcons: Record<string, React.ReactNode> = {
   '서비스 이용': <Globe className="w-5 h-5" />,
   '핫딜 정보': <ShoppingBag className="w-5 h-5" />,
@@ -191,124 +190,36 @@ const categoryIcons: Record<string, React.ReactNode> = {
 }
 
 export default function FAQPage() {
-  const [searchQuery, setSearchQuery] = useState('')
-  const [selectedCategory, setSelectedCategory] = useState('전체')
-  
-  const filteredFAQs = faqData.filter(faq => {
-    const matchesSearch = searchQuery === '' || 
-      faq.question.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      faq.answer.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      faq.tags?.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()))
-    
-    const matchesCategory = selectedCategory === '전체' || faq.category === selectedCategory
-    
-    return matchesSearch && matchesCategory
-  })
-  
-  const groupedFAQs = filteredFAQs.reduce((acc, faq) => {
-    if (!acc[faq.category]) {
-      acc[faq.category] = []
-    }
-    acc[faq.category].push(faq)
-    return acc
-  }, {} as Record<string, FAQItem[]>)
-  
+  // 카테고리별 FAQ 개수 계산
+  const categories = Object.entries(
+    faqData.reduce((acc, faq) => {
+      acc[faq.category] = (acc[faq.category] || 0) + 1
+      return acc
+    }, {} as Record<string, number>)
+  ).map(([name, count]) => ({
+    name,
+    icon: categoryIcons[name],
+    count
+  }))
+
   return (
     <div className="container mx-auto py-8 px-4 max-w-4xl">
+      {/* 구조화된 데이터 */}
+      <FAQJsonLd
+        faqs={faqData.map(faq => ({
+          question: faq.question,
+          answer: faq.answer
+        }))}
+      />
+      
       {/* 헤더 */}
       <div className="text-center mb-8">
         <h1 className="text-3xl font-bold mb-4">자주 묻는 질문</h1>
         <p className="text-gray-600">HiKo 서비스 이용에 대한 궁금증을 해결해드립니다</p>
       </div>
       
-      {/* 검색바 */}
-      <div className="relative mb-8">
-        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-        <Input
-          type="text"
-          placeholder="질문을 검색해보세요..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className="pl-10 pr-4 h-12"
-        />
-      </div>
-      
-      {/* 카테고리 필터 */}
-      <div className="flex flex-wrap gap-2 mb-8">
-        {categories.map(category => (
-          <Button
-            key={category}
-            variant={selectedCategory === category ? 'default' : 'outline'}
-            size="sm"
-            onClick={() => setSelectedCategory(category)}
-            className="flex items-center gap-2"
-          >
-            {category !== '전체' && categoryIcons[category]}
-            {category}
-            {category === '전체' && (
-              <Badge variant="secondary" className="ml-1">
-                {faqData.length}
-              </Badge>
-            )}
-          </Button>
-        ))}
-      </div>
-      
-      {/* FAQ 목록 */}
-      {filteredFAQs.length === 0 ? (
-        <Card>
-          <CardContent className="flex flex-col items-center justify-center py-12">
-            <MessageCircle className="w-12 h-12 text-gray-300 mb-4" />
-            <p className="text-gray-500 mb-4">검색 결과가 없습니다</p>
-            <Button variant="outline" onClick={() => {
-              setSearchQuery('')
-              setSelectedCategory('전체')
-            }}>
-              전체 FAQ 보기
-            </Button>
-          </CardContent>
-        </Card>
-      ) : (
-        <div className="space-y-6">
-          {Object.entries(groupedFAQs).map(([category, faqs]) => (
-            <Card key={category}>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  {categoryIcons[category]}
-                  {category}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <Accordion type="single" collapsible className="w-full">
-                  {faqs.map((faq) => (
-                    <AccordionItem key={faq.id} value={faq.id}>
-                      <AccordionTrigger className="text-left hover:no-underline">
-                        <div className="flex-1 pr-4">
-                          <p className="font-medium">{faq.question}</p>
-                          {faq.tags && (
-                            <div className="flex gap-1 mt-1">
-                              {faq.tags.map(tag => (
-                                <Badge key={tag} variant="secondary" className="text-xs">
-                                  {tag}
-                                </Badge>
-                              ))}
-                            </div>
-                          )}
-                        </div>
-                      </AccordionTrigger>
-                      <AccordionContent>
-                        <div className="text-gray-600 whitespace-pre-line">
-                          {faq.answer}
-                        </div>
-                      </AccordionContent>
-                    </AccordionItem>
-                  ))}
-                </Accordion>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      )}
+      {/* 클라이언트 컴포넌트 */}
+      <FAQClient faqData={faqData} categories={categories} />
       
       {/* 추가 도움말 */}
       <Card className="mt-12 bg-blue-50 border-blue-200">
@@ -330,25 +241,5 @@ export default function FAQPage() {
         </CardContent>
       </Card>
     </div>
-  )
-}
-
-function Mail(props: React.SVGProps<SVGSVGElement>) {
-  return (
-    <svg
-      {...props}
-      xmlns="http://www.w3.org/2000/svg"
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <rect width="20" height="16" x="2" y="4" rx="2" />
-      <path d="m22 7-10 5L2 7" />
-    </svg>
   )
 }

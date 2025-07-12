@@ -26,13 +26,15 @@ import {
   MessageSquare, 
   CreditCard,
   Package,
-  Info
+  Info,
+  Calculator
 } from 'lucide-react'
 import { useAuth } from '@/hooks/use-auth'
 import { useBuyForMe } from '@/hooks/use-buy-for-me'
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
+import { CurrencyCalculatorModal } from '@/components/features/currency-calculator-modal'
 
 const buyForMeSchema = z.object({
   productOptions: z.string().optional(),
@@ -73,6 +75,7 @@ export function BuyForMeModal({ open, onOpenChange, hotdeal }: BuyForMeModalProp
   const { currentUser } = useAuth()
   const { createRequest, isCreating } = useBuyForMe()
   const router = useRouter()
+  const [currencyModalOpen, setCurrencyModalOpen] = useState(false)
 
   const form = useForm<BuyForMeFormData>({
     resolver: zodResolver(buyForMeSchema),
@@ -199,6 +202,16 @@ export function BuyForMeModal({ open, onOpenChange, hotdeal }: BuyForMeModalProp
                       </>
                     )}
                   </div>
+                  <Button
+                    type="button"
+                    onClick={() => setCurrencyModalOpen(true)}
+                    variant="outline"
+                    size="sm"
+                    className="text-xs gap-1 mt-2"
+                  >
+                    <Calculator className="w-3 h-3" />
+                    환율 계산기
+                  </Button>
                   {hotdeal.seller && (
                     <p className="text-xs text-gray-500">{hotdeal.seller}</p>
                   )}
@@ -377,6 +390,12 @@ export function BuyForMeModal({ open, onOpenChange, hotdeal }: BuyForMeModalProp
           </div>
         </form>
       </DialogContent>
+      
+      {/* 환율 계산기 모달 */}
+      <CurrencyCalculatorModal 
+        open={currencyModalOpen} 
+        onOpenChange={setCurrencyModalOpen} 
+      />
     </Dialog>
   )
 }

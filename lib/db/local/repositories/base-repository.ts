@@ -1,15 +1,10 @@
-import { LocalStorage } from '../../storage'
+import { storage } from '@/lib/db/storage'
 
 export abstract class BaseRepository<T extends { id: string }> {
-  protected storage = LocalStorage.getInstance()
   protected abstract tableName: string
 
-  protected generateId(): string {
-    return `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
-  }
-
   async findAll(): Promise<T[]> {
-    const data = this.storage.get<T[]>(this.tableName)
+    const data = storage.get(this.tableName)
     return data || []
   }
 
@@ -18,16 +13,24 @@ export abstract class BaseRepository<T extends { id: string }> {
     return items.find(item => item.id === id) || null
   }
 
+  async findOne(predicate: (item: T) => boolean): Promise<T | null> {
+    const items = await this.findAll()
+    return items.find(predicate) || null
+  }
+
+  async findMany(predicate: (item: T) => boolean): Promise<T[]> {
+    const items = await this.findAll()
+    return items.filter(predicate)
+  }
+
   async create(data: Omit<T, 'id'>): Promise<T> {
     const items = await this.findAll()
-    const newItem = { 
-      ...data, 
-      id: this.generateId(),
-      createdAt: new Date(),
-      updatedAt: new Date()
-    } as unknown as T
-    items.push(newItem)
-    this.storage.set(this.tableName, items)
+    const newItem = {
+      ...data,
+      id: this.generateId()
+    } as T
+
+    storage.set(this.tableName, [...items, newItem])
     return newItem
   }
 
@@ -36,27 +39,38 @@ export abstract class BaseRepository<T extends { id: string }> {
     const index = items.findIndex(item => item.id === id)
     
     if (index === -1) return null
-    
-    items[index] = { 
-      ...items[index], 
+
+    const updatedItem = {
+      ...items[index],
       ...data,
-      updatedAt: new Date()
+      id // Ensure ID is not overwritten
     }
-    this.storage.set(this.tableName, items)
-    return items[index]
+
+    const newItems = [...items]
+    newItems[index] = updatedItem
+    storage.set(this.tableName, newItems)
+    
+    return updatedItem
   }
 
   async delete(id: string): Promise<boolean> {
     const items = await this.findAll()
     const filteredItems = items.filter(item => item.id !== id)
     
-    if (filteredItems.length === items.length) return false
+    if (items.length === filteredItems.length) return false
     
-    this.storage.set(this.tableName, filteredItems)
+    storage.set(this.tableName, filteredItems)
     return true
   }
 
-  async deleteAll(): Promise<void> {
-    this.storage.remove(this.tableName)
+  async deleteAll(): Promise<number> {
+    const items = await this.findAll()
+    const count = items.length
+    storage.set(this.tableName, [])
+    return count
+  }
+
+  protected generateId(): string {
+    return `${this.tableName}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
   }
 }

@@ -22,28 +22,65 @@ pnpm test [filename]  # Run tests for a specific file
 
 ### Project-Specific Commands
 ```bash
-# Initialize mock data
-# The app automatically initializes mock data on first load via lib/db/mock-data.ts
+# Image Management
+pnpm scrape-images           # Scrape product images from external sources
+pnpm scrape-images:fast      # Quick scrape (5 images only)
+pnpm map-local-images        # Map local images to products
+pnpm generate-product-images # Generate placeholder product images
+pnpm verify-images           # Verify all image links are valid
 
-# Clear local storage data (run in browser console)
-localStorage.clear()
+# Data Management
+pnpm clear-auth              # Clear authentication data
+pnpm crawl                   # Run hotdeal crawler
+pnpm crawl:ppomppu           # Crawl only Ppomppu
+pnpm crawl:all               # Crawl all sources
+pnpm reset-hotdeals          # Reset hotdeal data
+pnpm import-hotdeals         # Import crawled hotdeal data
+
+# Browser Management Tools
+# Visit /admin/hotdeal-manager for integrated hotdeal management
+# Visit /clear-storage.html or /reset-data.html in browser for data management
+
+# Demo admin account
+# Email: admin@hiko.kr
+# Password: admin123
 ```
 
 ## Architecture Overview
 
 ### Project Structure
-This is a Next.js 15 application using App Router with a custom local storage database implementation. The project is transitioning to become HiKo - a shopping assistant platform for foreigners in Korea.
+This is a Next.js 15 application using App Router with a custom local storage database implementation. The project is HiKo (하이코) - a shopping assistant platform for foreigners in Korea.
+
+```
+├── app/                    # Next.js App Router pages (routing only)
+├── components/            
+│   ├── ui/                # shadcn/ui components
+│   ├── features/          # Domain-specific components
+│   ├── layout/            # Layout components
+│   └── common/            # Shared components
+├── actions/               # Server Actions (preferred over API routes)
+├── hooks/                 # Custom React hooks
+├── lib/                   
+│   ├── db/                # Local storage database layer
+│   ├── i18n/              # Internationalization (7 languages)
+│   ├── services/          # Business logic services
+│   └── validations.ts     # Zod schemas
+├── states/                # Jotai atoms for global state
+├── types/                 # TypeScript type definitions
+└── docs/                  # Project documentation
+```
 
 ### Database Layer
 The application uses a custom local storage database with a Repository pattern:
 - **BaseRepository** (`lib/db/local/repositories/base-repository.ts`): Abstract base class providing CRUD operations
-- **Entity Repositories**: Extend BaseRepository for User, Post, Comment entities
+- **Entity Repositories**: Extend BaseRepository for User, Post, Comment, HotDeal, Order, Payment entities
 - **Database Service** (`lib/db/database-service.ts`): Singleton that exports repository instances
 - **Storage Layer** (`lib/db/storage.ts`): LocalStorage wrapper with JSON serialization
+- **Auto-initialization**: Mock data automatically initializes on first load via `initializeMockData()`
 
 ### State Management Architecture
-- **Global State**: Jotai atoms in `states/` directory
-- **Server State**: TanStack Query for async data fetching
+- **Global State**: Jotai atoms in `states/` directory (auth, UI state)
+- **Server State**: TanStack Query for async data fetching (5-minute stale time)
 - **Local State**: React hooks in `hooks/` directory
 - **Providers**: Centralized in `components/common/providers.tsx`
 
@@ -61,40 +98,41 @@ The application uses a custom local storage database with a Repository pattern:
 
 ## HiKo Project Context
 
-The project is being transformed into HiKo, a platform helping foreigners shop online in Korea:
+HiKo is a platform helping foreigners shop online in Korea:
 
-### Core Features (from PRD)
-1. **Hot Deal Crawling**: Real-time crawling from 6 Korean communities
-2. **Multi-language Support**: Translation to 7 languages
-3. **Order Service**: "Buy for me" service for complex Korean shopping sites
-
-### Development Phases
-- **Phase 1 (Week 1-4)**: Crawling system + basic UI
-- **Phase 2 (Week 5-8)**: Translation + order forms
-- **Phase 3 (Week 9-12)**: Payment integration + deployment
+### Core Features
+1. **Hot Deal Crawling**: Real-time crawling from 6 Korean communities (Ppomppu, Ruliweb, Clien, Quasarzone, Coolenjoy, Itcm)
+2. **Multi-language Support**: Translation to 7 languages (EN, ZH, VI, MN, TH, JA, RU) with caching
+3. **Order Service**: "Buy for me" service with 8% commission for complex Korean shopping sites
+4. **User System**: Role-based access (guest, member, admin)
+5. **Payment Integration**: Support for multiple payment methods
 
 ### Key Technical Decisions
-- Server Components for SEO-critical pages (hot deals list, detail pages)
-- Client Components for interactive features (filters, language selector, order forms)
-- Local storage DB for rapid prototyping, with planned Supabase migration
-- Repository pattern to ease future database transitions
+- **No API Routes**: Use Server Actions in `actions/` directory instead
+- **Local Storage DB**: With prepared migration path to Supabase
+- **Repository Pattern**: Enables easy database transition
+- **Server Components**: For SEO-critical pages (hot deals list, detail pages)
+- **Image Optimization**: Next.js Image with external domain support and 7-day caching
 
 ## Development Guidelines
 
 ### File Naming Conventions
-- Components: PascalCase (`HotDealCard.tsx`)
-- Files: kebab-case (`hotdeal-card.tsx`)
+- ALL files use kebab-case (`hotdeal-card.tsx`, NOT `HotDealCard.tsx`)
+- Components have PascalCase names but kebab-case filenames
 - Routes: kebab-case folders under `app/`
 
 ### TypeScript Configuration
-- Strict mode enabled
+- Strict mode enabled (no `any` types allowed)
 - Path alias: `@/*` maps to project root
 - Target: ES2017
 
 ### Testing Strategy
-- Vitest for unit tests
+- Vitest for unit tests with jsdom environment
 - Testing Library for component tests
-- Test files alongside source files or in `tests/` directory
+- Custom test utils in `tests/utils/test-utils.tsx`
+- LocalStorage cleared between tests
+- Window APIs mocked (matchMedia, IntersectionObserver)
+- Run specific tests with: `pnpm test [filename]`
 
 ### Local Storage Database Usage
 ```typescript
@@ -111,27 +149,50 @@ const { posts, loading, createPost } = usePosts()
 ```typescript
 // Use Zod schemas in lib/validations.ts
 // Use React Hook Form with zodResolver
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { postSchema } from '@/lib/validations'
 ```
 
-## Current Implementation Status
+### Internationalization Pattern
+```typescript
+// Always use translation system, no hardcoded text
+import { useTranslation } from '@/hooks/use-translation'
+const { t } = useTranslation()
+// Use: t('key.path')
+// Fallback to English for missing translations
+```
 
-### Implemented
-- Basic CRUD for Users, Posts, Comments
-- Authentication hook structure
-- Dashboard layout
-- Local storage database layer
-- Mock data initialization
-
-### Pending (for HiKo transformation)
-- Hot deal crawling system
-- Translation integration
-- Order management system
-- Payment integration
-- Multi-language UI
+### Order Flow Implementation
+```typescript
+// Order statuses: pending → processing → shipped → delivered → cancelled
+// 8% commission automatically calculated
+// Use buy-for-me-modal.tsx for order creation
+```
 
 ## Performance Considerations
 
 - Server Components are used by default for better performance
-- Images should use Next.js Image component
+- Images should use Next.js Image component with proper dimensions
 - Local storage operations are synchronous - consider pagination for large datasets
 - TanStack Query configured with 5-minute stale time
+- Implement loading states for all async operations
+- Use Suspense boundaries for better UX
+- Image domains whitelisted in next.config.js for optimization
+
+## Important Notes
+
+1. **shadcn/ui**: Always check if component exists before creating new ones
+2. **Icons**: Use lucide-react for all icons
+3. **Styling**: Tailwind CSS only, no CSS modules or styled-components
+4. **Forms**: Always validate with Zod schemas
+5. **Authentication**: Check user role/auth state before protected operations
+6. **Translations**: All user-facing text must use i18n system
+7. **Mock Data**: Automatically initializes on first load - check localStorage before testing
+8. **Image Management**: Use provided pnpm scripts for image operations
+
+# important-instruction-reminders
+Do what has been asked; nothing more, nothing less.
+NEVER create files unless they're absolutely necessary for achieving your goal.
+ALWAYS prefer editing an existing file to creating a new one.
+NEVER proactively create documentation files (*.md) or README files. Only create documentation files if explicitly requested by the User.

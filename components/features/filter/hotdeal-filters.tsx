@@ -21,32 +21,39 @@ import { Input } from '@/components/ui/input'
 import { Separator } from '@/components/ui/separator'
 import { Badge } from '@/components/ui/badge'
 import { useLanguage } from '@/lib/i18n/context'
+import { useViewport } from '@/hooks/use-viewport'
 
 interface FilterState {
   categories: string[]
   priceMin: string
   priceMax: string
-  sources: string[]
+  communitySources: string[]
+  shoppingSources: string[]
   sortBy: string
   freeShipping: boolean
-  discountOnly: boolean
   todayOnly: boolean
 }
 
 const CATEGORIES = [
-  { id: 'fashion', name: '패션/의류', icon: '👕' },
-  { id: 'electronics', name: '전자제품', icon: '📱' },
-  { id: 'food', name: '식품', icon: '🍕' },
-  { id: 'beauty', name: '화장품/뷰티', icon: '💄' },
-  { id: 'home', name: '생활용품', icon: '🏠' },
-  { id: 'sports', name: '스포츠/레저', icon: '⚽' },
-  { id: 'books', name: '도서/문구', icon: '📚' },
-  { id: 'furniture', name: '가구/인테리어', icon: '🛋️' },
-  { id: 'kids', name: '유아/키즈', icon: '👶' },
+  { id: 'electronics', name: '전자/IT', icon: '📱' },
+  { id: 'food', name: '식품/영양', icon: '🍕' },
+  { id: 'beauty', name: '뷰티/패션', icon: '💄' },
+  { id: 'home', name: '생활/가전', icon: '🏠' },
+  { id: 'event', name: '이벤트/상품권', icon: '🎁' },
+  { id: 'game', name: '게임/앱', icon: '🎮' },
   { id: 'other', name: '기타', icon: '📦' }
 ]
 
-const SOURCES = [
+const COMMUNITY_SOURCES = [
+  { id: 'ppomppu', name: '뽐뿌' },
+  { id: 'ruliweb', name: '루리웹' },
+  { id: 'clien', name: '클리앙' },
+  { id: 'quasarzone', name: '퀘이사존' },
+  { id: 'coolenjoy', name: '쿨앤조이' },
+  { id: 'algumon', name: '알구몬' }
+]
+
+const SHOPPING_SOURCES = [
   '쿠팡',
   'G마켓',
   '11번가',
@@ -59,10 +66,9 @@ const SOURCES = [
 
 const SORT_OPTIONS = [
   { value: 'latest', label: '최신순' },
+  { value: 'popular', label: '인기순' },
   { value: 'price_low', label: '낮은 가격순' },
-  { value: 'price_high', label: '높은 가격순' },
-  { value: 'discount', label: '할인율순' },
-  { value: 'popular', label: '인기순' }
+  { value: 'price_high', label: '높은 가격순' }
 ]
 
 interface HotDealFiltersProps {
@@ -75,12 +81,14 @@ export function HotDealFilters({ onFilterChange, showMobileToggle = true }: HotD
   const router = useRouter()
   const pathname = usePathname()
   const searchParams = useSearchParams()
+  const { isMobile } = useViewport()
   
   const [isOpen, setIsOpen] = useState(false)
   const [expandedSections, setExpandedSections] = useState({
     category: true,
     price: true,
-    source: false,
+    communitySource: false,
+    shoppingSource: false,
     options: false
   })
 
@@ -89,20 +97,20 @@ export function HotDealFilters({ onFilterChange, showMobileToggle = true }: HotD
     categories: searchParams.get('categories')?.split(',').filter(Boolean) || [],
     priceMin: searchParams.get('priceMin') || '',
     priceMax: searchParams.get('priceMax') || '',
-    sources: searchParams.get('sources')?.split(',').filter(Boolean) || [],
+    communitySources: searchParams.get('communitySources')?.split(',').filter(Boolean) || [],
+    shoppingSources: searchParams.get('shoppingSources')?.split(',').filter(Boolean) || [],
     sortBy: searchParams.get('sort') || 'latest',
     freeShipping: searchParams.get('freeShipping') === 'true',
-    discountOnly: searchParams.get('discountOnly') === 'true',
     todayOnly: searchParams.get('todayOnly') === 'true'
   })
 
   const activeFilterCount = 
     filters.categories.length + 
-    filters.sources.length +
+    filters.communitySources.length +
+    filters.shoppingSources.length +
     (filters.priceMin ? 1 : 0) +
     (filters.priceMax ? 1 : 0) +
     (filters.freeShipping ? 1 : 0) +
-    (filters.discountOnly ? 1 : 0) +
     (filters.todayOnly ? 1 : 0)
 
   const toggleSection = (section: keyof typeof expandedSections) => {
@@ -125,17 +133,17 @@ export function HotDealFilters({ onFilterChange, showMobileToggle = true }: HotD
       if (updatedFilters.priceMax) {
         params.set('priceMax', updatedFilters.priceMax)
       }
-      if (updatedFilters.sources.length > 0) {
-        params.set('sources', updatedFilters.sources.join(','))
+      if (updatedFilters.communitySources.length > 0) {
+        params.set('communitySources', updatedFilters.communitySources.join(','))
+      }
+      if (updatedFilters.shoppingSources.length > 0) {
+        params.set('shoppingSources', updatedFilters.shoppingSources.join(','))
       }
       if (updatedFilters.sortBy !== 'latest') {
         params.set('sort', updatedFilters.sortBy)
       }
       if (updatedFilters.freeShipping) {
         params.set('freeShipping', 'true')
-      }
-      if (updatedFilters.discountOnly) {
-        params.set('discountOnly', 'true')
       }
       if (updatedFilters.todayOnly) {
         params.set('todayOnly', 'true')
@@ -155,11 +163,18 @@ export function HotDealFilters({ onFilterChange, showMobileToggle = true }: HotD
     updateFilters({ categories: newCategories })
   }
 
-  const handleSourceToggle = (source: string) => {
-    const newSources = filters.sources.includes(source)
-      ? filters.sources.filter(s => s !== source)
-      : [...filters.sources, source]
-    updateFilters({ sources: newSources })
+  const handleCommunitySourceToggle = (source: string) => {
+    const newSources = filters.communitySources.includes(source)
+      ? filters.communitySources.filter(s => s !== source)
+      : [...filters.communitySources, source]
+    updateFilters({ communitySources: newSources })
+  }
+
+  const handleShoppingSourceToggle = (source: string) => {
+    const newSources = filters.shoppingSources.includes(source)
+      ? filters.shoppingSources.filter(s => s !== source)
+      : [...filters.shoppingSources, source]
+    updateFilters({ shoppingSources: newSources })
   }
 
   const clearAllFilters = useCallback(() => {
@@ -167,10 +182,10 @@ export function HotDealFilters({ onFilterChange, showMobileToggle = true }: HotD
       categories: [],
       priceMin: '',
       priceMax: '',
-      sources: [],
+      communitySources: [],
+      shoppingSources: [],
       sortBy: 'latest',
       freeShipping: false,
-      discountOnly: false,
       todayOnly: false
     }
     setFilters(clearedFilters)
@@ -320,33 +335,73 @@ export function HotDealFilters({ onFilterChange, showMobileToggle = true }: HotD
 
       <Separator />
 
-      {/* Sources */}
+      {/* Community Sources */}
       <div>
         <button
-          onClick={() => toggleSection('source')}
+          onClick={() => toggleSection('communitySource')}
           className="w-full flex items-center justify-between mb-3"
         >
           <Label className="text-sm font-medium flex items-center gap-2 cursor-pointer">
             <Store className="w-4 h-4" />
-            쇼핑몰
-            {filters.sources.length > 0 && (
+            커뮤니티
+            {filters.communitySources.length > 0 && (
               <Badge variant="secondary" className="ml-2">
-                {filters.sources.length}
+                {filters.communitySources.length}
               </Badge>
             )}
           </Label>
-          {expandedSections.source ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+          {expandedSections.communitySource ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
         </button>
         
-        {expandedSections.source && (
+        {expandedSections.communitySource && (
           <div className="space-y-2">
-            {SOURCES.map((source) => (
+            {COMMUNITY_SOURCES.map((source) => (
+              <div key={source.id} className="flex items-center space-x-2">
+                <input
+                  type="checkbox"
+                  id={source.id}
+                  checked={filters.communitySources.includes(source.id)}
+                  onChange={() => handleCommunitySourceToggle(source.id)}
+                  className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
+                />
+                <Label htmlFor={source.id} className="text-sm cursor-pointer">
+                  {source.name}
+                </Label>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      <Separator />
+
+      {/* Shopping Sources */}
+      <div>
+        <button
+          onClick={() => toggleSection('shoppingSource')}
+          className="w-full flex items-center justify-between mb-3"
+        >
+          <Label className="text-sm font-medium flex items-center gap-2 cursor-pointer">
+            <Package className="w-4 h-4" />
+            쇼핑몰
+            {filters.shoppingSources.length > 0 && (
+              <Badge variant="secondary" className="ml-2">
+                {filters.shoppingSources.length}
+              </Badge>
+            )}
+          </Label>
+          {expandedSections.shoppingSource ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+        </button>
+        
+        {expandedSections.shoppingSource && (
+          <div className="space-y-2">
+            {SHOPPING_SOURCES.map((source) => (
               <div key={source} className="flex items-center space-x-2">
                 <input
                   type="checkbox"
                   id={source}
-                  checked={filters.sources.includes(source)}
-                  onChange={() => handleSourceToggle(source)}
+                  checked={filters.shoppingSources.includes(source)}
+                  onChange={() => handleShoppingSourceToggle(source)}
                   className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
                 />
                 <Label htmlFor={source} className="text-sm cursor-pointer">
@@ -385,18 +440,6 @@ export function HotDealFilters({ onFilterChange, showMobileToggle = true }: HotD
               />
               <Label htmlFor="freeShipping" className="text-sm cursor-pointer">
                 무료배송
-              </Label>
-            </div>
-            <div className="flex items-center space-x-2">
-              <input
-                type="checkbox"
-                id="discountOnly"
-                checked={filters.discountOnly}
-                onChange={(e) => updateFilters({ discountOnly: e.target.checked })}
-                className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
-              />
-              <Label htmlFor="discountOnly" className="text-sm cursor-pointer">
-                할인 상품만
               </Label>
             </div>
             <div className="flex items-center space-x-2">
@@ -459,10 +502,10 @@ export function HotDealFilters({ onFilterChange, showMobileToggle = true }: HotD
     return (
       <>
         {/* Mobile Filter Button */}
-        <div className="lg:hidden">
+        <div className="lg:hidden mb-4">
           <Button 
             variant="outline" 
-            className="w-full mb-4"
+            className="w-full"
             onClick={() => setIsOpen(true)}
           >
             <Filter className="w-4 h-4 mr-2" />
@@ -475,25 +518,68 @@ export function HotDealFilters({ onFilterChange, showMobileToggle = true }: HotD
           </Button>
         </div>
 
-        {/* Mobile Modal */}
+        {/* Mobile Bottom Sheet */}
         {isOpen && (
-          <div className="lg:hidden fixed inset-0 z-50 bg-black/50 flex">
+          <div className="lg:hidden fixed inset-0 z-40 bg-black/50 flex items-end filter-modal-backdrop">
             <div 
               id="filter-modal"
-              className="bg-white dark:bg-gray-900 w-[300px] sm:w-[400px] h-full overflow-y-auto"
+              className="bg-white dark:bg-gray-900 w-full rounded-t-2xl shadow-xl animate-in slide-in-from-bottom duration-300 flex flex-col filter-modal-content mobile-bottom-sheet"
+              style={{
+                maxHeight: isMobile ? 'calc(100vh - 56px - env(safe-area-inset-bottom))' : 'calc(85vh)',
+                maxHeight: isMobile ? 'calc(100dvh - 56px - env(safe-area-inset-bottom))' : 'calc(85vh)',
+              }}
             >
-              <div className="sticky top-0 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 p-4 flex items-center justify-between">
-                <h2 className="text-lg font-semibold">필터</h2>
-                <Button 
-                  variant="ghost" 
-                  size="sm"
+              {/* 헤더 */}
+              <div className="sticky top-0 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 p-4 rounded-t-2xl">
+                <div className="w-12 h-1 bg-gray-300 dark:bg-gray-700 rounded-full mx-auto mb-3" />
+                <div className="flex items-center justify-between">
+                  <h2 className="text-lg font-semibold">필터</h2>
+                  <Button 
+                    variant="ghost" 
+                    size="sm"
+                    onClick={() => setIsOpen(false)}
+                  >
+                    <X className="w-5 h-5" />
+                  </Button>
+                </div>
+              </div>
+              
+              {/* 필터 컨텐츠 - 스크롤 영역 개선 */}
+              <div 
+                className="flex-1 overflow-y-auto px-4 py-4 min-h-0 overscroll-contain"
+                style={{
+                  WebkitOverflowScrolling: 'touch',
+                  maxHeight: isMobile ? 'calc(100vh - 200px - env(safe-area-inset-bottom))' : 'auto'
+                }}
+              >
+                <FilterContent />
+              </div>
+              
+              {/* 하단 버튼 - safe area 고려 */}
+              <div 
+                className="sticky bottom-0 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-800 p-4 flex gap-2 shrink-0"
+                style={{
+                  paddingBottom: isMobile ? `calc(1rem + env(safe-area-inset-bottom))` : '1rem',
+                  marginBottom: isMobile ? '56px' : '0' // 하단 네비 높이만큼 마진
+                }}
+              >
+                <Button
+                  variant="outline"
+                  className="flex-1"
+                  onClick={() => {
+                    clearAllFilters()
+                    setIsOpen(false)
+                  }}
+                >
+                  초기화
+                </Button>
+                <Button
+                  variant="default"
+                  className="flex-1"
                   onClick={() => setIsOpen(false)}
                 >
-                  <X className="w-5 h-5" />
+                  적용하기
                 </Button>
-              </div>
-              <div className="p-4">
-                <FilterContent />
               </div>
             </div>
           </div>

@@ -1,8 +1,10 @@
+export type UserRole = 'guest' | 'member' | 'admin'
+
 export interface User {
   id: string
   email: string
   name: string
-  role?: 'customer' | 'admin'
+  role?: UserRole
   avatar?: string
   phone?: string
   address?: string

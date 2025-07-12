@@ -1,6 +1,6 @@
 export class LocalStorage {
   private static instance: LocalStorage
-  private prefix = 'myapp_'
+  private prefix = 'hiko_'
 
   static getInstance(): LocalStorage {
     if (!LocalStorage.instance) {
@@ -49,3 +49,6 @@ export class LocalStorage {
     }
   }
 }
+
+// Export singleton instance
+export const storage = LocalStorage.getInstance()

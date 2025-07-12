@@ -15,10 +15,13 @@ export function useAuth() {
   const [isLoading, setIsLoading] = useAtom(isLoadingAuthAtom)
   const router = useRouter()
 
-  // 클라이언트 사이드에서 로컬 스토리지에서 사용자 정보 복원
+  // 클라이언트 사이드에서 로컬 스토리지에서 사용자 정보 복원 (선택적)
   useEffect(() => {
     if (typeof window !== 'undefined' && !currentUser) {
       const savedUser = localStorage.getItem('currentUser')
+      // 개발 중 자동 로그인 비활성화 - 사용자가 수동으로 로그인해야 함
+      // 자동 로그인을 원한다면 아래 주석을 해제하세요
+      /*
       if (savedUser) {
         try {
           const user = JSON.parse(savedUser)
@@ -26,6 +29,12 @@ export function useAuth() {
         } catch (error) {
           localStorage.removeItem('currentUser')
         }
+      }
+      */
+      
+      // 대신 저장된 사용자 정보만 정리
+      if (savedUser) {
+        console.log('저장된 사용자 정보가 있습니다. 수동 로그인이 필요합니다.')
       }
     }
   }, [currentUser, setCurrentUser])
@@ -58,7 +67,7 @@ export function useAuth() {
       // 일반 사용자 로그인 (데모용으로 비밀번호 체크 생략)
       if (user && user.email === email) {
         setCurrentUser(user)
-        router.push(ROUTES.DASHBOARD)
+        router.push(ROUTES.HOTDEALS)  // 핫딜 페이지로 이동
         return user
       } else {
         throw new Error('비밀번호가 일치하지 않습니다')
@@ -88,7 +97,7 @@ export function useAuth() {
         updatedAt: new Date(),
       })
       setCurrentUser(newUser)
-      router.push(ROUTES.DASHBOARD)
+      router.push(ROUTES.HOTDEALS)  // 핫딜 페이지로 이동
       return newUser
     } catch (error) {
       console.error('Registration failed:', error)

@@ -1,11 +1,17 @@
 'use client'
 
-import { MessageCircle } from 'lucide-react'
+import { useState, useEffect, useRef } from 'react'
+import { MessageCircle, Loader2 } from 'lucide-react'
 import { useHotDealComments } from '@/hooks/use-hotdeal-comments'
 import { CommentForm } from './comment-form'
 import { CommentItem } from './comment-item'
+import { CommentNotification } from './comment-notification'
+import { CommentListSkeleton } from './comment-skeleton'
 import { Card, CardContent } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
+import { Badge } from '@/components/ui/badge'
+import { cn } from '@/lib/utils'
+import { HotDealComment } from '@/lib/db/local/repositories/hotdeal-comment-repository'
 
 interface CommentSectionProps {
   hotdealId: string
@@ -13,38 +19,73 @@ interface CommentSectionProps {
 }
 
 export function CommentSection({ hotdealId, commentCount = 0 }: CommentSectionProps) {
-  const { data: comments = [], isLoading } = useHotDealComments(hotdealId)
+  const { data: comments = [], isLoading, isFetching } = useHotDealComments(hotdealId)
+  const previousCount = useRef(0)
+  const sectionRef = useRef<HTMLDivElement>(null)
+  
+  // 총 댓글 수 계산 (중첩 댓글 포함)
+  const getTotalCommentCount = (commentList: (HotDealComment & { replies?: HotDealComment[] })[]): number => {
+    return commentList.reduce((total, comment) => {
+      return total + 1 + (comment.replies ? getTotalCommentCount(comment.replies) : 0)
+    }, 0)
+  }
+  
+  const totalComments = getTotalCommentCount(comments)
+  
+  // 이전 댓글 수 추적
+  useEffect(() => {
+    if (totalComments > 0 && previousCount.current === 0) {
+      previousCount.current = totalComments
+    }
+  }, [totalComments])
+  
+  // 댓글 정렬 (최신순으로만)
+  const processComments = (commentList: (HotDealComment & { replies?: HotDealComment[] })[]): (HotDealComment & { replies?: HotDealComment[] })[] => {
+    let sorted = [...commentList]
+    
+    // 최신순 정렬
+    sorted.sort((a, b) => {
+      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+    })
+    
+    // 중첩 댓글도 정렬
+    return sorted.map(comment => ({
+      ...comment,
+      replies: comment.replies ? processComments(comment.replies) : undefined
+    }))
+  }
+  
+  const processedComments = processComments(comments)
+  
+  const handleNewCommentClick = () => {
+    sectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    previousCount.current = totalComments
+  }
   
   if (isLoading) {
-    return (
-      <div className="space-y-4">
-        <h2 className="text-xl font-bold mb-6 flex items-center gap-2">
-          <MessageCircle className="w-5 h-5" />
-          댓글
-        </h2>
-        {Array.from({ length: 3 }).map((_, i) => (
-          <Card key={i}>
-            <CardContent className="p-4">
-              <div className="flex gap-3">
-                <Skeleton className="w-8 h-8 rounded-full" />
-                <div className="flex-1 space-y-2">
-                  <Skeleton className="h-4 w-32" />
-                  <Skeleton className="h-16 w-full" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-    )
+    return <CommentListSkeleton count={3} />
   }
   
   return (
-    <div className="space-y-6">
-      <h2 className="text-xl font-bold flex items-center gap-2">
-        <MessageCircle className="w-5 h-5" />
-        댓글 {comments.length > 0 ? comments.length : commentCount}개
-      </h2>
+    <div className="space-y-6" ref={sectionRef}>
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <h2 className="text-xl font-bold flex items-center gap-2">
+            <MessageCircle className="w-5 h-5" />
+            댓글 
+            <Badge variant="secondary" className="ml-1">
+              {totalComments > 0 ? totalComments : commentCount}
+            </Badge>
+          </h2>
+          {isFetching && !isLoading && (
+            <div className="flex items-center gap-2 text-sm text-gray-500">
+              <Loader2 className="w-3 h-3 animate-spin" />
+              <span>새로고침 중...</span>
+            </div>
+          )}
+        </div>
+        
+      </div>
       
       {/* 댓글 작성 폼 */}
       <Card>
@@ -54,7 +95,7 @@ export function CommentSection({ hotdealId, commentCount = 0 }: CommentSectionPr
       </Card>
       
       {/* 댓글 목록 */}
-      {comments.length === 0 ? (
+      {processedComments.length === 0 ? (
         <Card>
           <CardContent className="flex flex-col items-center justify-center py-12 text-gray-500">
             <MessageCircle className="w-12 h-12 mb-4 text-gray-300" />
@@ -63,8 +104,11 @@ export function CommentSection({ hotdealId, commentCount = 0 }: CommentSectionPr
         </Card>
       ) : (
         <div className="space-y-4">
-          {comments.map(comment => (
-            <Card key={comment.id}>
+          {processedComments.map(comment => (
+            <Card 
+              key={comment.id}
+              className="transition-all duration-200 hover:shadow-md"
+            >
               <CardContent className="p-4">
                 <CommentItem
                   comment={comment}
@@ -75,6 +119,13 @@ export function CommentSection({ hotdealId, commentCount = 0 }: CommentSectionPr
           ))}
         </div>
       )}
+      
+      {/* 새 댓글 알림 */}
+      <CommentNotification
+        currentCount={totalComments}
+        previousCount={previousCount.current}
+        onNewComment={handleNewCommentClick}
+      />
     </div>
   )
 }

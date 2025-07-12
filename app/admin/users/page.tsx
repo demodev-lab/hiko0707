@@ -18,8 +18,8 @@ export default async function AdminUsersPage() {
     switch (role) {
       case 'admin':
         return <Badge className="bg-red-600">관리자</Badge>
-      case 'customer':
-        return <Badge variant="secondary">고객</Badge>
+      case 'member':
+        return <Badge variant="secondary">회원</Badge>
       default:
         return <Badge variant="outline">{role}</Badge>
     }
@@ -43,7 +43,7 @@ export default async function AdminUsersPage() {
       return daysSinceUpdate < 7
     }).length,
     admins: users.filter(u => u.role === 'admin').length,
-    customers: users.filter(u => u.role === 'customer').length
+    members: users.filter(u => u.role === 'member').length
   }
 
   return (
@@ -102,7 +102,7 @@ export default async function AdminUsersPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-gray-600">고객</p>
-                  <p className="text-2xl font-bold">{stats.customers}</p>
+                  <p className="text-2xl font-bold">{stats.members}</p>
                 </div>
                 <Users className="w-8 h-8 text-purple-600" />
               </div>

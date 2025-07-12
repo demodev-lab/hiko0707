@@ -7,7 +7,9 @@ import {
   LayoutDashboard,
   TrendingUp,
   LogOut,
-  ShoppingBag
+  ShoppingBag,
+  Globe,
+  Database
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 
@@ -23,9 +25,9 @@ const navigation = [
     icon: ShoppingBag
   },
   {
-    name: '핫딜 관리',
-    href: '/admin/hotdeals',
-    icon: TrendingUp
+    name: '핫딜 통합 관리',
+    href: '/admin/hotdeal-manager',
+    icon: Database
   }
 ]
 

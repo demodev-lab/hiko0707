@@ -21,6 +21,7 @@ import { useAuth } from '@/hooks/use-auth'
 import { useRouter } from 'next/navigation'
 import { notificationService } from '@/lib/notifications/notification-service'
 import { UrlParser, ParsedProduct } from './url-parser'
+import { FeeCalculator } from './fee-calculator'
 
 const orderFormSchema = z.object({
   items: z.array(z.object({
@@ -368,23 +369,11 @@ export function OrderForm({ initialData, hotdealId, onSuccess }: OrderFormProps)
       </Card>
 
       {/* 비용 정보 */}
-      <Card>
-        <CardHeader className="flex flex-row items-center gap-2">
-          <CreditCard className="w-5 h-5" />
-          <CardTitle>예상 비용</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <Alert>
-            <Info className="h-4 w-4" />
-            <AlertTitle>예상 비용 안내</AlertTitle>
-            <AlertDescription className="space-y-1 text-sm">
-              <p>• 실제 구매 시 상품 옵션, 배송비 등에 따라 최종 금액이 달라질 수 있습니다</p>
-              <p>• 정확한 견적은 관리자가 실제 쇼핑몰에서 확인 후 보내드립니다</p>
-              <p>• 서비스 수수료는 최종 상품 금액의 10%입니다</p>
-            </AlertDescription>
-          </Alert>
-        </CardContent>
-      </Card>
+      <FeeCalculator 
+        amount={subtotal}
+        showDetailBreakdown={true}
+        variant="default"
+      />
 
       <div className="flex gap-4">
         <Button

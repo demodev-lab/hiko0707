@@ -15,6 +15,22 @@ import {
 } from 'lucide-react'
 import { HotDealsSection } from '@/components/features/home/hotdeals-section'
 
+// ISR 설정 - 1시간마다 재생성
+export const revalidate = 3600 // 1 hour
+
+// 페이지 메타데이터
+export const metadata = {
+  title: 'HiKo - 한국 쇼핑 도우미 | Korean Shopping Assistant',
+  description: '외국인을 위한 한국 쇼핑 플랫폼. 7개 언어 지원, 대리구매, 실시간 핫딜 정보 제공. The best Korean shopping platform for foreigners.',
+  keywords: '한국 쇼핑, Korean shopping, 대리구매, proxy buying, 핫딜, hot deals, K-beauty, K-fashion',
+  openGraph: {
+    title: 'HiKo - 한국 쇼핑 도우미',
+    description: '외국인을 위한 똑똑한 한국 쇼핑 도우미',
+    type: 'website',
+    images: ['/og-image.png'],
+  },
+}
+
 export default function Home() {
   const features = [
     {
@@ -79,16 +95,16 @@ export default function Home() {
           </div>
           
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
-            <Button asChild size="lg" className="text-lg px-8">
+            <Button asChild size="lg" className="bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:from-blue-700 hover:to-purple-700 shadow-lg hover:shadow-xl transition-all duration-200 text-lg px-8">
+              <Link href="/register">
+                <Heart className="w-5 h-5 mr-2" />
+                지금 시작하기
+              </Link>
+            </Button>
+            <Button asChild variant="outline" size="lg" className="border-2 border-gray-300 hover:border-blue-600 hover:bg-blue-50 transition-all duration-200 text-lg px-8">
               <Link href="/hotdeals">
                 <TrendingUp className="w-5 h-5 mr-2" />
                 핫딜 보러가기
-              </Link>
-            </Button>
-            <Button asChild variant="outline" size="lg" className="text-lg px-8">
-              <Link href="/order">
-                <ShoppingBag className="w-5 h-5 mr-2" />
-                대리 구매
               </Link>
             </Button>
           </div>
@@ -119,6 +135,8 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+
 
       {/* 주요 기능 섹션 */}
       <section className="py-20 px-4 bg-gray-50">
@@ -233,7 +251,7 @@ export default function Home() {
                     ))}
                   </div>
                   <p className="text-gray-600 mb-4 italic">
-                    "{testimonial.comment}"
+                    &ldquo;{testimonial.comment}&rdquo;
                   </p>
                   <div className="flex items-center gap-2">
                     <div className="text-2xl">{testimonial.country}</div>
@@ -254,19 +272,22 @@ export default function Home() {
             회원가입하고 첫 주문 시 10% 할인 혜택을 받으세요
           </p>
           <div className="flex gap-4 justify-center flex-wrap">
-            <Link href="/register">
-              <Button size="lg" variant="secondary" className="gap-2">
-                무료 회원가입 <CheckCircle className="w-4 h-4" />
-              </Button>
-            </Link>
-            <Link href="/hotdeals">
-              <Button size="lg" variant="outline" className="text-white border-white hover:bg-white hover:text-blue-600 gap-2">
-                핫딜 둘러보기 <ArrowRight className="w-4 h-4" />
-              </Button>
-            </Link>
+            <Button asChild size="lg" className="bg-white text-blue-600 hover:bg-gray-100 shadow-2xl hover:shadow-xl hover:scale-105 transition-all duration-200 gap-2 px-10 py-6 text-lg font-semibold">
+              <Link href="/register">
+                <CheckCircle className="w-6 h-6" />
+                무료 회원가입
+              </Link>
+            </Button>
+            <Button asChild size="lg" variant="ghost" className="bg-transparent border-2 border-white/50 text-white hover:bg-white/10 hover:border-white transition-all duration-200 gap-2 px-10 py-6 text-lg">
+              <Link href="/hotdeals">
+                핫딜 둘러보기
+                <ArrowRight className="w-6 h-6" />
+              </Link>
+            </Button>
           </div>
         </div>
       </section>
+
 
       {/* 파트너 섹션 */}
       <section className="py-16 px-4 bg-gray-50">

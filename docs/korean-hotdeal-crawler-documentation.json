@@ -1,0 +1,330 @@
+{
+  "title": "한국 핫딜 크롤러 (Korean Hotdeal Crawler) 완전 가이드",
+  "version": "1.0.0",
+  "lastUpdated": "2025-07-12",
+  "overview": {
+    "description": "한국의 대표 핫딜 커뮤니티 사이트(뽐뿌)에서 실시간 핫딜 정보를 수집하는 Node.js 기반 크롤러입니다. Playwright를 사용하여 동적 웹페이지를 스크래핑하고, 구조화된 JSON 형식으로 데이터를 저장합니다.",
+    "mainFeatures": [
+      "뽐뿌 사이트 실시간 핫딜 크롤링",
+      "게시글 제목에서 가격, 쇼핑몰, 카테고리 자동 추출",
+      "게시글 본문 텍스트 및 이미지 수집",
+      "중복 게시글 필터링",
+      "통계 데이터 자동 생성",
+      "CLI 명령어 지원"
+    ],
+    "techStack": {
+      "runtime": "Node.js (ES6 모듈)",
+      "webScraping": "Playwright (Chromium)",
+      "cli": "Commander.js",
+      "styling": "Chalk (터미널 색상)",
+      "loading": "Ora (로딩 스피너)"
+    }
+  },
+  "architecture": {
+    "classStructure": {
+      "KoreanHotdealCrawler": {
+        "description": "메인 크롤러 클래스로 모든 크롤링 로직을 포함",
+        "properties": {
+          "options": "크롤러 설정 옵션 (headless, maxPages, delay 등)",
+          "results": "수집된 핫딜 데이터 배열",
+          "browser": "Playwright 브라우저 인스턴스",
+          "page": "현재 활성 페이지 객체"
+        },
+        "methods": {
+          "init()": "브라우저 초기화 및 설정",
+          "crawlPpomppu()": "뽐뿌 사이트 크롤링 메인 로직",
+          "parseHotdeal()": "게시글 데이터를 핫딜 객체로 변환",
+          "parseTitle()": "제목에서 가격, 쇼핑몰 등 정보 추출",
+          "inferCategory()": "제목 기반 카테고리 자동 분류",
+          "parseDate()": "날짜 문자열을 Date 객체로 변환",
+          "getPostDetail()": "게시글 상세 페이지에서 본문 및 이미지 추출",
+          "exportToJson()": "수집 데이터를 JSON 파일로 저장",
+          "generateStatistics()": "통계 데이터 생성"
+        }
+      }
+    },
+    "dataFlow": [
+      "1. CLI 명령어 파싱 및 옵션 설정",
+      "2. Playwright 브라우저 초기화",
+      "3. 뽐뿌 게시판 페이지별 순회",
+      "4. 게시글 목록 추출 (DOM 파싱)",
+      "5. 각 게시글 상세 정보 수집",
+      "6. 데이터 정규화 및 구조화",
+      "7. JSON 파일로 내보내기",
+      "8. 통계 정보 생성 및 출력"
+    ]
+  },
+  "crawlingLogic": {
+    "siteSpecific": {
+      "ppomppu": {
+        "baseUrl": "https://www.ppomppu.co.kr/zboard/zboard.php?id=ppomppu",
+        "selectors": {
+          "postRow": "#revolution_main_table > tbody > tr.baseList",
+          "postNumber": "td.baseList-space.baseList-numb",
+          "titleLink": "a[href*='no=']",
+          "category": "td.baseList-space.title > div > small",
+          "hotTag": "td.baseList-space.title > div > div > img",
+          "contentArea": "body > div.wrapper > div.contents > div.container > div > table:nth-child(14) > tbody > tr:nth-child(1) > td > table > tbody > tr > td"
+        },
+        "parsing": {
+          "postIdentification": "게시물 번호가 있는 행만 선택하여 정확한 게시글 식별",
+          "titleExtraction": "여러 링크 중 실제 제목 링크 찾기 (길이 > 5, ppomppu 텍스트 제외)",
+          "categoryExtraction": "small 태그 또는 제목의 [카테고리] 패턴에서 추출",
+          "statsExtraction": "조회수와 추천수를 ' - '로 분리하여 파싱",
+          "thumbnailExtraction": "_thumb 포함 이미지 URL 찾기"
+        }
+      }
+    },
+    "titleParsingLogic": {
+      "pattern": "[쇼핑몰명] 제품명 (가격/배송정보) [카테고리]",
+      "extraction": {
+        "store": "제목 시작의 [대괄호] 내용 추출",
+        "price": "(괄호) 내 숫자,숫자원 패턴 매칭",
+        "freeShipping": "(괄호) 내 '무료' 또는 'free' 키워드 검색",
+        "category": "키워드 기반 카테고리 추론 시스템"
+      }
+    },
+    "detailPageLogic": {
+      "contentExtraction": {
+        "method": "재귀적 텍스트 노드 순회",
+        "allowedTags": ["p", "div", "span", "strong", "b", "em", "i", "br"],
+        "excludedElements": "a, img, script, style 태그 제외",
+        "textCleaning": "연속 공백 제거, 줄바꿈 정리, 최소 길이 검증"
+      },
+      "imageExtraction": {
+        "selectors": [".han_contents img", ".view_contents img", ".contents img"],
+        "filters": {
+          "excludePatterns": ["icon", "emoticon", "menu", "logo", "share", "smilie"],
+          "minSize": "width > 100 && height > 100",
+          "formats": [".jpg", ".jpeg", ".png", ".webp"]
+        }
+      }
+    },
+    "duplicateHandling": {
+      "method": "게시글 ID 기반 고유성 보장",
+      "idFormat": "hotdeal_{timestamp}_{postId}"
+    }
+  },
+  "dataStructure": {
+    "hotdealObject": {
+      "id": "고유 식별자 (hotdeal_{timestamp}_{postId})",
+      "title": "게시글 제목",
+      "content": "게시글 본문 텍스트 (상세 페이지에서 추출)",
+      "price": "추출된 가격 정보 (예: '20,060원')",
+      "originalPrice": "원가 (현재 null)",
+      "discount": "할인율 (현재 null)",
+      "storeName": "쇼핑몰명 (예: '11번가', '지마켓')",
+      "category": "카테고리 (예: '[의류/잡화]', '[식품/건강]')",
+      "thumbnailImage": "썸네일 이미지 URL",
+      "originalImage": "원본 이미지 URL (상세 페이지에서 추출)",
+      "author": "작성자 닉네임",
+      "postDate": "게시 날짜 (ISO 8601 형식)",
+      "views": "조회수",
+      "recommendCount": "추천수",
+      "commentCount": "댓글수 (현재 0 고정)",
+      "url": "게시글 URL",
+      "isEnded": "종료 여부 (현재 false 고정)",
+      "isFreeShipping": "무료배송 여부",
+      "isPopular": "인기 게시글 여부 (HOT 태그)",
+      "source": "출처 사이트 ('ppomppu')",
+      "sourcePostId": "원본 게시글 ID",
+      "crawledPage": "크롤링된 페이지 번호",
+      "createdAt": "크롤링 시각",
+      "updatedAt": "업데이트 시각"
+    },
+    "exportedJson": {
+      "metadata": {
+        "exportDate": "내보내기 시각",
+        "totalDeals": "총 핫딜 수",
+        "source": "크롤링 소스",
+        "version": "크롤러 버전",
+        "exportedBy": "크롤러 식별자",
+        "crawledPages": "크롤링한 페이지 수"
+      },
+      "hotdeals": "핫딜 객체 배열",
+      "statistics": {
+        "totalDeals": "총 딜 수",
+        "activeDeals": "활성 딜 수",
+        "endedDeals": "종료된 딜 수",
+        "categoryCounts": "카테고리별 딜 수",
+        "storeCounts": "쇼핑몰별 딜 수",
+        "freeShippingCount": "무료배송 딜 수"
+      }
+    }
+  },
+  "usage": {
+    "installation": {
+      "requirements": [
+        "Node.js 14+ (ES6 모듈 지원)",
+        "npm 또는 yarn"
+      ],
+      "dependencies": {
+        "playwright": "웹 브라우저 자동화",
+        "commander": "CLI 인터페이스",
+        "chalk": "터미널 색상 출력",
+        "ora": "로딩 스피너"
+      },
+      "setup": [
+        "npm install playwright commander chalk ora",
+        "npx playwright install chromium"
+      ]
+    },
+    "cli": {
+      "basicCommand": "node crawler.js",
+      "options": {
+        "-s, --source <source>": {
+          "description": "크롤링할 사이트 선택",
+          "values": ["ppomppu", "ruliweb", "coolenjoy", "slrclub", "all"],
+          "default": "ppomppu"
+        },
+        "-p, --pages <number>": {
+          "description": "크롤링할 페이지 수",
+          "default": "2"
+        },
+        "-o, --output <directory>": {
+          "description": "출력 디렉토리 경로",
+          "default": "./exports"
+        },
+        "--headless <boolean>": {
+          "description": "헤드리스 모드 사용 여부",
+          "default": "true"
+        },
+        "-d, --delay <ms>": {
+          "description": "페이지 간 딜레이 (밀리초)",
+          "default": "2000"
+        }
+      },
+      "examples": [
+        {
+          "command": "node crawler.js",
+          "description": "기본 설정으로 뽐뿌 2페이지 크롤링"
+        },
+        {
+          "command": "node crawler.js -p 5 -o ./data",
+          "description": "5페이지 크롤링, ./data 디렉토리에 저장"
+        },
+        {
+          "command": "node crawler.js --headless false",
+          "description": "브라우저 UI를 보면서 크롤링"
+        }
+      ]
+    }
+  },
+  "outputExample": {
+    "consoleOutput": [
+      "🚀 설정:",
+      "- 사이트: ppomppu",
+      "- 페이지: 3",
+      "- 출력: ./exports",
+      "- 헤드리스: true",
+      "",
+      "🕷️  한국 핫딜 크롤러 시작...",
+      "✔ 뽐뿌 크롤링 완료: 61개 딜 수집",
+      "",
+      "🔍 디버그 정보 (페이지 1):",
+      "  - 총 행 수: 157",
+      "  - 번호 있는 행: 30",
+      "  - 추출된 게시글: 30",
+      "  - 최종 게시글: 30",
+      "",
+      "📝 첫 번째 게시글 샘플:",
+      "  - 게시물 번호: 635626",
+      "  - 제목: [11번가]블랙야크키즈 냉감소재 반팔상하세트 (티멤 20,060원/무료)",
+      "  - URL: https://www.ppomppu.co.kr/zboard/view.php?id=ppomppu&page=1&divpage=102&no=635626",
+      "  - 작성자: Trafat",
+      "  - 카테고리: [의류/잡화]",
+      "  - 인기글: true",
+      "  - 썸네일: https://cdn.ppomppu.co.kr/zboard/data/_thumb/ppomppu/6/small_635626.jpg",
+      "",
+      "✅ 크롤링 완료!",
+      "📁 파일: ./exports/hotdeal-ppomppu-2025-07-12T07-07-55.json",
+      "📊 수집된 딜: 61개",
+      "💾 파일 크기: 132KB",
+      "",
+      "📈 통계:",
+      "- 무료배송: 52개",
+      "- 카테고리: 7개",
+      "- 쇼핑몰: 23개",
+      "- 이미지 있음: 61개",
+      "- 본문 텍스트 있음: 10개",
+      "- 인기 게시글: 8개"
+    ],
+    "jsonStructure": "위의 dataStructure.exportedJson 참조"
+  },
+  "technicalDetails": {
+    "performanceOptimization": {
+      "pageLoadStrategy": "domcontentloaded 대신 load 사용으로 안정성 향상",
+      "detailPageLimit": "첫 10개 게시글만 상세 정보 수집으로 성능 최적화",
+      "delayStrategy": "페이지 간 2초 딜레이로 서버 부하 방지"
+    },
+    "errorHandling": {
+      "navigationRetry": "페이지 로딩 실패 시 5초 후 재시도",
+      "gracefulDegradation": "개별 게시글 파싱 실패 시 다음 게시글로 진행",
+      "detailPageFallback": "상세 페이지 접근 실패 시 기본 정보만 저장"
+    },
+    "browserSettings": {
+      "viewport": "1920x1080",
+      "userAgent": "Chrome 120 Windows 10",
+      "args": [
+        "--no-sandbox",
+        "--disable-setuid-sandbox",
+        "--disable-blink-features=AutomationControlled",
+        "--disable-features=VizDisplayCompositor"
+      ]
+    }
+  },
+  "extensibility": {
+    "addingNewSites": {
+      "steps": [
+        "1. 새 크롤링 메서드 추가 (예: crawlRuliweb())",
+        "2. 사이트별 셀렉터 정의",
+        "3. 파싱 로직 구현",
+        "4. run() 메서드에 조건부 실행 추가"
+      ],
+      "considerations": [
+        "각 사이트의 DOM 구조 분석 필요",
+        "robots.txt 및 이용약관 확인",
+        "적절한 딜레이 설정으로 서버 부하 방지"
+      ]
+    },
+    "dataEnhancement": {
+      "possibleAdditions": [
+        "가격 히스토리 추적",
+        "실시간 재고 확인",
+        "알림 시스템 연동",
+        "중복 제거 알고리즘 개선",
+        "이미지 다운로드 및 로컬 저장"
+      ]
+    }
+  },
+  "bestPractices": {
+    "ethical": [
+      "robots.txt 준수",
+      "적절한 크롤링 속도 유지",
+      "서버에 부담 주지 않는 시간대 선택",
+      "개인정보 수집 금지"
+    ],
+    "technical": [
+      "에러 핸들링 강화",
+      "로그 시스템 구축",
+      "데이터 검증 로직 추가",
+      "정기적인 셀렉터 업데이트"
+    ]
+  },
+  "troubleshooting": {
+    "commonIssues": {
+      "emptyResults": {
+        "cause": "셀렉터 변경 또는 사이트 구조 변경",
+        "solution": "브라우저 개발자 도구로 현재 DOM 구조 확인 후 셀렉터 업데이트"
+      },
+      "timeoutErrors": {
+        "cause": "느린 네트워크 또는 서버 응답",
+        "solution": "타임아웃 값 증가, waitUntil 옵션 조정"
+      },
+      "parsingErrors": {
+        "cause": "예상치 못한 데이터 형식",
+        "solution": "try-catch 블록 추가, 기본값 설정"
+      }
+    }
+  }
+}

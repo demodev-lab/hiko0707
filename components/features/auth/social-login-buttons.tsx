@@ -69,8 +69,8 @@ export function SocialLoginButtons({ mode }: SocialLoginButtonsProps) {
         
         localStorage.setItem('currentUser', JSON.stringify(mockUser))
         
-        // Redirect to dashboard
-        router.push('/dashboard')
+        // Redirect to hotdeals
+        router.push('/hotdeals')
       }, 1500)
     } catch (error) {
       toast.error(t('auth.socialLoginError'))

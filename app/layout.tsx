@@ -5,7 +5,11 @@ import { Providers } from '@/components/common/providers'
 import { Header } from '@/components/layout/header'
 import { Footer } from '@/components/layout/footer'
 import { MobileNav } from '@/components/layout/mobile-nav'
+import { SkipLinks } from '@/components/common/skip-links'
 import { Toaster } from 'sonner'
+import { WebsiteJsonLd, OrganizationJsonLd } from '@/components/seo/json-ld'
+import { StagewiseToolbar } from '@stagewise/toolbar-next'
+import ReactPlugin from '@stagewise-plugins/react'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -49,12 +53,15 @@ export default function RootLayout({
             `,
           }}
         />
+        <WebsiteJsonLd />
+        <OrganizationJsonLd />
       </head>
       <body className={`${inter.className} bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100`} suppressHydrationWarning>
         <Providers>
+          <SkipLinks />
           <div className="min-h-screen flex flex-col pb-16 md:pb-0 bg-white dark:bg-gray-900">
             <Header />
-            <main className="flex-1">
+            <main id="main-content" className="flex-1" tabIndex={-1}>
               {children}
             </main>
             <Footer />
@@ -62,6 +69,7 @@ export default function RootLayout({
           </div>
           <Toaster richColors position="top-center" />
         </Providers>
+        <StagewiseToolbar config={{ plugins: [ReactPlugin] }} />
       </body>
     </html>
   )

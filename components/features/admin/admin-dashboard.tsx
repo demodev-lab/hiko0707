@@ -1,20 +1,25 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { Progress } from '@/components/ui/progress'
 import {
   Package,
   TrendingUp,
   DollarSign,
   ShoppingBag,
-  AlertCircle
+  AlertCircle,
+  RefreshCw,
+  Clock,
+  Database
 } from 'lucide-react'
 import { Order } from '@/types/order'
 import { StatsCard } from '@/components/features/admin/stats-card'
 import { useBuyForMeAdmin } from '@/hooks/use-buy-for-me'
+import { getCrawlerProgress } from '@/actions/crawler-actions'
 import Link from 'next/link'
 
 interface AdminDashboardProps {
@@ -30,13 +35,79 @@ interface AdminDashboardProps {
   recentOrders: Order[]
 }
 
+interface CrawlerProgress {
+  isRunning: boolean
+  currentStep: string
+  progress: number
+  currentPost: number
+  totalPosts: number
+  source: string
+  timeFilter?: number
+  startTime?: Date
+  estimatedTimeLeft?: number
+}
+
 export function AdminDashboard({ stats, recentOrders }: AdminDashboardProps) {
   const { allRequests } = useBuyForMeAdmin()
+  const [isClient, setIsClient] = useState(false)
+  const [crawlerProgress, setCrawlerProgress] = useState<CrawlerProgress>({
+    isRunning: false,
+    currentStep: '',
+    progress: 0,
+    currentPost: 0,
+    totalPosts: 0,
+    source: ''
+  })
+  
+  useEffect(() => {
+    setIsClient(true)
+  }, [])
+
+  // 크롤링 진행도 폴링
+  useEffect(() => {
+    let interval: NodeJS.Timeout | null = null
+
+    const checkProgress = async () => {
+      try {
+        const progressData = await getCrawlerProgress()
+        setCrawlerProgress(progressData)
+        
+        // 크롤링이 실행 중일 때만 지속적으로 폴링
+        if (progressData.isRunning && !interval) {
+          interval = setInterval(checkProgress, 1000)
+        } else if (!progressData.isRunning && interval) {
+          clearInterval(interval)
+          interval = null
+        }
+      } catch (error) {
+        console.error('진행도 조회 실패:', error)
+      }
+    }
+
+    // 초기 체크
+    checkProgress()
+
+    return () => {
+      if (interval) clearInterval(interval)
+    }
+  }, [])
   
   const buyForMeStats = {
     total: allRequests.length,
     pending: allRequests.filter(r => r.status === 'pending_review').length,
     active: allRequests.filter(r => ['quote_sent', 'quote_approved', 'payment_pending', 'payment_completed', 'purchasing', 'shipping'].includes(r.status)).length
+  }
+
+  // 안전한 포맷팅 함수들
+  const formatCurrency = (amount: number) => {
+    if (!isClient) return `₩${amount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',')}`
+    return `₩${amount.toLocaleString('ko-KR')}`
+  }
+
+  const formatDate = (date: string | Date) => {
+    const dateObj = typeof date === 'string' ? new Date(date) : date
+    if (!isClient) return dateObj.toISOString().split('T')[0]
+    return dateObj.toLocaleDateString('ko-KR')
   }
 
   const statsCards = [
@@ -66,7 +137,7 @@ export function AdminDashboard({ stats, recentOrders }: AdminDashboardProps) {
     },
     {
       title: '오늘 매출',
-      value: `₩${stats.totalRevenue.toLocaleString()}`,
+      value: formatCurrency(stats.totalRevenue),
       subtitle: '수수료 수익',
       icon: DollarSign,
       color: 'text-purple-600',
@@ -89,9 +160,62 @@ export function AdminDashboard({ stats, recentOrders }: AdminDashboardProps) {
             <StatsCard key={stat.title} {...stat} />
           ))}
         </div>
+
+        {/* 크롤링 진행도 카드 */}
+        {crawlerProgress.isRunning && (
+          <Card className="mb-8 border-blue-200 bg-blue-50">
+            <CardHeader className="pb-3">
+              <CardTitle className="flex items-center gap-2 text-blue-900">
+                <RefreshCw className="h-5 w-5 animate-spin" />
+                크롤링 진행 중
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                <div className="flex justify-between text-sm">
+                  <span className="text-blue-700">{crawlerProgress.currentStep}</span>
+                  <span className="font-medium text-blue-900">{crawlerProgress.progress}%</span>
+                </div>
+                <Progress value={crawlerProgress.progress} className="h-2" />
+                
+                {crawlerProgress.totalPosts > 0 && (
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                    <div>
+                      <p className="text-blue-600">진행 상황</p>
+                      <p className="font-medium text-blue-900">
+                        {crawlerProgress.currentPost} / {crawlerProgress.totalPosts}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-blue-600">소스</p>
+                      <p className="font-medium text-blue-900 capitalize">{crawlerProgress.source}</p>
+                    </div>
+                    {crawlerProgress.estimatedTimeLeft && (
+                      <div>
+                        <p className="text-blue-600">예상 완료</p>
+                        <p className="font-medium text-blue-900 flex items-center gap-1">
+                          <Clock className="h-3 w-3" />
+                          {Math.floor(crawlerProgress.estimatedTimeLeft / 60)}분 {crawlerProgress.estimatedTimeLeft % 60}초
+                        </p>
+                      </div>
+                    )}
+                    <div>
+                      <Link href="/admin/crawler">
+                        <Button size="sm" variant="outline" className="border-blue-600 text-blue-700 hover:bg-blue-100">
+                          <Database className="w-4 h-4 mr-2" />
+                          크롤러 페이지
+                        </Button>
+                      </Link>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        )}
         
         {/* 대리 구매 알림 카드 */}
-        {buyForMeStats.pending > 0 && (
+        {isClient && buyForMeStats.pending > 0 && (
           <Card className="mb-8 border-yellow-200 bg-yellow-50">
             <CardContent className="py-4">
               <div className="flex items-center justify-between">
@@ -163,7 +287,7 @@ export function AdminDashboard({ stats, recentOrders }: AdminDashboardProps) {
                       <div>
                         <p className="font-medium text-sm">{request.productInfo.title}</p>
                         <p className="text-xs text-gray-500">
-                          {request.shippingInfo.name} · {new Date(request.requestDate).toLocaleDateString('ko-KR')}
+                          {request.shippingInfo.name} · {formatDate(request.requestDate)}
                         </p>
                       </div>
                       <Badge variant="outline" className="text-xs">

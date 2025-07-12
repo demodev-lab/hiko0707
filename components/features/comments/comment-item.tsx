@@ -18,6 +18,8 @@ import { useAuth } from '@/hooks/use-auth'
 import { useUpdateComment, useDeleteComment, useLikeComment } from '@/hooks/use-hotdeal-comments'
 import { CommentForm } from './comment-form'
 import { cn } from '@/lib/utils'
+import { toast } from 'sonner'
+import { Animated, AnimatedButton } from '@/components/ui/animated'
 
 interface CommentItemProps {
   comment: HotDealComment & { replies?: HotDealComment[] }
@@ -30,7 +32,7 @@ export function CommentItem({ comment, hotdealId, level = 0 }: CommentItemProps)
   const [isEditing, setIsEditing] = useState(false)
   const [isReplying, setIsReplying] = useState(false)
   const [editContent, setEditContent] = useState(comment.content)
-  const [isLiked, setIsLiked] = useState(false)
+  const isLiked = currentUser && comment.likedByUsers?.includes(currentUser.id) || false
   
   const updateComment = useUpdateComment()
   const deleteComment = useDeleteComment()
@@ -65,19 +67,27 @@ export function CommentItem({ comment, hotdealId, level = 0 }: CommentItemProps)
   }
   
   const handleLike = async () => {
+    if (!currentUser) {
+      toast.error('로그인이 필요합니다')
+      return
+    }
+    
     try {
       await likeComment.mutateAsync({
         commentId: comment.id,
         isLiked
       })
-      setIsLiked(!isLiked)
     } catch (error) {
       // Error handled in mutation
     }
   }
   
   return (
-    <div className={cn("space-y-3", level > 0 && "ml-12 mt-3")}>
+    <Animated 
+      variant="fadeInUp" 
+      delay={level * 0.1}
+      className={cn("space-y-3", level > 0 && "ml-12 mt-3")}
+    >
       <div className="flex gap-3">
         <Avatar className="w-8 h-8 flex-shrink-0">
           <AvatarImage src={comment.user?.image} />
@@ -159,20 +169,31 @@ export function CommentItem({ comment, hotdealId, level = 0 }: CommentItemProps)
               
               {!comment.isDeleted && (
                 <div className="flex items-center gap-4 pt-1">
-                  <Button
+                  <AnimatedButton
                     variant="ghost"
                     size="sm"
-                    className="h-auto p-0 text-xs hover:bg-transparent"
+                    className={cn(
+                      "h-auto p-0 text-xs hover:bg-transparent transition-all",
+                      isLiked && "text-red-500"
+                    )}
                     onClick={handleLike}
+                    disabled={likeComment.isPending}
+                    tapScale={0.9}
                   >
                     <Heart 
                       className={cn(
-                        "w-3 h-3 mr-1",
-                        isLiked && "fill-red-500 text-red-500"
+                        "w-3 h-3 mr-1 transition-all",
+                        isLiked && "fill-red-500 text-red-500",
+                        likeComment.isPending && "animate-pulse"
                       )} 
                     />
-                    {comment.likeCount > 0 && comment.likeCount}
-                  </Button>
+                    <span className={cn(
+                      "transition-all",
+                      comment.likeCount > 0 ? "opacity-100" : "opacity-0"
+                    )}>
+                      {comment.likeCount > 0 && comment.likeCount}
+                    </span>
+                  </AnimatedButton>
                   
                   {level < 2 && (
                     <Button
@@ -216,6 +237,6 @@ export function CommentItem({ comment, hotdealId, level = 0 }: CommentItemProps)
           ))}
         </div>
       )}
-    </div>
+    </Animated>
   )
 }

@@ -5,16 +5,34 @@ import { db } from '@/lib/db/database-service'
 import { useAuth } from './use-auth'
 import { toast } from 'sonner'
 import { HotDealComment } from '@/lib/db/local/repositories/hotdeal-comment-repository'
+import { useEffect } from 'react'
 
-export function useHotDealComments(hotdealId: string) {
-  return useQuery({
+export function useHotDealComments(hotdealId: string, enablePolling = true) {
+  const queryClient = useQueryClient()
+  
+  const query = useQuery({
     queryKey: ['hotdeal-comments', hotdealId],
     queryFn: async () => {
       return await db.hotdealComments.getNestedComments(hotdealId)
     },
     enabled: !!hotdealId,
-    staleTime: 1 * 60 * 1000 // 1분
+    staleTime: 30 * 1000, // 30초
+    refetchInterval: enablePolling ? 10 * 1000 : false // 10초마다 폴링
   })
+
+  // Focus시 refetch
+  useEffect(() => {
+    if (!enablePolling) return
+
+    const handleFocus = () => {
+      queryClient.invalidateQueries({ queryKey: ['hotdeal-comments', hotdealId] })
+    }
+
+    window.addEventListener('focus', handleFocus)
+    return () => window.removeEventListener('focus', handleFocus)
+  }, [hotdealId, queryClient, enablePolling])
+
+  return query
 }
 
 export function useCreateComment() {
@@ -136,6 +154,7 @@ export function useDeleteComment() {
 }
 
 export function useLikeComment() {
+  const { currentUser } = useAuth()
   const queryClient = useQueryClient()
   
   return useMutation({
@@ -146,9 +165,13 @@ export function useLikeComment() {
       commentId: string
       isLiked: boolean 
     }) => {
+      if (!currentUser) {
+        throw new Error('로그인이 필요합니다')
+      }
+      
       const result = isLiked 
-        ? await db.hotdealComments.unlikeComment(commentId)
-        : await db.hotdealComments.likeComment(commentId)
+        ? await db.hotdealComments.unlikeComment(commentId, currentUser.id)
+        : await db.hotdealComments.likeComment(commentId, currentUser.id)
         
       if (!result) {
         throw new Error('좋아요 처리에 실패했습니다')
@@ -159,8 +182,12 @@ export function useLikeComment() {
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['hotdeal-comments', data.hotdealId] })
     },
-    onError: () => {
-      toast.error('좋아요 처리에 실패했습니다')
+    onError: (error) => {
+      if (error.message === '로그인이 필요합니다') {
+        toast.error('로그인 후 이용해주세요')
+      } else {
+        toast.error('좋아요 처리에 실패했습니다')
+      }
     }
   })
 }

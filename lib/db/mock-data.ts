@@ -2,22 +2,46 @@ import { User, Post, Comment } from './local/models'
 import { LocalStorage } from './storage'
 import { HotDeal } from '@/types/hotdeal'
 import hotDealMockData from './hotdeal-mock-data.json'
+// import { extendedRealHotDeals } from './extended-real-data' // 추후 크롤러 개발 시 사용
+import imageMappingData from './image-mapping.json'
 
-// HotDeal mock 데이터 (날짜 변환 필요)
-export const mockHotDeals: HotDeal[] = hotDealMockData.map(deal => ({
+// 이미지 URL 생성 함수
+function getImageUrl(deal: any, index: number): string {
+  // 스크래핑된 이미지가 있는지 확인
+  const mappedImage = (imageMappingData as Record<string, string>)[index.toString()]
+  if (mappedImage) {
+    return mappedImage
+  }
+  
+  // 로컬 이미지 경로인 경우 그대로 유지
+  if (deal.imageUrl?.startsWith('/images/')) {
+    return deal.imageUrl
+  }
+  
+  // 기존 URL 유지, 없으면 기본 이미지
+  return deal.imageUrl || '/images/products/home/home_1_original.jpg'
+}
+
+// 기존 HotDeal mock 데이터 (날짜 변환 및 이미지 URL 수정)
+const baseMockHotDeals: HotDeal[] = hotDealMockData.map((deal, index) => ({
   ...deal,
   crawledAt: new Date(deal.crawledAt),
   updatedAt: new Date(deal.updatedAt),
   startDate: (deal as any).startDate ? new Date((deal as any).startDate) : undefined,
-  endDate: (deal as any).endDate ? new Date((deal as any).endDate) : undefined
+  endDate: (deal as any).endDate ? new Date((deal as any).endDate) : undefined,
+  // 이미지 URL을 스크래핑된 이미지 또는 플레이스홀더로 변경
+  imageUrl: getImageUrl(deal, index)
 } as HotDeal))
+
+// 임시 테스트용 - 기존 목업 데이터 사용
+export const mockHotDeals: HotDeal[] = baseMockHotDeals.slice(0, 5)
 
 export const mockUsers: User[] = [
   {
     id: '1',
     email: 'john@example.com',
     name: 'John Doe',
-    role: 'customer',
+    role: 'member',
     avatar: 'https://avatar.vercel.sh/john',
     createdAt: new Date('2024-01-01'),
     updatedAt: new Date('2024-01-01')
@@ -26,7 +50,7 @@ export const mockUsers: User[] = [
     id: '2',
     email: 'jane@example.com',
     name: 'Jane Smith',
-    role: 'customer',
+    role: 'member',
     avatar: 'https://avatar.vercel.sh/jane',
     createdAt: new Date('2024-01-02'),
     updatedAt: new Date('2024-01-02')
@@ -36,7 +60,7 @@ export const mockUsers: User[] = [
     id: '3',
     email: 'david@example.com',
     name: 'David Wang',
-    role: 'customer',
+    role: 'member',
     avatar: 'https://avatar.vercel.sh/david',
     createdAt: new Date('2024-01-05'),
     updatedAt: new Date('2024-01-05')
@@ -45,7 +69,7 @@ export const mockUsers: User[] = [
     id: '4',
     email: 'maria@example.com',
     name: 'Maria Garcia',
-    role: 'customer',
+    role: 'member',
     avatar: 'https://avatar.vercel.sh/maria',
     createdAt: new Date('2024-01-10'),
     updatedAt: new Date('2024-01-10')
@@ -54,7 +78,7 @@ export const mockUsers: User[] = [
     id: '5',
     email: 'nguyen@example.com',
     name: 'Nguyen Tran',
-    role: 'customer',
+    role: 'member',
     avatar: 'https://avatar.vercel.sh/nguyen',
     createdAt: new Date('2024-01-15'),
     updatedAt: new Date('2024-01-15')
@@ -126,18 +150,59 @@ export const mockComments: Comment[] = [
 export function initializeMockData(): void {
   const storage = LocalStorage.getInstance()
   
-  const existingUsers = storage.get<User[]>('users')
-  if (!existingUsers || existingUsers.length === 0) {
+  // 사용자, 게시글, 댓글 데이터만 초기화 (없을 경우에만)
+  if (!storage.get('users')) {
     storage.set('users', mockUsers)
+  }
+  if (!storage.get('posts')) {
     storage.set('posts', mockPosts)
+  }
+  if (!storage.get('comments')) {
     storage.set('comments', mockComments)
-    console.log('Mock data initialized')
   }
   
-  // HotDeal 데이터 초기화
-  const existingHotDeals = storage.get<HotDeal[]>('hotdeals')
+  // 핫딜 데이터는 초기화하지 않음 (크롤링 데이터 보존)
+  const existingHotDeals = storage.get('hotdeals') || []
   if (!existingHotDeals || existingHotDeals.length === 0) {
-    storage.set('hotdeals', mockHotDeals)
-    console.log(`HotDeal mock data initialized: ${mockHotDeals.length} items`)
+    // 빈 배열로 초기화하여 오류 방지
+    storage.set('hotdeals', [])
+    console.log('✅ HotDeals initialized as empty array for crawled data')
+  } else {
+    console.log(`✅ Existing HotDeals preserved: ${existingHotDeals.length} items`)
+  }
+  
+  console.log('✅ Mock data initialization complete')
+}
+
+// 강제로 모든 데이터를 다시 초기화하는 함수
+export function forceInitializeMockData(): void {
+  const storage = LocalStorage.getInstance()
+  
+  storage.set('users', mockUsers)
+  storage.set('posts', mockPosts)
+  storage.set('comments', mockComments)
+  // 핫딜은 초기화하지 않음
+  
+  console.log(`✅ Mock data force initialized (excluding hotdeals)`)
+  console.log(`- Users: ${mockUsers.length} items`)
+  console.log(`- Posts: ${mockPosts.length} items`)
+  console.log(`- Comments: ${mockComments.length} items`)
+}
+
+// 핫딜 데이터를 완전히 지우는 함수
+export function clearAllHotDeals(): void {
+  if (typeof window !== 'undefined') {
+    localStorage.setItem('hiko_hotdeals', '[]')
+    console.log('🗑️ All HotDeals cleared from hiko_hotdeals')
+  }
+}
+
+// 브라우저 전역에서 사용할 수 있도록 설정
+if (typeof window !== 'undefined') {
+  // window가 정의되어 있을 때만 실행
+  const globalWindow = window as any
+  if (globalWindow) {
+    globalWindow.forceInitializeMockData = forceInitializeMockData
+    globalWindow.clearAllHotDeals = clearAllHotDeals
   }
 }
