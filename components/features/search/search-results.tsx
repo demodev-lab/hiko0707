@@ -71,10 +71,11 @@ export function SearchResults({ query, filters }: SearchResultsProps) {
             deals.sort((a, b) => b.price - a.price)
             break
           case 'popular':
-            deals.sort((a, b) => b.viewCount - a.viewCount)
+            deals.sort((a, b) => (b.viewCount || 0) - (a.viewCount || 0))
             break
           case 'discount':
-            deals.sort((a, b) => (b.discountRate || 0) - (a.discountRate || 0))
+            // Sort by price as discount rate is not available
+            deals.sort((a, b) => a.price - b.price)
             break
           default: // 'latest'
             deals.sort((a, b) => new Date(b.crawledAt).getTime() - new Date(a.crawledAt).getTime())

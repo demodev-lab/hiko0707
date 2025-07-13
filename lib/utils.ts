@@ -47,3 +47,23 @@ export function formatDate(date: Date | string): string {
     second: '2-digit'
   })
 }
+
+export function formatPhoneNumber(phone: string): string {
+  // Remove all non-digit characters
+  const cleaned = phone.replace(/\D/g, '')
+  
+  // Format as XXX-XXXX-XXXX or XX-XXX-XXXX
+  if (cleaned.length === 11) {
+    return `${cleaned.slice(0, 3)}-${cleaned.slice(3, 7)}-${cleaned.slice(7)}`
+  } else if (cleaned.length === 10) {
+    if (cleaned.startsWith('02')) {
+      return `${cleaned.slice(0, 2)}-${cleaned.slice(2, 6)}-${cleaned.slice(6)}`
+    } else {
+      return `${cleaned.slice(0, 3)}-${cleaned.slice(3, 6)}-${cleaned.slice(6)}`
+    }
+  } else if (cleaned.length === 9 && cleaned.startsWith('02')) {
+    return `${cleaned.slice(0, 2)}-${cleaned.slice(2, 5)}-${cleaned.slice(5)}`
+  }
+  
+  return phone // Return as is if format doesn't match
+}

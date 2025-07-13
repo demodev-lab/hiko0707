@@ -628,10 +628,7 @@ export async function crawlPpomppuWithPlaywright(pageNumber: number = 1): Promis
     const crawledDeals: CrawledHotDeal[] = realRawData.map((raw, index) => {
       const transformed = ppomppuCrawler.transformData(raw);
       
-      // 종료 상태 반영
-      if (raw.isEnded) {
-        transformed.status = 'expired';
-      }
+      // 종료 상태는 별도 처리 (CrawledHotDeal에는 status 필드가 없음)
       
       // 원본 이미지 URL (실제로는 상세 페이지에서 가져와야 함)
       transformed.imageUrl = raw.imageUrl.replace('thumb1_', 'data/');
@@ -668,10 +665,7 @@ export async function updateExpiredDeals(
   
   return existingDeals.map(deal => {
     const crawledDeal = crawledUrlMap.get(deal.originalUrl);
-    if (crawledDeal && crawledDeal.status === 'expired' && deal.status !== 'expired') {
-      // 종료된 것으로 업데이트
-      return { ...deal, status: 'expired', updatedAt: new Date() };
-    }
+    // CrawledHotDeal에는 status 필드가 없으므로 업데이트 로직 제거
     return deal;
   });
 }

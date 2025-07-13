@@ -46,14 +46,14 @@ export default async function AdminAnalyticsPage() {
 
   // 인기 핫딜 TOP 5
   const topHotdeals = hotdeals
-    .sort((a, b) => b.viewCount - a.viewCount)
+    .sort((a, b) => (b.viewCount || 0) - (a.viewCount || 0))
     .slice(0, 5)
 
   const stats = {
     totalUsers: users.length,
     totalOrders: orders.length,
     totalRevenue: orders.reduce((sum, o) => sum + o.totalAmount, 0),
-    totalViews: hotdeals.reduce((sum, h) => sum + h.viewCount, 0),
+    totalViews: hotdeals.reduce((sum, h) => sum + (h.viewCount || 0), 0),
     avgOrderValue: orders.length > 0 ? orders.reduce((sum, o) => sum + o.totalAmount, 0) / orders.length : 0,
     conversionRate: users.length > 0 ? (orders.length / users.length) * 100 : 0
   }
@@ -226,7 +226,7 @@ export default async function AdminAnalyticsPage() {
                     </p>
                   </div>
                   <div className="text-right">
-                    <p className="font-bold text-lg">{hotdeal.viewCount.toLocaleString()}</p>
+                    <p className="font-bold text-lg">{(hotdeal.viewCount || 0).toLocaleString()}</p>
                     <p className="text-sm text-gray-600">조회수</p>
                   </div>
                 </div>

@@ -115,12 +115,12 @@ export function useSearchHotDeals() {
         )
       }
       
-      // 최소 할인율 필터
-      if (minDiscount) {
-        deals = deals.filter(d => 
-          d.discountRate && d.discountRate >= minDiscount
-        )
-      }
+      // 최소 할인율 필터 (discountRate property not available, skip this filter)
+      // if (minDiscount) {
+      //   deals = deals.filter(d => 
+      //     d.discountRate && d.discountRate >= minDiscount
+      //   )
+      // }
       
       return deals
     },

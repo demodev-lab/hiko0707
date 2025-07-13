@@ -118,6 +118,7 @@ export const translations: Record<LanguageCode, any> = {
       hotdeals: '핫딜',
       order: '대신사줘요',
       mypage: '마이페이지',
+      buyForMe: '대신사줘요',
     },
     // Header
     header: {
@@ -182,6 +183,13 @@ export const translations: Record<LanguageCode, any> = {
       shipping: '배송',
       noDeals: '핫딜이 없습니다',
       noDealsMessage: '현재 표시할 핫딜이 없습니다. 필터를 변경하거나 나중에 다시 시도해주세요.',
+      empty: '핫딜이 없습니다',
+      emptyWithFilters: '조건에 맞는 핫딜이 없습니다',
+      emptyMessage: '현재 진행 중인 핫딜이 없습니다. 알림을 설정하면 새로운 핫딜을 바로 받아보실 수 있습니다.',
+      emptyWithFiltersMessage: '선택하신 조건에 맞는 핫딜을 찾을 수 없습니다. 필터를 조정하거나 다른 카테고리를 확인해보세요.',
+      resetFilters: '필터 초기화',
+      setupAlerts: '핫딜 알림 설정',
+      buyForMe: '원하는 상품 대신 구매하기',
     },
     // Categories
     category: {
@@ -426,6 +434,33 @@ export const translations: Record<LanguageCode, any> = {
       tryAgain: '다시 시도',
       goHome: '홈으로 돌아가기',
     },
+    // Address Management
+    address: {
+      title: '주소 관리',
+      subtitle: '최대 {max}개까지 주소를 저장할 수 있습니다 ({count}개 저장됨)',
+      add: '주소 추가',
+      edit: '주소 수정',
+      empty: '저장된 주소가 없습니다',
+      emptyDescription: '배송 주소를 추가하면 더 빠르게 주문할 수 있습니다',
+      addFirst: '첫 주소 추가하기',
+      default: '기본 배송지',
+      setAsDefault: '기본 배송지로 설정',
+      deleteConfirm: '이 주소를 삭제하시겠습니까?',
+      formDescription: '배송에 사용할 주소 정보를 입력해주세요',
+      nameLabel: '주소 별칭',
+      namePlaceholder: '예: 집, 회사, 부모님 댁',
+      nameDescription: '주소를 쉽게 구분할 수 있는 이름을 지정하세요',
+      recipientName: '수취인 이름',
+      recipientNamePlaceholder: '받는 분 성함을 입력하세요',
+      phoneNumber: '전화번호',
+      postalCode: '우편번호',
+      searchPostalCode: '검색',
+      baseAddress: '기본 주소',
+      baseAddressPlaceholder: '도로명 주소 또는 지번 주소',
+      detailAddress: '상세 주소',
+      detailAddressPlaceholder: '동/호수, 층 등 상세 정보',
+      defaultDescription: '이 주소를 기본 배송지로 사용합니다',
+    },
   },
   
   en: {
@@ -483,6 +518,7 @@ export const translations: Record<LanguageCode, any> = {
       hotdeals: 'Hot Deals',
       order: 'Buy for Me',
       mypage: 'My Page',
+      buyForMe: 'Buy for Me',
     },
     // Header
     header: {
@@ -547,6 +583,13 @@ export const translations: Record<LanguageCode, any> = {
       shipping: 'Shipping',
       noDeals: 'No Hot Deals',
       noDealsMessage: 'No hot deals available. Try changing filters or check back later.',
+      empty: 'No Hot Deals Available',
+      emptyWithFilters: 'No Matching Hot Deals',
+      emptyMessage: 'There are no active hot deals at the moment. Set up alerts to be notified when new deals arrive.',
+      emptyWithFiltersMessage: 'No hot deals match your selected criteria. Try adjusting filters or check other categories.',
+      resetFilters: 'Reset Filters',
+      setupAlerts: 'Set Up Deal Alerts',
+      buyForMe: 'Request Purchase Service',
     },
     // Categories
     category: {

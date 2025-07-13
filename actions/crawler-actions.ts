@@ -137,9 +137,7 @@ export async function runCrawler(options: CrawlerOptions) {
               await db.hotdeals.update(existing.id, {
                 ...hotdeal,
                 id: existing.id,
-                createdAt: existing.createdAt,
                 sourcePostId: hotdeal.sourcePostId, // 기존 데이터에 sourcePostId 추가
-                updatedAt: new Date().toISOString()
               })
               updatedDeals++
             } else {
@@ -245,9 +243,7 @@ export async function importCrawlData(data: any) {
           await db.hotdeals.update(existing.id, {
             ...hotdeal,
             id: existing.id,
-            createdAt: existing.createdAt,
             sourcePostId: hotdeal.sourcePostId || existing.sourcePostId, // sourcePostId 보존
-            updatedAt: new Date().toISOString()
           })
           updatedCount++
         } else {

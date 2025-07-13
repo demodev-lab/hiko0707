@@ -3,6 +3,7 @@
 import { CrawledHotDeal } from '@/lib/crawlers/types'
 import { ppomppuCrawler } from '@/lib/crawlers/ppomppu-crawler'
 import { db } from '@/lib/db/database-service'
+import { HotDealSource } from '@/types/hotdeal'
 
 interface PpomppuRawData {
   title: string
@@ -196,10 +197,7 @@ export async function crawlPpomppuPageWithMCP(pageNumber: number = 1): Promise<C
     const crawledDeals: CrawledHotDeal[] = rawData.map((raw) => {
       const transformed = ppomppuCrawler.transformData(raw);
       
-      // 종료 상태 반영
-      if (raw.isEnded) {
-        transformed.status = 'ended';
-      }
+      // 종료 상태는 별도 처리 (CrawledHotDeal에는 status 필드가 없음)
       
       // 원본 이미지 URL 설정
       if (raw.originalImageUrl) {
@@ -244,19 +242,20 @@ export async function saveCrawledHotDeals(
       const existing = existingUrlMap.get(crawledDeal.originalUrl);
       
       if (existing) {
-        // 종료 상태만 업데이트
-        if (crawledDeal.status === 'ended' && existing.status !== 'ended') {
-          await db.hotdeals.update(existing.id, {
-            status: 'ended',
-            updatedAt: new Date()
-          });
-          stats.updated++;
-        } else {
-          stats.skipped++;
-        }
+        // 기존 데이터가 있으면 건너뜀 (중복 방지)
+        stats.skipped++;
       } else {
-        // 새로운 핫딜 저장
-        await db.hotdeals.create(crawledDeal);
+        // 새로운 핫딜 저장 (CrawledHotDeal -> HotDeal 변환)
+        await db.hotdeals.create({
+          ...crawledDeal,
+          source: crawledDeal.source as HotDealSource,
+          status: 'active' as const,
+          sourcePostId: crawledDeal.title + '-' + Date.now(),
+          viewCount: 0,
+          likeCount: 0,
+          commentCount: 0,
+          translationStatus: 'pending' as const
+        });
         stats.saved++;
       }
     }

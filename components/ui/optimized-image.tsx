@@ -82,7 +82,7 @@ export function OptimizedImage({
         priority={props.priority}
         quality={props.quality || 85}
         sizes={props.sizes || '(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw'}
-        unoptimized={currentSrc.startsWith('/images/')}
+        unoptimized={typeof currentSrc === 'string' && currentSrc.startsWith('/images/')}
       />
       
       {/* 로딩 스켈레톤 */}

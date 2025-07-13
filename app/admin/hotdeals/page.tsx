@@ -162,20 +162,15 @@ export default async function AdminHotdealsPage() {
                           </div>
                         </div>
                       </td>
-                      <td className="p-3">{getCategoryBadge(hotdeal.category)}</td>
+                      <td className="p-3">{getCategoryBadge(hotdeal.category || 'other')}</td>
                       <td className="p-3">
                         <div>
                           <p className="font-semibold">₩{hotdeal.price.toLocaleString()}</p>
-                          {hotdeal.originalPrice && (
-                            <p className="text-sm text-gray-500 line-through">
-                              ₩{hotdeal.originalPrice.toLocaleString()}
-                            </p>
-                          )}
                         </div>
                       </td>
                       <td className="p-3">
-                        {hotdeal.discountRate ? (
-                          <Badge className="bg-red-600">{hotdeal.discountRate}%</Badge>
+                        {(hotdeal as any).discountRate ? (
+                          <Badge className="bg-red-600">{(hotdeal as any).discountRate}%</Badge>
                         ) : (
                           <span className="text-gray-400">-</span>
                         )}

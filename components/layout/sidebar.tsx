@@ -12,7 +12,8 @@ import {
   Settings,
   User,
   Heart,
-  Bell
+  Bell,
+  MapPin
 } from 'lucide-react'
 import { useAtom } from 'jotai'
 import { isSidebarOpenAtom } from '@/states/ui-store'
@@ -25,6 +26,7 @@ const navigation = [
   { name: '대리 구매', href: '/order', icon: ShoppingBag },
   { name: '주문 내역', href: '/orders', icon: Package },
   { name: '결제 내역', href: '/dashboard/payments', icon: CreditCard },
+  { name: '주소 관리', href: '/dashboard/addresses', icon: MapPin },
   { name: '즐겨찾기', href: '/dashboard/favorites', icon: Heart },
 ]
 

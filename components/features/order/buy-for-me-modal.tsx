@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -19,6 +19,8 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
+import { Checkbox } from '@/components/ui/checkbox'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { 
   ShoppingBag, 
   User, 
@@ -27,10 +29,13 @@ import {
   CreditCard,
   Package,
   Info,
-  Calculator
+  Calculator,
+  Plus,
+  BookmarkPlus
 } from 'lucide-react'
 import { useAuth } from '@/hooks/use-auth'
 import { useBuyForMe } from '@/hooks/use-buy-for-me'
+import { useAddress } from '@/hooks/use-address'
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
@@ -74,8 +79,11 @@ interface BuyForMeModalProps {
 export function BuyForMeModal({ open, onOpenChange, hotdeal }: BuyForMeModalProps) {
   const { currentUser } = useAuth()
   const { createRequest, isCreating } = useBuyForMe()
+  const { addresses, defaultAddress, createAddress } = useAddress()
   const router = useRouter()
   const [currencyModalOpen, setCurrencyModalOpen] = useState(false)
+  const [selectedAddressId, setSelectedAddressId] = useState<string>('new')
+  const [saveNewAddress, setSaveNewAddress] = useState(false)
 
   const form = useForm<BuyForMeFormData>({
     resolver: zodResolver(buyForMeSchema),
@@ -92,6 +100,42 @@ export function BuyForMeModal({ open, onOpenChange, hotdeal }: BuyForMeModalProp
     }
   })
 
+  // Auto-fill default address when modal opens
+  useEffect(() => {
+    if (open && defaultAddress && selectedAddressId === 'new') {
+      setSelectedAddressId(defaultAddress.id)
+      form.setValue('shippingInfo.fullName', defaultAddress.recipientName)
+      form.setValue('shippingInfo.phoneNumber', defaultAddress.phoneNumber)
+      form.setValue('shippingInfo.address', defaultAddress.address)
+      form.setValue('shippingInfo.postalCode', defaultAddress.postalCode)
+      form.setValue('shippingInfo.detailAddress', defaultAddress.detailAddress)
+    }
+  }, [open, defaultAddress, form, selectedAddressId])
+
+  // Handle address selection
+  const handleAddressChange = (addressId: string) => {
+    setSelectedAddressId(addressId)
+    
+    if (addressId === 'new') {
+      // Clear form for new address
+      form.setValue('shippingInfo.fullName', currentUser?.name || '')
+      form.setValue('shippingInfo.phoneNumber', currentUser?.phone || '')
+      form.setValue('shippingInfo.address', '')
+      form.setValue('shippingInfo.postalCode', '')
+      form.setValue('shippingInfo.detailAddress', '')
+    } else {
+      // Fill form with selected address
+      const selectedAddress = addresses.find(addr => addr.id === addressId)
+      if (selectedAddress) {
+        form.setValue('shippingInfo.fullName', selectedAddress.recipientName)
+        form.setValue('shippingInfo.phoneNumber', selectedAddress.phoneNumber)
+        form.setValue('shippingInfo.address', selectedAddress.address)
+        form.setValue('shippingInfo.postalCode', selectedAddress.postalCode)
+        form.setValue('shippingInfo.detailAddress', selectedAddress.detailAddress)
+      }
+    }
+  }
+
   const onSubmit = async (data: BuyForMeFormData) => {
     if (!currentUser) {
       toast.error('로그인이 필요합니다')
@@ -102,6 +146,25 @@ export function BuyForMeModal({ open, onOpenChange, hotdeal }: BuyForMeModalProp
     if (!hotdeal) {
       toast.error('상품 정보를 찾을 수 없습니다')
       return
+    }
+
+    // Save new address if requested
+    if (saveNewAddress && selectedAddressId === 'new') {
+      try {
+        await createAddress({
+          name: `주소 ${addresses.length + 1}`,
+          recipientName: data.shippingInfo.fullName,
+          phoneNumber: data.shippingInfo.phoneNumber,
+          postalCode: data.shippingInfo.postalCode,
+          address: data.shippingInfo.address,
+          detailAddress: data.shippingInfo.detailAddress || '',
+          isDefault: addresses.length === 0 // Set as default if it's the first address
+        })
+        toast.success('새 주소가 저장되었습니다')
+      } catch (error) {
+        console.error('Failed to save address:', error)
+        // Continue with request even if address saving fails
+      }
     }
 
     const estimatedPrice = parseInt(hotdeal.price.replace(/[^0-9]/g, '')) || 0
@@ -142,6 +205,8 @@ export function BuyForMeModal({ open, onOpenChange, hotdeal }: BuyForMeModalProp
       onSuccess: () => {
         onOpenChange(false)
         form.reset()
+        setSelectedAddressId('new')
+        setSaveNewAddress(false)
         // Redirect to my page to see the request status
         router.push('/mypage')
       }
@@ -257,10 +322,72 @@ export function BuyForMeModal({ open, onOpenChange, hotdeal }: BuyForMeModalProp
 
           {/* Shipping Information */}
           <div className="space-y-3 sm:space-y-4">
-            <h4 className="font-medium flex items-center gap-2 text-sm sm:text-base">
-              <MapPin className="w-3 h-3 sm:w-4 sm:h-4" />
-              배송 정보
-            </h4>
+            <div className="flex items-center justify-between">
+              <h4 className="font-medium flex items-center gap-2 text-sm sm:text-base">
+                <MapPin className="w-3 h-3 sm:w-4 sm:h-4" />
+                배송 정보
+              </h4>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="text-xs"
+                onClick={() => router.push('/mypage/addresses')}
+              >
+                <BookmarkPlus className="w-3 h-3 mr-1" />
+                주소 관리
+              </Button>
+            </div>
+
+            {/* Address Selection */}
+            <div className="space-y-2">
+              <Label className="text-sm">배송지 선택</Label>
+              <Select value={selectedAddressId} onValueChange={handleAddressChange}>
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="배송지를 선택하세요" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="new">
+                    <div className="flex items-center gap-2">
+                      <Plus className="w-3 h-3" />
+                      새 주소 입력
+                    </div>
+                  </SelectItem>
+                  {addresses.map((address) => (
+                    <SelectItem key={address.id} value={address.id}>
+                      <div className="flex flex-col items-start">
+                        <div className="flex items-center gap-2">
+                          <span className="font-medium">{address.name}</span>
+                          {address.isDefault && (
+                            <Badge variant="secondary" className="text-xs">기본</Badge>
+                          )}
+                        </div>
+                        <span className="text-xs text-muted-foreground">
+                          {address.recipientName} | {address.address}
+                        </span>
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Save new address checkbox (only show for new address) */}
+            {selectedAddressId === 'new' && (
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="saveAddress"
+                  checked={saveNewAddress}
+                  onCheckedChange={(checked) => setSaveNewAddress(checked as boolean)}
+                />
+                <Label
+                  htmlFor="saveAddress"
+                  className="text-sm font-normal cursor-pointer"
+                >
+                  이 주소를 저장하기 (다음에 빠르게 선택할 수 있어요)
+                </Label>
+              </div>
+            )}
             
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
               <div>

@@ -40,13 +40,20 @@ export async function POST(request: NextRequest) {
               // Update existing hotdeal
               await db.hotdeals.update(existing.id, {
                 ...hotdeal,
-                id: existing.id,
-                createdAt: existing.createdAt
+                id: existing.id
               })
               updatedDeals++
             } else {
               // Create new hotdeal
-              await db.hotdeals.create(hotdeal)
+              await db.hotdeals.create({
+                ...hotdeal,
+                status: 'active' as const,
+                sourcePostId: hotdeal.title + '-' + Date.now(),
+                viewCount: 0,
+                likeCount: 0,
+                commentCount: 0,
+                translationStatus: 'pending' as const
+              })
               newDeals++
             }
           } catch (error) {

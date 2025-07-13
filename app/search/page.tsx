@@ -57,7 +57,6 @@ export default function SearchPage() {
       const lowerQuery = query.toLowerCase()
       results = results.filter(deal => 
         deal.title.toLowerCase().includes(lowerQuery) ||
-        deal.description?.toLowerCase().includes(lowerQuery) ||
         deal.category?.toLowerCase().includes(lowerQuery) ||
         deal.source?.toLowerCase().includes(lowerQuery) ||
         deal.seller?.toLowerCase().includes(lowerQuery) ||
@@ -110,7 +109,7 @@ export default function SearchPage() {
 
     // Filter by free shipping
     if (freeShipping) {
-      results = results.filter(deal => deal.isFreeShipping)
+      results = results.filter(deal => deal.shipping?.isFree)
     }
 
     // Filter by today only

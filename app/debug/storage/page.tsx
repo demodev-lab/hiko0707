@@ -120,7 +120,7 @@ export default function StorageDebugPage() {
                       <div>
                         <p className="font-medium text-sm">{deal.title}</p>
                         <p className="text-xs text-gray-500">
-                          {deal.source} | {deal.originalPrice || 'N/A'}
+                          {deal.source} | ₩{deal.price.toLocaleString()}
                         </p>
                       </div>
                       <Badge variant={deal.status === 'active' ? 'default' : 'secondary'}>

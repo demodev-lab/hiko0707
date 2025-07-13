@@ -59,7 +59,7 @@ export default function HotDealDetailPage() {
           )
           .sort((a, b) => {
             // 추천수가 높은 순으로 정렬
-            return b.communityRecommendCount - a.communityRecommendCount
+            return (b.communityRecommendCount || 0) - (a.communityRecommendCount || 0)
           })
           .slice(0, 4)
         setSimilarDeals(similar)
@@ -214,7 +214,7 @@ export default function HotDealDetailPage() {
                 <span className="flex items-center gap-1 bg-blue-50 px-2 py-1 rounded">
                   <ThumbsUp className="w-3 h-3 sm:w-4 sm:h-4 text-blue-600" />
                   <span className="font-medium">추천</span>
-                  <span className="text-blue-900 font-semibold">{deal.communityRecommendCount.toLocaleString()}</span>
+                  <span className="text-blue-900 font-semibold">{(deal.communityRecommendCount || 0).toLocaleString()}</span>
                 </span>
                 <span className="flex items-center gap-1 bg-green-50 px-2 py-1 rounded">
                   <MessageSquare className="w-3 h-3 sm:w-4 sm:h-4 text-green-600" />
@@ -400,7 +400,7 @@ export default function HotDealDetailPage() {
                 <span className="flex items-center gap-1 bg-blue-50 px-2 py-1 rounded">
                   <ThumbsUp className="w-3 h-3 sm:w-4 sm:h-4 text-blue-600" />
                   <span className="font-medium">추천</span>
-                  <span className="text-blue-900 font-semibold">{deal.communityRecommendCount.toLocaleString()}</span>
+                  <span className="text-blue-900 font-semibold">{(deal.communityRecommendCount || 0).toLocaleString()}</span>
                 </span>
                 <span className="flex items-center gap-1 bg-green-50 px-2 py-1 rounded">
                   <MessageSquare className="w-3 h-3 sm:w-4 sm:h-4 text-green-600" />
@@ -445,15 +445,7 @@ export default function HotDealDetailPage() {
                   <span className="flex items-center gap-1 text-sm sm:text-base">
                     <Truck className="w-3 h-3 sm:w-4 sm:h-4 text-green-600" />
                     <span className={`font-semibold ${deal.shipping.isFree ? 'text-green-600' : 'text-gray-600'}`}>
-                      {deal.shipping.isFree ? '무료배송' : (
-                        deal.shipping.cost ? (
-                          <PriceDisplay 
-                            price={deal.shipping.cost} 
-                            originalCurrency="KRW"
-                            className="font-semibold text-gray-600"
-                          />
-                        ) : '배송비 별도'
-                      )}
+                      {deal.shipping.isFree ? '무료배송' : '배송비 별도'}
                     </span>
                   </span>
                 </div>

@@ -61,7 +61,7 @@ export function BuyForMeButton({
         className={className}
       >
         <ShoppingBag className="w-4 h-4 mr-2" />
-        대리 구매 신청
+        상세 주문
       </Button>
 
       <BuyForMeModal

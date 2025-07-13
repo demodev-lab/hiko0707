@@ -94,7 +94,7 @@ export default function ImportDataPage() {
         total: hotdeals.length,
         categories: categories.size,
         sources: sources.size,
-        freeShipping: hotdeals.filter(h => h.isFreeShipping).length,
+        freeShipping: hotdeals.filter(h => h.shipping?.isFree).length,
         popular: hotdeals.filter(h => h.isPopular).length
       })
     } catch (error) {
