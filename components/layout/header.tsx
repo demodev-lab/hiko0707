@@ -12,7 +12,7 @@ import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { languages } from '@/lib/i18n/config'
 import { useAuth } from '@/hooks/use-auth'
-import { useRouter } from 'next/navigation'
+import { useRouter, usePathname } from 'next/navigation'
 import { ShowForRole, RoleBasedContent } from '@/components/auth/role-based-content'
 import { CurrencyCalculatorModal } from '@/components/features/currency-calculator-modal'
 
@@ -24,8 +24,12 @@ export function Header() {
   const [currencyModalOpen, setCurrencyModalOpen] = useState(false)
   const { currentUser, logout, isAuthenticated } = useAuth()
   const router = useRouter()
+  const pathname = usePathname()
   const langMenuRef = useRef<HTMLDivElement>(null)
   const userMenuRef = useRef<HTMLDivElement>(null)
+  
+  // 핫딜 페이지와 검색 페이지에서는 검색바 숨김
+  const hideSearchBar = pathname === '/hotdeals' || pathname === '/search'
 
   const currentLang = languages[0] // 기본 언어 (한국어)
 
@@ -103,19 +107,21 @@ export function Header() {
             </ShowForRole>
           </nav>
 
-          {/* 검색바 (데스크톱) */}
-          <form onSubmit={handleSearch} className="hidden lg:flex items-center space-x-2 flex-1 max-w-sm mx-8">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-              <Input
-                type="text"
-                placeholder="핫딜 검색..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10 pr-4"
-              />
-            </div>
-          </form>
+          {/* 검색바 (데스크톱) - 핫딜/검색 페이지에서는 숨김 */}
+          {!hideSearchBar && (
+            <form onSubmit={handleSearch} className="hidden lg:flex items-center space-x-2 flex-1 max-w-sm mx-8">
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                <Input
+                  type="text"
+                  placeholder="핫딜 검색..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-10 pr-4"
+                />
+              </div>
+            </form>
+          )}
 
           {/* 우측 메뉴 */}
           <div className="flex items-center space-x-2 sm:space-x-4">
@@ -247,21 +253,23 @@ export function Header() {
           </div>
         </div>
 
-        {/* 모바일 검색바 */}
-        <div className="lg:hidden border-t border-gray-200 dark:border-gray-800 pt-3 pb-3">
-          <form onSubmit={handleSearch} className="flex items-center">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-              <Input
-                type="text"
-                placeholder="핫딜 검색..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10 pr-4 text-sm"
-              />
-            </div>
-          </form>
-        </div>
+        {/* 모바일 검색바 - 핫딜/검색 페이지에서는 숨김 */}
+        {!hideSearchBar && (
+          <div className="lg:hidden border-t border-gray-200 dark:border-gray-800 pt-3 pb-3">
+            <form onSubmit={handleSearch} className="flex items-center">
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                <Input
+                  type="text"
+                  placeholder="핫딜 검색..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-10 pr-4 text-sm"
+                />
+              </div>
+            </form>
+          </div>
+        )}
       </div>
 
       {/* 모바일 네비게이션 메뉴 */}

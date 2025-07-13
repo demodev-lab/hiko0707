@@ -84,7 +84,7 @@ export function useCurrency(options: UseCurrencyOptions = {}) {
 
 // 환율 계산기 전용 hook
 export function useCurrencyCalculator() {
-  const [amount, setAmount] = useState<string>('1000')
+  const [amount, setAmount] = useState<string>('10000')
   const [fromCurrency, setFromCurrency] = useState<string>('KRW')
   const [toCurrency, setToCurrency] = useState<string>('USD')
   const { currencies, convert, format, getRate } = useCurrency()

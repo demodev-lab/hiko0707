@@ -17,6 +17,7 @@ import { TranslatedContent } from '@/components/features/translation/translated-
 import { TranslationIndicator } from '@/components/features/translation/translation-indicator'
 import { useHotDealTranslation } from '@/hooks/use-translations'
 import { AnimatedCard } from '@/components/ui/animated'
+import { PriceDisplay } from '@/components/features/price-display'
 
 interface HotDealCardProps {
   deal: HotDeal
@@ -184,9 +185,15 @@ export function HotDealCard({ deal }: HotDealCardProps) {
               className="hover:opacity-80 transition-opacity cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1 rounded"
             >
               <div className="flex items-center gap-2 flex-wrap">
-                <span className="text-lg font-bold text-red-600">
-                  {deal.price ? formatCurrency(deal.price, language) : '가격 정보 없음'}
-                </span>
+                {deal.price ? (
+                  <PriceDisplay 
+                    price={deal.price} 
+                    originalCurrency="KRW"
+                    className="text-lg font-bold text-red-600"
+                  />
+                ) : (
+                  <span className="text-lg font-bold text-red-600">가격 정보 없음</span>
+                )}
                 {/* 배송 정보 - 가격과 같은 라인 */}
                 {deal.shipping?.isFree && (
                   <span className="text-xs text-green-600 font-medium bg-green-50 px-2 py-1 rounded shrink-0">

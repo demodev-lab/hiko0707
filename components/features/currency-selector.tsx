@@ -10,9 +10,11 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { useCurrency } from '@/hooks/use-currency'
 import { Currency } from '@/lib/services/currency-service'
+import { useCurrencyContext } from '@/contexts/currency-context'
 
 export function CurrencySelector() {
-  const { selectedCurrency, currencies, changeCurrency } = useCurrency()
+  const { currencies } = useCurrency()
+  const { selectedCurrency, changeCurrency } = useCurrencyContext()
   
   const currentCurrency = currencies.find(c => c.code === selectedCurrency)
 

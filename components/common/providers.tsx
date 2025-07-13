@@ -8,6 +8,7 @@ import { ThemeProvider } from '@/contexts/theme-context'
 import { MockDataInitializer } from './mock-data-initializer'
 import { ErrorBoundary } from './error-boundary'
 import { ChatProvider } from '@/components/features/chat/chat-provider'
+import { CurrencyProvider } from '@/contexts/currency-context'
 // import { KakaoProvider } from '@/components/providers/kakao-provider'
 import { useState } from 'react'
 
@@ -40,12 +41,14 @@ export function Providers({ children }: { children: React.ReactNode }) {
         <JotaiProvider>
           <ThemeProvider>
             <LanguageProvider>
-              <NotificationProvider>
-                <ChatProvider>
-                  <MockDataInitializer />
-                  {children}
-                </ChatProvider>
-              </NotificationProvider>
+              <CurrencyProvider>
+                <NotificationProvider>
+                  <ChatProvider>
+                    <MockDataInitializer />
+                    {children}
+                  </ChatProvider>
+                </NotificationProvider>
+              </CurrencyProvider>
             </LanguageProvider>
           </ThemeProvider>
         </JotaiProvider>

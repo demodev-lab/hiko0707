@@ -2,6 +2,8 @@
 
 import { useCurrency } from '@/hooks/use-currency'
 import { cn } from '@/lib/utils'
+import { useCurrencyContext } from '@/contexts/currency-context'
+import { useEffect, useState } from 'react'
 
 interface PriceDisplayProps {
   price: number
@@ -20,10 +22,28 @@ export function PriceDisplay({
   className,
   originalClassName,
 }: PriceDisplayProps) {
-  const { selectedCurrency, format, convert, getRate } = useCurrency()
+  const { format, convert, getRate } = useCurrency()
+  const { selectedCurrency } = useCurrencyContext()
+  const [currentCurrency, setCurrentCurrency] = useState(selectedCurrency)
+  
+  // 통화 변경 이벤트 감지
+  useEffect(() => {
+    const handleCurrencyChange = (e: CustomEvent) => {
+      setCurrentCurrency(e.detail.currency)
+    }
+    
+    window.addEventListener('currencyChanged', handleCurrencyChange as any)
+    return () => {
+      window.removeEventListener('currencyChanged', handleCurrencyChange as any)
+    }
+  }, [])
+  
+  useEffect(() => {
+    setCurrentCurrency(selectedCurrency)
+  }, [selectedCurrency])
 
   // 선택된 통화와 원래 통화가 같으면 그대로 표시
-  if (selectedCurrency === originalCurrency) {
+  if (currentCurrency === originalCurrency) {
     return (
       <span className={className}>
         {format(price, originalCurrency)}
@@ -42,7 +62,7 @@ export function PriceDisplay({
   return (
     <div className="inline-flex flex-col gap-0.5">
       <span className={className}>
-        {format(convertedPrice, selectedCurrency)}
+        {format(convertedPrice, currentCurrency)}
       </span>
       {showOriginal && (
         <span className={cn('text-xs text-muted-foreground', originalClassName)}>
@@ -51,7 +71,7 @@ export function PriceDisplay({
       )}
       {showRate && exchangeRate && (
         <span className="text-xs text-muted-foreground">
-          1 {originalCurrency} = {exchangeRate.toFixed(2)} {selectedCurrency}
+          1 {originalCurrency} = {exchangeRate.toFixed(2)} {currentCurrency}
         </span>
       )}
     </div>
@@ -73,13 +93,31 @@ export function DiscountPriceDisplay({
   className,
   originalClassName,
 }: DiscountPriceDisplayProps) {
-  const { selectedCurrency, format, convert } = useCurrency()
+  const { format, convert } = useCurrency()
+  const { selectedCurrency } = useCurrencyContext()
+  const [currentCurrency, setCurrentCurrency] = useState(selectedCurrency)
+  
+  // 통화 변경 이벤트 감지
+  useEffect(() => {
+    const handleCurrencyChange = (e: CustomEvent) => {
+      setCurrentCurrency(e.detail.currency)
+    }
+    
+    window.addEventListener('currencyChanged', handleCurrencyChange as any)
+    return () => {
+      window.removeEventListener('currencyChanged', handleCurrencyChange as any)
+    }
+  }, [])
+  
+  useEffect(() => {
+    setCurrentCurrency(selectedCurrency)
+  }, [selectedCurrency])
 
-  const convertedPrice = selectedCurrency === originalCurrency 
+  const convertedPrice = currentCurrency === originalCurrency 
     ? price 
     : convert(price, originalCurrency)
   
-  const convertedOriginalPrice = selectedCurrency === originalCurrency
+  const convertedOriginalPrice = currentCurrency === originalCurrency
     ? originalPrice
     : convert(originalPrice, originalCurrency)
 
@@ -92,17 +130,17 @@ export function DiscountPriceDisplay({
   return (
     <div className="inline-flex items-center gap-2">
       <span className={cn('font-bold text-red-600', className)}>
-        {format(convertedPrice, selectedCurrency)}
+        {format(convertedPrice, currentCurrency)}
       </span>
       <span className="text-sm text-muted-foreground line-through">
-        {format(convertedOriginalPrice, selectedCurrency)}
+        {format(convertedOriginalPrice, currentCurrency)}
       </span>
       {calculatedDiscountRate > 0 && (
         <span className="text-xs font-semibold text-red-600 bg-red-50 px-1.5 py-0.5 rounded">
           {calculatedDiscountRate}%
         </span>
       )}
-      {showOriginal && selectedCurrency !== originalCurrency && (
+      {showOriginal && currentCurrency !== originalCurrency && (
         <span className={cn('text-xs text-muted-foreground', originalClassName)}>
           ({format(price, originalCurrency)})
         </span>

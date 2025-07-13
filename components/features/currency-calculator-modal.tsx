@@ -12,18 +12,20 @@ interface CurrencyCalculatorModalProps {
 export function CurrencyCalculatorModal({ open, onOpenChange }: CurrencyCalculatorModalProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2 text-xl">
-            <Calculator className="w-5 h-5" />
+      <DialogContent className="max-w-lg sm:max-w-xl p-0 gap-0">
+        <DialogHeader className="px-4 sm:px-6 pt-4 sm:pt-6 pb-2">
+          <DialogTitle className="flex items-center gap-2 text-lg sm:text-xl">
+            <Calculator className="w-5 h-5 text-blue-600" />
             실시간 환율 계산기
           </DialogTitle>
-        </DialogHeader>
-        <div className="py-4">
-          <p className="text-gray-600 mb-6">
-            한국 원화를 여러분의 통화로 바로 환산해보세요. 쇼핑 전 가격을 미리 확인할 수 있습니다.
+          <p className="text-sm text-gray-600 mt-2">
+            한국 쇼핑 가격을 여러분의 통화로 확인하세요
           </p>
-          <CurrencyCalculator isEmbedded={true} />
+        </DialogHeader>
+        <div className="px-4 sm:px-6 pb-4 sm:pb-6">
+          <div className="max-w-md mx-auto">
+            <CurrencyCalculator isEmbedded={true} />
+          </div>
         </div>
       </DialogContent>
     </Dialog>

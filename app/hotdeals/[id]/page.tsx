@@ -21,6 +21,7 @@ import { HotDeal } from '@/types/hotdeal'
 import { useHotDeals } from '@/hooks/use-local-db'
 import { OptimizedImage } from '@/components/ui/optimized-image'
 import { Loading } from '@/components/ui/loading'
+import { PriceDisplay } from '@/components/features/price-display'
 
 const sourceLabels: Record<string, string> = {
   ppomppu: '뽐뿌',
@@ -240,9 +241,15 @@ export default function HotDealDetailPage() {
           {/* 가격 정보 - 모바일에서 한 줄로 표시 */}
           <div className="bg-gradient-to-r from-red-50 to-orange-50 border border-red-100 p-4 rounded-xl shadow-sm">
             <div className="flex items-center justify-between gap-4">
-              <span className="text-2xl font-bold text-red-600">
-                {deal.price ? `₩${deal.price.toLocaleString()}` : '가격 정보 없음'}
-              </span>
+              {deal.price ? (
+                <PriceDisplay 
+                  price={deal.price} 
+                  originalCurrency="KRW"
+                  className="text-2xl font-bold text-red-600"
+                />
+              ) : (
+                <span className="text-2xl font-bold text-red-600">가격 정보 없음</span>
+              )}
               {deal.shipping && deal.shipping.isFree && (
                 <span className="flex items-center gap-1 text-sm bg-green-50 px-2 py-1 rounded">
                   <Truck className="w-3 h-3 text-green-600" />
@@ -422,9 +429,15 @@ export default function HotDealDetailPage() {
             <div className="space-y-3">
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                 <span className="text-sm sm:text-base font-medium text-gray-700">판매가</span>
-                <span className="text-2xl sm:text-3xl font-bold text-red-600 break-all">
-                  {deal.price ? `₩${deal.price.toLocaleString()}` : '가격 정보 없음'}
-                </span>
+                {deal.price ? (
+                  <PriceDisplay 
+                    price={deal.price} 
+                    originalCurrency="KRW"
+                    className="text-2xl sm:text-3xl font-bold text-red-600 break-all"
+                  />
+                ) : (
+                  <span className="text-2xl sm:text-3xl font-bold text-red-600 break-all">가격 정보 없음</span>
+                )}
               </div>
               {deal.shipping && (
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 pt-2 border-t border-red-100">
@@ -432,7 +445,15 @@ export default function HotDealDetailPage() {
                   <span className="flex items-center gap-1 text-sm sm:text-base">
                     <Truck className="w-3 h-3 sm:w-4 sm:h-4 text-green-600" />
                     <span className={`font-semibold ${deal.shipping.isFree ? 'text-green-600' : 'text-gray-600'}`}>
-                      {deal.shipping.isFree ? '무료배송' : '배송비 별도'}
+                      {deal.shipping.isFree ? '무료배송' : (
+                        deal.shipping.cost ? (
+                          <PriceDisplay 
+                            price={deal.shipping.cost} 
+                            originalCurrency="KRW"
+                            className="font-semibold text-gray-600"
+                          />
+                        ) : '배송비 별도'
+                      )}
                     </span>
                   </span>
                 </div>
