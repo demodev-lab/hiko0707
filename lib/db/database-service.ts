@@ -8,7 +8,6 @@ import { PaymentRepository, PaymentRequestRepository } from './local/repositorie
 import { FavoriteRepository } from './local/repositories/favorite-repository'
 import { BuyForMeRepository } from './local/repositories/buy-for-me-repository'
 import { TranslationRepository } from './local/repositories/translation-repository'
-import { AddressRepository } from './local/repositories/address-repository'
 import { initializeMockData } from './mock-data'
 import { LocalStorage } from './storage'
 
@@ -26,7 +25,6 @@ export class DatabaseService {
   public favorites: FavoriteRepository
   public buyForMeRequests: BuyForMeRepository
   public translations: TranslationRepository
-  public addresses: AddressRepository
 
   private constructor() {
     this.users = new UserRepository()
@@ -40,7 +38,6 @@ export class DatabaseService {
     this.favorites = new FavoriteRepository()
     this.buyForMeRequests = new BuyForMeRepository()
     this.translations = new TranslationRepository()
-    this.addresses = new AddressRepository()
     
     if (typeof window !== 'undefined') {
       initializeMockData()
@@ -65,7 +62,6 @@ export class DatabaseService {
     await this.paymentRequests.deleteAll()
     await this.favorites.deleteAll()
     await this.buyForMeRequests.deleteAll()
-    await this.addresses.deleteAll()
   }
 
   async backup(): Promise<string> {
@@ -79,7 +75,6 @@ export class DatabaseService {
       paymentRequests: await this.paymentRequests.findAll(),
       favorites: await this.favorites.findAll(),
       buyForMeRequests: await this.buyForMeRequests.findAll(),
-      addresses: await this.addresses.findAll(),
       timestamp: new Date().toISOString()
     }
     return JSON.stringify(data, null, 2)
@@ -101,7 +96,6 @@ export class DatabaseService {
       storage.set('payment_requests', data.paymentRequests)
       storage.set('favorites', data.favorites || [])
       storage.set('buyForMeRequests', data.buyForMeRequests || [])
-      storage.set('addresses', data.addresses || [])
       
       console.log('Data restored successfully')
     } catch (error) {

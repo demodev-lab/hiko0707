@@ -14,7 +14,6 @@ function convertToHotDeal(crawledDeal: CrawledHotDeal): Omit<HotDeal, 'id'> {
     originalUrl: crawledDeal.originalUrl,
     seller: crawledDeal.seller,
     source: crawledDeal.source as HotDeal['source'],
-    sourcePostId: uuidv4(), // 새로운 ID 생성
     crawledAt: crawledDeal.crawledAt,
     userId: crawledDeal.userId,
     communityCommentCount: crawledDeal.communityCommentCount || 0,

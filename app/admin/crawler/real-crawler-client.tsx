@@ -8,7 +8,6 @@ import { Input } from '@/components/ui/input'
 import { Loader2, Play, CheckCircle, XCircle } from 'lucide-react'
 import { PpomppuRealCrawler } from '@/lib/crawlers/ppomppu-real-crawler'
 import { db } from '@/lib/db/database-service'
-import { HotDealSource } from '@/types/hotdeal'
 
 export function RealCrawlerClient() {
   const [isRunning, setIsRunning] = useState(false)
@@ -62,16 +61,7 @@ export function RealCrawlerClient() {
             const isDuplicate = existing.some(d => d.originalUrl === deal.originalUrl)
             
             if (!isDuplicate) {
-              await db.hotdeals.create({
-                ...deal,
-                source: deal.source as HotDealSource,
-                status: 'active' as const,
-                sourcePostId: deal.title + '-' + Date.now(),
-                viewCount: 0,
-                likeCount: 0,
-                commentCount: 0,
-                translationStatus: 'pending' as const
-              })
+              await db.hotdeals.create(deal)
               savedCount++
             } else {
               skippedCount++

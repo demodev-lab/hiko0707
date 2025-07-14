@@ -23,40 +23,16 @@ import {
   Zap
 } from 'lucide-react'
 import { HotDealSource } from '@/types/hotdeal'
-// TODO: 크롤러 액션들을 구현해야 함
-// import { 
-//   getCrawlerStatusAction, 
-//   getAvailableCrawlersAction,
-//   CrawlActionOptions,
-//   CrawlActionResult
-// } from '@/actions/crawler-actions'
-import { toast } from 'sonner'
+import { 
+  executeCrawlAction, 
+  getCrawlerStatusAction, 
+  getAvailableCrawlersAction,
+  CrawlActionOptions,
+  CrawlActionResult
+} from '@/actions/crawler-actions'
+import { useToast } from '@/hooks/use-toast'
 import { formatDistanceToNow } from 'date-fns'
 import { ko } from 'date-fns/locale'
-
-// 임시 타입 정의
-interface CrawlActionOptions {
-  sources: HotDealSource[]
-  maxPages: number
-  concurrent: boolean
-  exportToJson: boolean
-  saveToDb: boolean
-  timeFilterHours?: number
-}
-
-interface CrawlActionResult {
-  success: boolean
-  message: string
-  data?: any
-  stats?: {
-    totalCrawled: number
-    totalSaved: number
-    totalUpdated: number
-    totalSkipped: number
-    duration: number
-  }
-  errors?: string[]
-}
 
 interface CrawlerStatus {
   totalHotDeals: number
@@ -74,6 +50,7 @@ interface CrawlerInfo {
 }
 
 export function CrawlerManagementPanel() {
+  const { toast } = useToast()
   const [isLoading, setIsLoading] = useState(false)
   const [isCrawling, setIsCrawling] = useState(false)
   const [crawlerStatus, setCrawlerStatus] = useState<CrawlerStatus | null>(null)
@@ -96,11 +73,10 @@ export function CrawlerManagementPanel() {
   const loadCrawlerStatus = async () => {
     setIsLoading(true)
     try {
-      // TODO: 크롤러 상태 로드 함수 구현 필요
-      // const result = await getCrawlerStatusAction()
-      // if (result.success && result.data) {
-      //   setCrawlerStatus(result.data)
-      // }
+      const result = await getCrawlerStatusAction()
+      if (result.success && result.data) {
+        setCrawlerStatus(result.data)
+      }
     } catch (error) {
       console.error('크롤러 상태 로드 실패:', error)
     } finally {
@@ -110,11 +86,10 @@ export function CrawlerManagementPanel() {
 
   const loadAvailableCrawlers = async () => {
     try {
-      // TODO: 크롤러 목록 로드 함수 구현 필요
-      // const result = await getAvailableCrawlersAction()
-      // if (result.success && result.data) {
-      //   setAvailableCrawlers(result.data)
-      // }
+      const result = await getAvailableCrawlersAction()
+      if (result.success && result.data) {
+        setAvailableCrawlers(result.data)
+      }
     } catch (error) {
       console.error('크롤러 목록 로드 실패:', error)
     }
@@ -133,13 +108,29 @@ export function CrawlerManagementPanel() {
         saveToDb
       }
       
-      // TODO: 크롤링 액션 함수를 구현해야 함
-      // const result = await executeCrawlAction(options)
-      // setCrawlResult(result)
+      const result = await executeCrawlAction(options)
+      setCrawlResult(result)
       
-      toast.error('크롤링 기능이 아직 구현되지 않았습니다.')
+      if (result.success) {
+        toast({
+          title: '크롤링 완료',
+          description: result.message,
+        })
+        // 상태 새로고침
+        await loadCrawlerStatus()
+      } else {
+        toast({
+          title: '크롤링 실패',
+          description: result.message,
+          variant: 'destructive'
+        })
+      }
     } catch (error) {
-      toast.error('크롤링 중 오류가 발생했습니다')
+      toast({
+        title: '오류',
+        description: '크롤링 중 오류가 발생했습니다',
+        variant: 'destructive'
+      })
     } finally {
       setIsCrawling(false)
     }

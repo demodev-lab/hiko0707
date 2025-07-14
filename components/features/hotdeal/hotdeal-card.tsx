@@ -11,7 +11,6 @@ import { useLanguage } from '@/lib/i18n/context'
 import { FavoriteButton } from '@/components/features/favorites/favorite-button'
 import { ShareIconButton } from '@/components/features/share/share-icon-button'
 import { BuyForMeButton } from '@/components/features/order/buy-for-me-button'
-import { QuickBuyButton } from '@/components/features/order/quick-buy-button'
 import { formatCurrency, formatRelativeTime } from '@/lib/i18n/format'
 import { getRelativeTimeKorean } from '@/lib/utils/date-utils'
 import { TranslatedContent } from '@/components/features/translation/translated-content'
@@ -228,10 +227,10 @@ export function HotDealCard({ deal }: HotDealCardProps) {
             </span>
           </div>
         
-          {/* 버튼들 - 개선된 2단계 프로세스 */}
+          {/* 버튼들 - 컴팩트한 배치 */}
           <div className="space-y-1.5">
-            {/* 빠른 구매 버튼 - 주요 액션 (2단계 프로세스) */}
-            <QuickBuyButton
+            {/* Buy for Me 버튼 - 주요 액션 */}
+            <BuyForMeButton
               hotdeal={{
                 id: deal.id,
                 title: deal.title.replace(/\s*\([^)]*원[^)]*\)\s*$/, '').trim(),
@@ -242,42 +241,24 @@ export function HotDealCard({ deal }: HotDealCardProps) {
               }}
               variant="default"
               size="sm"
-              className="w-full h-9 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800"
+              className="w-full h-9"
             />
             
-            {/* 세부 옵션들 */}
-            <div className="grid grid-cols-2 gap-1.5">
-              {/* 상세 대리구매 버튼 - 보조 액션 */}
-              <BuyForMeButton
-                hotdeal={{
-                  id: deal.id,
-                  title: deal.title.replace(/\s*\([^)]*원[^)]*\)\s*$/, '').trim(),
-                  price: (deal.price || 0).toString(),
-                  imageUrl: deal.originalImageUrl,
-                  productUrl: deal.originalUrl || '',
-                  seller: deal.seller,
-                }}
+            {/* 원글 링크 버튼 - 보조 액션 */}
+            <Link 
+              href={deal.originalUrl || '#'} 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="block"
+            >
+              <Button
                 variant="outline"
                 size="sm"
-                className="h-8 text-xs"
-              />
-              
-              {/* 원글 링크 버튼 - 보조 액션 */}
-              <Link 
-                href={deal.originalUrl || '#'} 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="block"
+                className="w-full h-9"
               >
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="w-full h-8 text-xs"
-                >
-                  📋 원글
-                </Button>
-              </Link>
-            </div>
+                📋 원글 보기
+              </Button>
+            </Link>
           </div>
         
         </div>

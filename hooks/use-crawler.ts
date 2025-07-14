@@ -4,7 +4,7 @@ import { useState, useCallback } from 'react'
 import { HotDealSource } from '@/types/hotdeal'
 import { CrawlerFactory } from '@/lib/crawlers/crawler-factory'
 import { CrawlerResult } from '@/lib/crawlers/types'
-import { toast } from 'sonner'
+import { useToast } from '@/hooks/use-toast'
 
 export interface CrawlOptions {
   sources: HotDealSource[]
@@ -16,7 +16,7 @@ export interface CrawlOptions {
 }
 
 export function useCrawler() {
-  // Using imported toast from sonner
+  const { toast } = useToast()
   const [isRunning, setIsRunning] = useState(false)
   const [results, setResults] = useState<Map<HotDealSource, CrawlerResult>>(new Map())
   const [errors, setErrors] = useState<Map<HotDealSource, string>>(new Map())
@@ -72,11 +72,11 @@ export function useCrawler() {
         
         outcomes.forEach((outcome) => {
           if (outcome.status === 'fulfilled') {
-            const value = outcome.value
-            if ('result' in value) {
-              newResults.set(value.source, value.result)
-            } else if ('error' in value) {
-              newErrors.set(value.source, value.error.message || '알 수 없는 오류')
+            const { source, result, error } = outcome.value
+            if (result) {
+              newResults.set(source, result)
+            } else if (error) {
+              newErrors.set(source, error.message || '알 수 없는 오류')
             }
           }
         })
@@ -103,11 +103,22 @@ export function useCrawler() {
         .filter(result => result.success).length
       
       if (successCount === options.sources.length) {
-        toast.success(`크롤링 완료: ${totalCrawled}개의 핫딜을 수집했습니다.`)
+        toast({
+          title: '크롤링 완료',
+          description: `${totalCrawled}개의 핫딜을 수집했습니다.`,
+        })
       } else if (successCount > 0) {
-        toast.info(`크롤링 부분 완료: ${successCount}/${options.sources.length}개 소스에서 ${totalCrawled}개 수집`)
+        toast({
+          title: '크롤링 부분 완료',
+          description: `${successCount}/${options.sources.length}개 소스에서 ${totalCrawled}개 수집`,
+          variant: 'default'
+        })
       } else {
-        toast.error('크롤링 실패: 모든 소스에서 크롤링에 실패했습니다.')
+        toast({
+          title: '크롤링 실패',
+          description: '모든 소스에서 크롤링에 실패했습니다.',
+          variant: 'destructive'
+        })
       }
       
       return {
@@ -118,7 +129,11 @@ export function useCrawler() {
       }
     } catch (error) {
       console.error('크롤링 중 오류:', error)
-      toast.error('크롤링 중 오류가 발생했습니다.')
+      toast({
+        title: '오류',
+        description: '크롤링 중 오류가 발생했습니다.',
+        variant: 'destructive'
+      })
       throw error
     } finally {
       setIsRunning(false)

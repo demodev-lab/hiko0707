@@ -1,16 +1,15 @@
 'use client'
 
 import { useState, useMemo, useEffect } from 'react'
-import { useSearchParams, useRouter } from 'next/navigation'
+import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
-import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Filter, Bell, ShoppingBag } from 'lucide-react'
+import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react'
 import { HotDealCard } from '@/components/features/hotdeal/hotdeal-card'
 import { HotDealFilters } from '@/components/features/filter/hotdeal-filters'
 import { EmptyState } from '@/components/ui/error'
 import { HotDeal } from '@/types/hotdeal'
 import { StaggerContainer, StaggerItem } from '@/components/ui/animated'
 import { calculateTodayRankings } from '@/lib/utils/ranking-utils'
-import { useTranslation } from '@/hooks/use-translation'
 
 interface HotDealsClientProps {
   initialDeals: HotDeal[]
@@ -18,8 +17,6 @@ interface HotDealsClientProps {
 
 export function HotDealsClient({ initialDeals }: HotDealsClientProps) {
   const searchParams = useSearchParams()
-  const router = useRouter()
-  const { t } = useTranslation()
   // 순위 계산된 핫딜 목록
   const rankedDeals = useMemo(() => calculateTodayRankings(initialDeals), [initialDeals])
   const [filteredDeals, setFilteredDeals] = useState<HotDeal[]>(rankedDeals)
@@ -43,16 +40,6 @@ export function HotDealsClient({ initialDeals }: HotDealsClientProps) {
   const freeShipping = searchParams.get('freeShipping') === 'true'
   const todayOnly = searchParams.get('todayOnly') === 'true'
   const page = parseInt(searchParams.get('page') || '1')
-
-  // 필터가 적용되었는지 확인
-  const hasFilters = categories.length > 0 || 
-    communitySources.length > 0 || 
-    shoppingSources.length > 0 || 
-    priceMin || 
-    priceMax || 
-    freeShipping || 
-    todayOnly ||
-    sort !== 'latest'
 
   useEffect(() => {
     let filtered = [...rankedDeals]
@@ -90,7 +77,7 @@ export function HotDealsClient({ initialDeals }: HotDealsClientProps) {
         filtered.sort((a, b) => b.price - a.price)
         break
       case 'popular':
-        filtered.sort((a, b) => (b.viewCount || 0) - (a.viewCount || 0))
+        filtered.sort((a, b) => b.viewCount - a.viewCount)
         break
       default: // 'latest'
         filtered.sort((a, b) => new Date(b.crawledAt).getTime() - new Date(a.crawledAt).getTime())
@@ -211,32 +198,8 @@ export function HotDealsClient({ initialDeals }: HotDealsClientProps) {
           </>
         ) : (
           <EmptyState
-            variant="hotdeals"
-            title={hasFilters ? t('hotdeals.emptyWithFilters') : t('hotdeals.empty')}
-            message={hasFilters 
-              ? t('hotdeals.emptyWithFiltersMessage')
-              : t('hotdeals.emptyMessage')
-            }
-            additionalActions={[
-              ...(hasFilters ? [{
-                label: t('hotdeals.resetFilters'),
-                onClick: () => router.push('/hotdeals'),
-                icon: <Filter className="w-4 h-4" />,
-                variant: 'default' as const
-              }] : []),
-              {
-                label: t('hotdeals.setupAlerts'),
-                onClick: () => router.push('/dashboard/notifications'),
-                icon: <Bell className="w-4 h-4" />,
-                variant: 'outline' as const
-              },
-              {
-                label: t('hotdeals.buyForMe'),
-                onClick: () => router.push('/order'),
-                icon: <ShoppingBag className="w-4 h-4" />,
-                variant: 'outline' as const
-              }
-            ]}
+            title="핫딜이 없습니다"
+            message="조건에 맞는 핫딜을 찾을 수 없습니다. 필터를 조정해보세요."
           />
         )}
       </div>

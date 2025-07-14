@@ -30,7 +30,6 @@ import {
 } from 'lucide-react'
 import Link from 'next/link'
 import Image from 'next/image'
-import { ProgressIndicator } from '@/components/features/order/progress-indicator'
 
 const statusLabels: Record<BuyForMeRequest['status'], string> = {
   pending_review: '검토 대기',
@@ -125,46 +124,111 @@ export default function OrderDetailPage() {
             </Badge>
           </div>
 
-          {/* 주문 진행 상황 - 개선된 진행 표시기 */}
-          <ProgressIndicator currentStatus={request.status} />
-
-          {/* 빠른 액션 버튼들 */}
-          {(request.status === 'quote_sent' || request.status === 'payment_pending') && (
-            <Card>
-              <CardContent className="p-4">
-                <div className="flex gap-3">
-                  {request.status === 'quote_sent' && (
-                    <Link href={`/mypage/orders/${request.id}/quote`} className="flex-1">
-                      <Button className="w-full">
-                        <FileText className="w-4 h-4 mr-2" />
-                        견적서 확인
-                      </Button>
-                    </Link>
-                  )}
-                  {request.status === 'payment_pending' && (
-                    <Link href={`/mypage/orders/${request.id}/payment`} className="flex-1">
-                      <Button className="w-full">
-                        <DollarSign className="w-4 h-4 mr-2" />
-                        결제하기
-                      </Button>
-                    </Link>
-                  )}
-                  {request.orderInfo?.trackingNumber && (
-                    <Button variant="outline" className="flex-1" asChild>
-                      <a 
-                        href={request.orderInfo.trackingUrl || '#'}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        <Truck className="w-4 h-4 mr-2" />
-                        배송 추적
-                      </a>
-                    </Button>
-                  )}
+          {/* 주문 상태 타임라인 */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Clock className="w-5 h-5" />
+                주문 진행 상태
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="relative">
+                <div className="absolute left-4 top-0 bottom-0 w-0.5 bg-gray-200"></div>
+                
+                {/* 주문 접수 */}
+                <div className="relative flex items-start mb-6">
+                  <div className="absolute w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
+                    <CheckCircle className="w-5 h-5 text-white" />
+                  </div>
+                  <div className="ml-12">
+                    <p className="font-medium">주문 접수</p>
+                    <p className="text-sm text-gray-600">
+                      {format(new Date(request.requestDate), 'yyyy년 MM월 dd일 HH:mm', { locale: ko })}
+                    </p>
+                  </div>
                 </div>
-              </CardContent>
-            </Card>
-          )}
+                
+                {/* 건적 발송 */}
+                {request.quote && (
+                  <div className="relative flex items-start mb-6">
+                    <div className={`absolute w-8 h-8 rounded-full flex items-center justify-center ${
+                      ['quote_sent', 'quote_approved', 'payment_pending', 'payment_completed', 'purchasing', 'shipping', 'delivered'].includes(request.status)
+                        ? 'bg-green-500' : 'bg-gray-300'
+                    }`}>
+                      <CheckCircle className="w-5 h-5 text-white" />
+                    </div>
+                    <div className="ml-12">
+                      <p className="font-medium">견적서 발송</p>
+                      <p className="text-sm text-gray-600">
+                        {format(new Date(request.quote.quoteSentDate), 'yyyy년 MM월 dd일 HH:mm', { locale: ko })}
+                      </p>
+                      {request.status === 'quote_sent' && (
+                        <Link href={`/mypage/orders/${request.id}/quote`}>
+                          <Button size="sm" className="mt-2">
+                            견적서 확인
+                          </Button>
+                        </Link>
+                      )}
+                      {request.status === 'payment_pending' && (
+                        <Link href={`/mypage/orders/${request.id}/payment`}>
+                          <Button size="sm" className="mt-2">
+                            결제하기
+                          </Button>
+                        </Link>
+                      )}
+                    </div>
+                  </div>
+                )}
+                
+                {/* 결제 완료 */}
+                {['payment_completed', 'purchasing', 'shipping', 'delivered'].includes(request.status) && (
+                  <div className="relative flex items-start mb-6">
+                    <div className="absolute w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
+                      <CheckCircle className="w-5 h-5 text-white" />
+                    </div>
+                    <div className="ml-12">
+                      <p className="font-medium">결제 완료</p>
+                      <p className="text-sm text-gray-600">결제가 확인되었습니다</p>
+                    </div>
+                  </div>
+                )}
+                
+                {/* 배송 중 */}
+                {['shipping', 'delivered'].includes(request.status) && request.orderInfo?.trackingNumber && (
+                  <div className="relative flex items-start mb-6">
+                    <div className={`absolute w-8 h-8 rounded-full flex items-center justify-center ${
+                      request.status === 'delivered' ? 'bg-green-500' : 'bg-blue-500'
+                    }`}>
+                      {request.status === 'delivered' ? (
+                        <CheckCircle className="w-5 h-5 text-white" />
+                      ) : (
+                        <Truck className="w-5 h-5 text-white" />
+                      )}
+                    </div>
+                    <div className="ml-12">
+                      <p className="font-medium">
+                        {request.status === 'delivered' ? '배송 완료' : '배송 중'}
+                      </p>
+                      <p className="text-sm text-gray-600">
+                        트래킹 번호: {request.orderInfo.trackingNumber}
+                      </p>
+                      {request.orderInfo.trackingUrl && (
+                        <a 
+                          href={request.orderInfo.trackingUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-sm text-blue-600 hover:underline mt-1 inline-block"
+                        >
+                          배송 추적하기
+                        </a>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
 
           {/* 상품 정보 */}
           <Card>

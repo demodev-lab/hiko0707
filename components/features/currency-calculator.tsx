@@ -189,30 +189,62 @@ export function CurrencyCalculator({ isEmbedded = false }: CurrencyCalculatorPro
         </div>
 
         {/* 추가 정보 */}
-        <div className="bg-gray-50 dark:bg-gray-900/50 p-4 rounded-xl border border-gray-200 dark:border-gray-800">
+        <div className="bg-gradient-to-br from-amber-50 to-yellow-50 dark:from-amber-950/20 dark:to-yellow-950/20 p-5 rounded-xl border border-amber-200 dark:border-amber-800/50 space-y-4">
+          {/* 메인 팁 섹션 */}
           <div className="flex items-start gap-3">
-            <div className="p-2 bg-yellow-100 dark:bg-yellow-900/30 rounded-lg shrink-0">
-              <span className="text-lg">💡</span>
+            <div className="p-2.5 bg-amber-100 dark:bg-amber-900/40 rounded-xl shrink-0">
+              <span className="text-xl">💡</span>
             </div>
-            <div className="flex-1 space-y-2">
-              <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
-                팁: 핫딜 가격을 다른 통화로 미리 확인해보세요
+            <div className="flex-1">
+              <h4 className="text-sm font-semibold text-amber-900 dark:text-amber-100 mb-1">
+                스마트 쇼핑 팁
+              </h4>
+              <p className="text-sm text-amber-800 dark:text-amber-200 leading-relaxed">
+                핫딜 가격을 미리 다른 통화로 확인해보고 더 현명한 쇼핑을 하세요
               </p>
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-                <p className="text-xs text-gray-600 dark:text-gray-400">
-                  • 실시간 환율이 30분마다 자동 업데이트됩니다
-                </p>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={refreshRates}
-                  disabled={isLoading}
-                  className="gap-1.5 h-8"
-                >
-                  <RefreshCw className={`h-3.5 w-3.5 ${isLoading ? 'animate-spin' : ''}`} />
-                  지금 새로고침
-                </Button>
+            </div>
+          </div>
+
+          {/* 구분선 */}
+          <div className="border-t border-amber-200 dark:border-amber-800"></div>
+
+          {/* 업데이트 정보 섹션 */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 items-center">
+            <div className="space-y-2">
+              <div className="flex items-center gap-2">
+                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                <span className="text-xs font-medium text-gray-700 dark:text-gray-300">실시간 환율 정보</span>
               </div>
+              <p className="text-xs text-gray-600 dark:text-gray-400 pl-4">
+                30분마다 자동 업데이트
+              </p>
+              {lastUpdated && (
+                <div className="bg-white/60 dark:bg-black/20 p-2.5 rounded-lg border border-amber-200/50 dark:border-amber-800/30">
+                  <p className="text-xs text-gray-600 dark:text-gray-400 mb-1">마지막 갱신</p>
+                  <p className="text-sm font-mono font-semibold text-gray-800 dark:text-gray-200">
+                    {lastUpdated.toLocaleString('ko-KR', {
+                      month: '2-digit',
+                      day: '2-digit',
+                      hour: '2-digit',
+                      minute: '2-digit'
+                    })}
+                  </p>
+                </div>
+              )}
+            </div>
+
+            {/* 새로고침 버튼 섹션 */}
+            <div className="flex justify-center lg:justify-end">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={refreshRates}
+                disabled={isLoading}
+                className="gap-2 h-9 px-4 bg-white/80 dark:bg-gray-800/80 hover:bg-white dark:hover:bg-gray-800 border-amber-300 dark:border-amber-700 text-amber-700 dark:text-amber-300 hover:text-amber-800 dark:hover:text-amber-200 font-medium shadow-sm"
+              >
+                <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
+                수동 새로고침
+              </Button>
             </div>
           </div>
         </div>

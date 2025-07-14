@@ -66,26 +66,28 @@ export function Header() {
 
   return (
     <header id="navigation" role="banner" className="sticky top-0 z-50 w-full bg-white/95 dark:bg-gray-900/95 backdrop-blur supports-[backdrop-filter]:bg-white/60 supports-[backdrop-filter]:dark:bg-gray-900/60 border-b border-gray-200 dark:border-gray-800">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
-          {/* 로고 */}
-          <Link href="/" className="flex items-center space-x-2">
-            <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-              HiKo
-            </h1>
-          </Link>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12">
+        <div className="flex items-center justify-between h-16 gap-4 lg:gap-8">
+          {/* 로고 영역 */}
+          <div className="flex-shrink-0">
+            <Link href="/" className="flex items-center">
+              <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                HiKo
+              </h1>
+            </Link>
+          </div>
 
           {/* 데스크톱 네비게이션 */}
-          <nav className="hidden md:flex items-center space-x-8">
-            <Link href="/hotdeals" className="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 font-medium transition-colors">
+          <nav className="hidden md:flex items-center space-x-4 lg:space-x-8 flex-shrink-0">
+            <Link href="/hotdeals" className="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 font-medium transition-colors whitespace-nowrap">
               핫딜
             </Link>
-            <button onClick={handleOrderClick} className="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 font-medium transition-colors">
+            <button onClick={handleOrderClick} className="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 font-medium transition-colors whitespace-nowrap">
               대리 구매
             </button>
             <button 
               onClick={() => setCurrencyModalOpen(true)}
-              className="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 font-medium transition-colors flex items-center gap-1"
+              className="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 font-medium transition-colors flex items-center gap-1 whitespace-nowrap"
             >
               <Calculator className="w-4 h-4" />
               환율 계산기
@@ -93,14 +95,14 @@ export function Header() {
             
             {/* 회원 전용 메뉴 */}
             <ShowForRole roles={['member', 'admin']}>
-              <Link href="/mypage" className="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 font-medium transition-colors">
+              <Link href="/mypage" className="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 font-medium transition-colors whitespace-nowrap">
                 마이페이지
               </Link>
             </ShowForRole>
             
             {/* 관리자 전용 메뉴 */}
             <ShowForRole roles={['admin']}>
-              <Link href="/admin" className="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 font-medium transition-colors flex items-center gap-1">
+              <Link href="/admin" className="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 font-medium transition-colors flex items-center gap-1 whitespace-nowrap">
                 <Shield className="w-4 h-4" />
                 관리자
               </Link>
@@ -109,22 +111,22 @@ export function Header() {
 
           {/* 검색바 (데스크톱) - 핫딜/검색 페이지에서는 숨김 */}
           {!hideSearchBar && (
-            <form onSubmit={handleSearch} className="hidden lg:flex items-center space-x-2 flex-1 max-w-sm mx-8">
-              <div className="relative flex-1">
+            <form onSubmit={handleSearch} className="hidden lg:flex items-center flex-1 max-w-md mx-4 xl:mx-8">
+              <div className="relative w-full">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                 <Input
                   type="text"
                   placeholder="핫딜 검색..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10 pr-4"
+                  className="pl-10 pr-4 w-full"
                 />
               </div>
             </form>
           )}
 
           {/* 우측 메뉴 */}
-          <div className="flex items-center space-x-2 sm:space-x-4">
+          <div className="flex items-center space-x-2 lg:space-x-4 flex-shrink-0">
             {/* 언어 선택 - native dropdown */}
             <div className="relative" ref={langMenuRef}>
               <Button 

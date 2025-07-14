@@ -3,7 +3,6 @@
 import { CrawledHotDeal } from '@/lib/crawlers/types'
 import { ppomppuCrawler } from '@/lib/crawlers/ppomppu-crawler'
 import { db } from '@/lib/db/database-service'
-import { HotDealSource } from '@/types/hotdeal'
 
 interface PpomppuRawData {
   title: string
@@ -60,20 +59,19 @@ export async function savePpomppuHotDeals(deals: CrawledHotDeal[]): Promise<{
       const existing = existingUrlMap.get(deal.originalUrl);
       
       if (existing) {
-        // 기존 데이터가 있으면 건너뜀 (중복 방지)
-        stats.skipped++;
+        // 종료 상태만 업데이트
+        if (deal.status === 'ended' && existing.status !== 'ended') {
+          await db.hotdeals.update(existing.id, {
+            status: 'ended',
+            updatedAt: new Date()
+          });
+          stats.updated++;
+        } else {
+          stats.skipped++;
+        }
       } else {
-        // 새로운 핫딜 저장 (CrawledHotDeal -> HotDeal 변환)
-        await db.hotdeals.create({
-          ...deal,
-          source: deal.source as HotDealSource,
-          status: 'active' as const,
-          sourcePostId: deal.title + '-' + Date.now(), // 고유 ID 생성
-          viewCount: 0,
-          likeCount: 0,
-          commentCount: 0,
-          translationStatus: 'pending' as const
-        });
+        // 새로운 핫딜 저장
+        await db.hotdeals.create(deal);
         stats.saved++;
       }
     }

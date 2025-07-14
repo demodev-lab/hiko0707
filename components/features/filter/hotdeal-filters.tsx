@@ -525,6 +525,7 @@ export function HotDealFilters({ onFilterChange, showMobileToggle = true }: HotD
               id="filter-modal"
               className="bg-white dark:bg-gray-900 w-full rounded-t-2xl shadow-xl animate-in slide-in-from-bottom duration-300 flex flex-col filter-modal-content mobile-bottom-sheet"
               style={{
+                maxHeight: isMobile ? 'calc(100vh - 56px - env(safe-area-inset-bottom))' : 'calc(85vh)',
                 maxHeight: isMobile ? 'calc(100dvh - 56px - env(safe-area-inset-bottom))' : 'calc(85vh)',
               }}
             >

@@ -15,17 +15,12 @@ import {
   Mail,
   Phone,
   Eye,
-  LogOut,
-  MapPin,
-  Bell,
-  Settings
+  LogOut
 } from 'lucide-react'
 import Link from 'next/link'
 import { BuyForMeRequest } from '@/types/buy-for-me'
 import { format } from 'date-fns'
 import { ko } from 'date-fns/locale'
-import { ProgressIndicator } from '@/components/features/order/progress-indicator'
-import { StatusProgressBar } from '@/components/features/order/status-progress-bar'
 
 const statusLabels: Record<BuyForMeRequest['status'], string> = {
   pending_review: '검토 대기',
@@ -88,9 +83,6 @@ function RequestCard({ request }: { request: BuyForMeRequest }) {
             <p className="font-medium">{request.productOptions}</p>
           </div>
         )}
-        
-        {/* 진행 상황 표시 - 개선된 UI */}
-        <StatusProgressBar status={request.status} className="mb-4" />
         
         {/* 상태별 추가 정보 */}
         {request.status === 'quote_sent' && request.quote && (
@@ -204,45 +196,6 @@ export default function MyPage() {
                 로그아웃
               </Button>
             </div>
-          </div>
-
-          {/* 빠른 메뉴 */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-            <Link href="/mypage/addresses">
-              <Card className="hover:shadow-md transition-shadow cursor-pointer">
-                <CardContent className="p-4 text-center">
-                  <MapPin className="w-8 h-8 mx-auto mb-2 text-blue-600" />
-                  <p className="text-sm font-medium">주소 관리</p>
-                  <p className="text-xs text-muted-foreground">배송지 설정</p>
-                </CardContent>
-              </Card>
-            </Link>
-            
-            <Link href="/hotdeals">
-              <Card className="hover:shadow-md transition-shadow cursor-pointer">
-                <CardContent className="p-4 text-center">
-                  <Package className="w-8 h-8 mx-auto mb-2 text-green-600" />
-                  <p className="text-sm font-medium">핫딜 보기</p>
-                  <p className="text-xs text-muted-foreground">신상품 둘러보기</p>
-                </CardContent>
-              </Card>
-            </Link>
-            
-            <Card className="hover:shadow-md transition-shadow cursor-pointer opacity-50">
-              <CardContent className="p-4 text-center">
-                <Bell className="w-8 h-8 mx-auto mb-2 text-yellow-600" />
-                <p className="text-sm font-medium">알림 설정</p>
-                <p className="text-xs text-muted-foreground">준비 중</p>
-              </CardContent>
-            </Card>
-            
-            <Card className="hover:shadow-md transition-shadow cursor-pointer opacity-50">
-              <CardContent className="p-4 text-center">
-                <Settings className="w-8 h-8 mx-auto mb-2 text-gray-600" />
-                <p className="text-sm font-medium">설정</p>
-                <p className="text-xs text-muted-foreground">준비 중</p>
-              </CardContent>
-            </Card>
           </div>
 
 
