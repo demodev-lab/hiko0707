@@ -2,8 +2,6 @@
 
 import { useCurrency } from '@/hooks/use-currency'
 import { cn } from '@/lib/utils'
-import { useCurrencyContext } from '@/contexts/currency-context'
-import { useEffect, useState } from 'react'
 
 interface PriceDisplayProps {
   price: number
@@ -22,28 +20,10 @@ export function PriceDisplay({
   className,
   originalClassName,
 }: PriceDisplayProps) {
-  const { format, convert, getRate } = useCurrency()
-  const { selectedCurrency } = useCurrencyContext()
-  const [currentCurrency, setCurrentCurrency] = useState(selectedCurrency)
-  
-  // 통화 변경 이벤트 감지
-  useEffect(() => {
-    const handleCurrencyChange = (e: CustomEvent) => {
-      setCurrentCurrency(e.detail.currency)
-    }
-    
-    window.addEventListener('currencyChanged', handleCurrencyChange as any)
-    return () => {
-      window.removeEventListener('currencyChanged', handleCurrencyChange as any)
-    }
-  }, [])
-  
-  useEffect(() => {
-    setCurrentCurrency(selectedCurrency)
-  }, [selectedCurrency])
+  const { format, formatWithDecimals, convert, getRate, selectedCurrency } = useCurrency()
 
   // 선택된 통화와 원래 통화가 같으면 그대로 표시
-  if (currentCurrency === originalCurrency) {
+  if (selectedCurrency === originalCurrency) {
     return (
       <span className={className}>
         {format(price, originalCurrency)}
@@ -52,17 +32,17 @@ export function PriceDisplay({
   }
 
   // 변환된 가격
-  const convertedPrice = convert(price, originalCurrency)
+  const convertedPrice = convert(price, originalCurrency, selectedCurrency)
   if (convertedPrice === null) {
     return <span className={className}>{format(price, originalCurrency)}</span>
   }
 
-  const exchangeRate = getRate(originalCurrency)
+  const exchangeRate = getRate(originalCurrency, selectedCurrency)
 
   return (
     <div className="inline-flex flex-col gap-0.5">
       <span className={className}>
-        {format(convertedPrice, currentCurrency)}
+        {selectedCurrency === 'KRW' ? format(convertedPrice, selectedCurrency) : formatWithDecimals(convertedPrice, selectedCurrency)}
       </span>
       {showOriginal && (
         <span className={cn('text-xs text-muted-foreground', originalClassName)}>
@@ -71,7 +51,7 @@ export function PriceDisplay({
       )}
       {showRate && exchangeRate && (
         <span className="text-xs text-muted-foreground">
-          1 {originalCurrency} = {exchangeRate.toFixed(2)} {currentCurrency}
+          1 {originalCurrency} = {exchangeRate.toFixed(2)} {selectedCurrency}
         </span>
       )}
     </div>
@@ -93,33 +73,15 @@ export function DiscountPriceDisplay({
   className,
   originalClassName,
 }: DiscountPriceDisplayProps) {
-  const { format, convert } = useCurrency()
-  const { selectedCurrency } = useCurrencyContext()
-  const [currentCurrency, setCurrentCurrency] = useState(selectedCurrency)
-  
-  // 통화 변경 이벤트 감지
-  useEffect(() => {
-    const handleCurrencyChange = (e: CustomEvent) => {
-      setCurrentCurrency(e.detail.currency)
-    }
-    
-    window.addEventListener('currencyChanged', handleCurrencyChange as any)
-    return () => {
-      window.removeEventListener('currencyChanged', handleCurrencyChange as any)
-    }
-  }, [])
-  
-  useEffect(() => {
-    setCurrentCurrency(selectedCurrency)
-  }, [selectedCurrency])
+  const { format, formatWithDecimals, convert, selectedCurrency } = useCurrency()
 
-  const convertedPrice = currentCurrency === originalCurrency 
+  const convertedPrice = selectedCurrency === originalCurrency 
     ? price 
-    : convert(price, originalCurrency)
+    : convert(price, originalCurrency, selectedCurrency)
   
-  const convertedOriginalPrice = currentCurrency === originalCurrency
+  const convertedOriginalPrice = selectedCurrency === originalCurrency
     ? originalPrice
-    : convert(originalPrice, originalCurrency)
+    : convert(originalPrice, originalCurrency, selectedCurrency)
 
   if (convertedPrice === null || convertedOriginalPrice === null) {
     return <PriceDisplay price={price} originalCurrency={originalCurrency} className={className} />
@@ -130,17 +92,17 @@ export function DiscountPriceDisplay({
   return (
     <div className="inline-flex items-center gap-2">
       <span className={cn('font-bold text-red-600', className)}>
-        {format(convertedPrice, currentCurrency)}
+        {selectedCurrency === 'KRW' ? format(convertedPrice, selectedCurrency) : formatWithDecimals(convertedPrice, selectedCurrency)}
       </span>
       <span className="text-sm text-muted-foreground line-through">
-        {format(convertedOriginalPrice, currentCurrency)}
+        {selectedCurrency === 'KRW' ? format(convertedOriginalPrice, selectedCurrency) : formatWithDecimals(convertedOriginalPrice, selectedCurrency)}
       </span>
       {calculatedDiscountRate > 0 && (
         <span className="text-xs font-semibold text-red-600 bg-red-50 px-1.5 py-0.5 rounded">
           {calculatedDiscountRate}%
         </span>
       )}
-      {showOriginal && currentCurrency !== originalCurrency && (
+      {showOriginal && selectedCurrency !== originalCurrency && (
         <span className={cn('text-xs text-muted-foreground', originalClassName)}>
           ({format(price, originalCurrency)})
         </span>

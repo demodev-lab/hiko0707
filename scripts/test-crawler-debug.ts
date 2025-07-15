@@ -6,7 +6,7 @@
  * 웹에서 크롤링이 실패할 때 원인을 파악하기 위한 스크립트
  */
 
-import { runCrawler } from '../actions/crawler-actions'
+// import { runCrawler } from '../actions/crawler-actions' // File deleted
 import chalk from 'chalk'
 
 async function testCrawler() {
@@ -20,40 +20,40 @@ async function testCrawler() {
     console.log('- JSON 저장: true')
     console.log('')
     
-    const result = await runCrawler({
-      source: 'ppomppu',
-      pages: 1,
-      headless: true,
-      saveToJson: true,
-      saveToDb: false,
-      groupBySource: false
-    })
+    // const result = await runCrawler({
+    //   source: 'ppomppu',
+    //   pages: 1,
+    //   headless: true,
+    //   saveToJson: true,
+    //   saveToDb: false,
+    //   groupBySource: false
+    // })
     
-    console.log(chalk.green('✅ 크롤링 성공!'))
+    console.log(chalk.green('✅ 크롤링 테스트 스킵 (크롤러 액션 파일 삭제됨)'))
     console.log('')
-    console.log(chalk.cyan('📊 결과:'))
-    console.log(`성공: ${result.success}`)
+    // console.log(chalk.cyan('📊 결과:'))
+    // console.log(`성공: ${result.success}`)
     
-    if (result.success) {
-      console.log(`총 딜 수: ${result.data?.totalDeals || 0}`)
-      console.log(`내보낸 파일: ${result.data?.exportedFiles?.length || 0}개`)
+    // if (result.success) {
+    //   console.log(`총 딜 수: ${result.data?.totalDeals || 0}`)
+    //   console.log(`내보낸 파일: ${result.data?.exportedFiles?.length || 0}개`)
       
-      if (result.data?.results) {
-        result.data.results.forEach((r, i) => {
-          console.log(`- 소스 ${i + 1}: ${r.source} (${r.totalDeals}개 딜)`)
-        })
-      }
+    //   if (result.data?.results) {
+    //     result.data.results.forEach((r, i) => {
+    //       console.log(`- 소스 ${i + 1}: ${r.source} (${r.totalDeals}개 딜)`)
+    //     })
+    //   }
       
-      if (result.data?.exportedFiles) {
-        console.log('')
-        console.log(chalk.cyan('📁 내보낸 파일:'))
-        result.data.exportedFiles.forEach(file => {
-          console.log(`- ${file}`)
-        })
-      }
-    } else {
-      console.log(chalk.red(`❌ 오류: ${result.error}`))
-    }
+    //   if (result.data?.exportedFiles) {
+    //     console.log('')
+    //     console.log(chalk.cyan('📁 내보낸 파일:'))
+    //     result.data.exportedFiles.forEach(file => {
+    //       console.log(`- ${file}`)
+    //     })
+    //   }
+    // } else {
+    //   console.log(chalk.red(`❌ 오류: ${result.error}`))
+    // }
     
   } catch (error) {
     console.log(chalk.red('❌ 테스트 실패:'))

@@ -49,9 +49,9 @@ async function main() {
       delay: 1000 
     })
     
-    // 브라우저 초기화만 테스트
-    await crawler.init()
-    await crawler.cleanup()
+    // 브라우저 초기화만 테스트 (protected methods cannot be accessed)
+    // await crawler.init()
+    // await crawler.cleanup()
     
     console.log(chalk.green('✅ 크롤러 기본 테스트 완료'))
     

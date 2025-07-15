@@ -58,6 +58,7 @@ export function convertCrawledDataToHotDeals(crawledFilePath: string): HotDeal[]
       originalUrl: deal.url,
       seller: deal.storeName,
       source: deal.source as HotDealSource,
+      sourcePostId: deal.sourcePostId,
       crawledAt: new Date(deal.postDate),
       userId: deal.author,
       communityCommentCount: deal.commentCount,

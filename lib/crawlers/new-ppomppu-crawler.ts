@@ -667,9 +667,9 @@ export class PpomppuCrawler extends BaseHotdealCrawler {
       seller: storeName || '알 수 없음',
       category,
       // 매칭된 고해상도 이미지 또는 썸네일 사용
-      originalImageUrl: normalizedImageUrl,
-      imageUrl: normalizedImageUrl,
-      thumbnailImageUrl: post.thumbnailUrl ? (post.thumbnailUrl.startsWith('//') ? `https:${post.thumbnailUrl}` : post.thumbnailUrl) : null,
+      originalImageUrl: normalizedImageUrl || undefined,
+      imageUrl: normalizedImageUrl || undefined,
+      thumbnailImageUrl: post.thumbnailUrl ? (post.thumbnailUrl.startsWith('//') ? `https:${post.thumbnailUrl}` : post.thumbnailUrl) : undefined,
       originalUrl: post.url,
       source: 'ppomppu' as any,
       sourcePostId: post.postNumber, // 뽐뿌 게시글 번호를 중복 체크용 ID로 사용
@@ -685,9 +685,8 @@ export class PpomppuCrawler extends BaseHotdealCrawler {
       status: 'active' as const,
       viewCount: post.views || 0,
       likeCount: 0,
-      commentCount: 0,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
+      commentCount: 0
+      // createdAt and updatedAt not part of HotDeal interface
     }
   }
 

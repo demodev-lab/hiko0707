@@ -81,6 +81,7 @@ function findBestImageUrl(title: string, brand?: string): string {
   
   // 키워드 우선순위로 매칭
   for (const term of searchTerms) {
+    if (!term) continue;
     const cleanTerm = term.replace(/[^\w가-힣]/g, '')
     for (const [keyword, imageUrl] of Object.entries(productImageMap)) {
       if (cleanTerm.includes(keyword) || keyword.includes(cleanTerm)) {
@@ -110,7 +111,7 @@ function generateImageMapping() {
   const combinedDeals = mockHotDeals
   
   combinedDeals.forEach((deal, index) => {
-    const imageUrl = findBestImageUrl(deal.title, deal.brand)
+    const imageUrl = findBestImageUrl(deal.title, deal.seller)
     imageMapping[index.toString()] = imageUrl
     
     console.log(`${index + 1}. ${deal.title} → ${imageUrl}`)

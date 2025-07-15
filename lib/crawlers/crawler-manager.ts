@@ -231,19 +231,17 @@ export class CrawlerManager {
         const existing = existingUrlMap.get(deal.originalUrl)
         
         if (existing) {
-          // 종료 상태만 업데이트
-          if (deal.status === 'ended' && existing.status !== 'ended') {
-            await db.hotdeals.update(existing.id, {
-              status: 'ended',
-              updatedAt: new Date()
-            })
-            stats.updated++
-          } else {
-            stats.skipped++
-          }
+          // 종료 상태만 업데이트 - CrawledHotDeal에는 status 필드가 없음
+          // Skip status update for now
+          stats.skipped++
         } else {
           // 새로운 핫딜 저장
-          await db.hotdeals.create(deal)
+          await db.hotdeals.create({
+            ...deal,
+            source: deal.source as any, // Type cast for string to HotDealSource
+            status: 'active',
+            sourcePostId: deal.originalUrl, // Use URL as default post ID
+          })
           stats.saved++
         }
       }

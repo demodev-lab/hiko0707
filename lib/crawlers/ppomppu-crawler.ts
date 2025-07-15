@@ -188,7 +188,7 @@ export class PpomppuCrawler extends BaseCrawler {
     const title = this.cleanTitle(rawData.title || '')
     
     return {
-      id: `ppomppu-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      // id field not part of CrawledHotDeal interface - will be generated in convertToHotDeal
       title,
       price: this.parsePrice(title),
       originalUrl: rawData.link || '',
@@ -205,12 +205,7 @@ export class PpomppuCrawler extends BaseCrawler {
       shipping: {
         isFree: this.checkFreeShipping(title)
       },
-      status: 'active' as const,
-      likeCount: 0,
-      commentCount: 0,
-      translationStatus: 'pending' as const,
-      createdAt: this.parseDate(rawData.date || ''),
-      updatedAt: new Date(),
+      // status, likeCount, commentCount, translationStatus, createdAt, updatedAt not in CrawledHotDeal interface
       crawlerId: 'ppomppu-crawler-v1',
       crawlerVersion: '1.0.0'
     }
@@ -235,9 +230,9 @@ export class PpomppuCrawler extends BaseCrawler {
         
         // 날짜 체크
         const oldestDeal = pageDeals[pageDeals.length - 1];
-        if (this.config.targetDate && oldestDeal.createdAt < this.config.targetDate) {
+        if (this.config.targetDate && oldestDeal.crawledAt < this.config.targetDate) {
           // targetDate 이후의 게시물만 필터링
-          const filteredDeals = pageDeals.filter(deal => deal.createdAt >= this.config.targetDate!);
+          const filteredDeals = pageDeals.filter(deal => deal.crawledAt >= this.config.targetDate!);
           crawledDeals.push(...filteredDeals);
           shouldContinue = false;
         } else {

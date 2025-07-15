@@ -172,6 +172,8 @@ function generateRealHotDeals(): HotDeal[] {
         cost: Math.random() > 0.3 ? 0 : Math.floor(Math.random() * 3000) + 2500,
         method: Math.random() > 0.5 ? '무료배송' : '일반배송'
       },
+      seller: product.brand, // Use brand as seller
+      sourcePostId: `real-${index + 1}-${source}`, // Generate unique sourcePostId
       status: Math.random() > 0.1 ? 'active' : 'ended',
     } as HotDeal
   })

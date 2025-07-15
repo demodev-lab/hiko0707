@@ -218,13 +218,13 @@ export abstract class BaseHotdealCrawler {
   protected generateStatistics(): CrawlerStatistics {
     const stats: CrawlerStatistics = {
       totalDeals: this.results.length,
-      activeDeals: this.results.filter(deal => !deal.isEnded).length,
-      endedDeals: this.results.filter(deal => deal.isEnded).length,
+      activeDeals: this.results.filter(deal => deal.status === 'active').length,
+      endedDeals: this.results.filter(deal => deal.status === 'ended').length,
       categoryCounts: {},
       storeCounts: {},
-      freeShippingCount: this.results.filter(deal => deal.isFreeShipping).length,
+      freeShippingCount: this.results.filter(deal => deal.shipping?.isFree).length,
       popularCount: this.results.filter(deal => deal.isPopular).length,
-      imagesCount: this.results.filter(deal => deal.thumbnailImageUrl || deal.originalImageUrl).length,
+      imagesCount: this.results.filter(deal => deal.imageUrl || deal.thumbnailImageUrl || deal.originalImageUrl).length,
       contentCount: this.results.filter(deal => deal.productComment && deal.productComment.length > 0).length
     }
 
@@ -237,8 +237,8 @@ export abstract class BaseHotdealCrawler {
 
     // Count by store
     this.results.forEach(deal => {
-      if (deal.storeName) {
-        stats.storeCounts[deal.storeName] = (stats.storeCounts[deal.storeName] || 0) + 1
+      if (deal.seller) {
+        stats.storeCounts[deal.seller] = (stats.storeCounts[deal.seller] || 0) + 1
       }
     })
 

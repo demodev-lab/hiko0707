@@ -59,7 +59,7 @@ export default function HotDealDetailPage() {
           )
           .sort((a, b) => {
             // 추천수가 높은 순으로 정렬
-            return b.communityRecommendCount - a.communityRecommendCount
+            return (b.communityRecommendCount || 0) - (a.communityRecommendCount || 0)
           })
           .slice(0, 4)
         setSimilarDeals(similar)
@@ -125,23 +125,19 @@ export default function HotDealDetailPage() {
       <div className="lg:hidden space-y-4">
         {/* 이미지 영역 */}
         <div className="relative aspect-[4/3] bg-gray-100 rounded-lg overflow-hidden">
-          {deal.originalImageUrl ? (
-            <OptimizedImage
-              src={deal.originalImageUrl}
-              alt={deal.title}
-              width={800}
-              height={600}
-              className="w-full h-full object-contain bg-white"
-              sizes="100vw"
-              priority
-              showLoader={true}
-              quality={90}
-            />
-          ) : (
-            <div className="w-full h-full flex items-center justify-center">
-              <span className="text-gray-400">이미지 없음</span>
-            </div>
-          )}
+          <OptimizedImage
+            src={deal.originalImageUrl || ''}
+            alt={deal.title}
+            width={800}
+            height={600}
+            className="w-full h-full object-contain bg-white"
+            sizes="100vw"
+            priority
+            showLoader={true}
+            quality={90}
+            showFallbackIcon={true}
+            fallbackText={`${deal.seller} 상품`}
+          />
           {deal.ranking && isToday(deal.crawledAt) && (
             <div className="absolute top-4 left-4 bg-yellow-500 text-black px-3 py-2 rounded-lg font-bold text-xl flex items-center gap-2">
               🏆 {deal.ranking}위
@@ -214,7 +210,7 @@ export default function HotDealDetailPage() {
                 <span className="flex items-center gap-1 bg-blue-50 px-2 py-1 rounded">
                   <ThumbsUp className="w-3 h-3 sm:w-4 sm:h-4 text-blue-600" />
                   <span className="font-medium">추천</span>
-                  <span className="text-blue-900 font-semibold">{deal.communityRecommendCount.toLocaleString()}</span>
+                  <span className="text-blue-900 font-semibold">{(deal.communityRecommendCount || 0).toLocaleString()}</span>
                 </span>
                 <span className="flex items-center gap-1 bg-green-50 px-2 py-1 rounded">
                   <MessageSquare className="w-3 h-3 sm:w-4 sm:h-4 text-green-600" />
@@ -309,23 +305,19 @@ export default function HotDealDetailPage() {
         {/* 이미지 영역 - PC에서 2칼럼 차지 */}
         <div className="lg:col-span-2 space-y-4">
           <div className="relative aspect-[4/3] bg-gray-100 rounded-lg overflow-hidden">
-            {deal.originalImageUrl ? (
-              <OptimizedImage
-                src={deal.originalImageUrl}
-                alt={deal.title}
-                width={800}
-                height={600}
-                className="w-full h-full object-contain bg-white"
-                sizes="(max-width: 768px) 100vw, 66vw"
-                priority
-                showLoader={true}
-                quality={90}
-              />
-            ) : (
-              <div className="w-full h-full flex items-center justify-center">
-                <span className="text-gray-400">이미지 없음</span>
-              </div>
-            )}
+            <OptimizedImage
+              src={deal.originalImageUrl || ''}
+              alt={deal.title}
+              width={800}
+              height={600}
+              className="w-full h-full object-contain bg-white"
+              sizes="(max-width: 768px) 100vw, 66vw"
+              priority
+              showLoader={true}
+              quality={90}
+              showFallbackIcon={true}
+              fallbackText={`${deal.seller} 상품`}
+            />
             {deal.ranking && isToday(deal.crawledAt) && (
               <div className="absolute top-4 left-4 bg-yellow-500 text-black px-3 py-2 rounded-lg font-bold text-xl flex items-center gap-2">
                 🏆 {deal.ranking}위
@@ -400,7 +392,7 @@ export default function HotDealDetailPage() {
                 <span className="flex items-center gap-1 bg-blue-50 px-2 py-1 rounded">
                   <ThumbsUp className="w-3 h-3 sm:w-4 sm:h-4 text-blue-600" />
                   <span className="font-medium">추천</span>
-                  <span className="text-blue-900 font-semibold">{deal.communityRecommendCount.toLocaleString()}</span>
+                  <span className="text-blue-900 font-semibold">{(deal.communityRecommendCount || 0).toLocaleString()}</span>
                 </span>
                 <span className="flex items-center gap-1 bg-green-50 px-2 py-1 rounded">
                   <MessageSquare className="w-3 h-3 sm:w-4 sm:h-4 text-green-600" />
@@ -445,15 +437,7 @@ export default function HotDealDetailPage() {
                   <span className="flex items-center gap-1 text-sm sm:text-base">
                     <Truck className="w-3 h-3 sm:w-4 sm:h-4 text-green-600" />
                     <span className={`font-semibold ${deal.shipping.isFree ? 'text-green-600' : 'text-gray-600'}`}>
-                      {deal.shipping.isFree ? '무료배송' : (
-                        deal.shipping.cost ? (
-                          <PriceDisplay 
-                            price={deal.shipping.cost} 
-                            originalCurrency="KRW"
-                            className="font-semibold text-gray-600"
-                          />
-                        ) : '배송비 별도'
-                      )}
+                      {deal.shipping.isFree ? '무료배송' : '배송비 별도'}
                     </span>
                   </span>
                 </div>

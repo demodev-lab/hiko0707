@@ -80,25 +80,21 @@ export function HotDealCard({ deal }: HotDealCardProps) {
       {/* 이미지 영역 */}
       <Link href={`/hotdeals/${deal.id}`} className="block">
         <div className="relative overflow-hidden bg-gray-100 w-full h-64">
-          {deal.originalImageUrl ? (
-            <OptimizedImage
-              src={deal.originalImageUrl}
-              alt={deal.title}
-              width={320}
-              height={256}
-              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-              priority={false}
-              quality={85}
-              showLoader={true}
-              onLoadComplete={() => console.log('🖼️ HotDeal image loaded:', deal.title, deal.originalImageUrl)}
-              onError={() => console.log('🚫 HotDeal image failed:', deal.title, deal.originalImageUrl)}
-            />
-          ) : (
-            <div className="w-full h-full flex items-center justify-center bg-gray-200">
-              <span className="text-gray-400">{t('hotdeals.noImage')}</span>
-            </div>
-          )}
+          <OptimizedImage
+            src={deal.originalImageUrl || ''}
+            alt={deal.title}
+            width={320}
+            height={256}
+            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+            priority={false}
+            quality={85}
+            showLoader={true}
+            showFallbackIcon={true}
+            fallbackText={deal.seller || '상품 이미지'}
+            onLoadComplete={() => console.log('🖼️ HotDeal image loaded:', deal.title, deal.originalImageUrl)}
+            onError={() => console.log('🚫 HotDeal image failed:', deal.title, deal.originalImageUrl)}
+          />
           
           {/* 디버그: imageUrl 정보 표시 (개발용) - 비활성화됨 */}
           {false && process.env.NODE_ENV === 'development' && (

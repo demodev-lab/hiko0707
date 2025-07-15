@@ -1,4 +1,5 @@
 import { BaseRepository } from './base-repository'
+import { storage } from '@/lib/db/storage'
 
 export interface HotDealComment {
   id: string
@@ -85,11 +86,11 @@ export class HotDealCommentRepository extends BaseRepository<HotDealComment> {
     const created = await this.create(comment)
     
     // Update hotdeal comment count
-    const hotdeals = (await this.storage.get('hotdeals') as any[]) || []
+    const hotdeals = (storage.get<any[]>('hotdeals')) || []
     const hotdealIndex = hotdeals.findIndex((d: any) => d.id === data.hotdealId)
     if (hotdealIndex !== -1) {
       hotdeals[hotdealIndex].commentCount = (hotdeals[hotdealIndex].commentCount || 0) + 1
-      this.storage.set('hotdeals', hotdeals)
+      storage.set('hotdeals', hotdeals)
     }
     
     return created
@@ -119,11 +120,11 @@ export class HotDealCommentRepository extends BaseRepository<HotDealComment> {
     })
     
     // Update hotdeal comment count
-    const hotdeals = (await this.storage.get('hotdeals') as any[]) || []
+    const hotdeals = (storage.get<any[]>('hotdeals')) || []
     const hotdealIndex = hotdeals.findIndex((d: any) => d.id === comment.hotdealId)
     if (hotdealIndex !== -1) {
       hotdeals[hotdealIndex].commentCount = Math.max(0, (hotdeals[hotdealIndex].commentCount || 1) - 1)
-      this.storage.set('hotdeals', hotdeals)
+      storage.set('hotdeals', hotdeals)
     }
     
     return true

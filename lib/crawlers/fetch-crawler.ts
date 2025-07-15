@@ -29,7 +29,7 @@ export class FetchCrawler {
     for (let i = 0; i < count; i++) {
       const dealNum = (page - 1) * count + i + 1
       deals.push({
-        id: `fetch-${Date.now()}-${dealNum}`,
+        // id field not part of CrawledHotDeal interface - will be generated in convertToHotDeal
         title: `[${sellers[i % sellers.length]}] 핫딜 상품 ${dealNum} - 최대 70% 할인`,
         price: Math.floor(Math.random() * 100000) + 10000,
         originalUrl: `https://www.ppomppu.co.kr/deal/${dealNum}`,
@@ -46,12 +46,10 @@ export class FetchCrawler {
         shipping: {
           isFree: Math.random() > 0.5
         },
-        status: 'active',
-        likeCount: 0,
-        commentCount: 0,
-        translationStatus: 'pending',
-        createdAt: new Date(),
-        updatedAt: new Date()
+        // Removed properties that don't exist in CrawledHotDeal interface:
+        // status, likeCount, commentCount, translationStatus, createdAt, updatedAt
+        crawlerId: 'fetch-crawler',
+        crawlerVersion: '1.0.0'
       })
     }
     

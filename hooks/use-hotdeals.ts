@@ -115,10 +115,10 @@ export function useSearchHotDeals() {
         )
       }
       
-      // 최소 할인율 필터
+      // 최소 추천수 필터  
       if (minDiscount) {
         deals = deals.filter(d => 
-          d.discountRate && d.discountRate >= minDiscount
+          d.communityRecommendCount && d.communityRecommendCount >= minDiscount
         )
       }
       

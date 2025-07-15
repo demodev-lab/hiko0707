@@ -16,6 +16,7 @@ function convertToHotDeal(crawledDeal: CrawledHotDeal): Omit<HotDeal, 'id'> {
     source: crawledDeal.source as HotDeal['source'],
     crawledAt: crawledDeal.crawledAt,
     userId: crawledDeal.userId,
+    sourcePostId: '',
     communityCommentCount: crawledDeal.communityCommentCount || 0,
     communityRecommendCount: crawledDeal.communityRecommendCount || 0,
     ranking: undefined,

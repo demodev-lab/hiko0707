@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { useState, useRef, useEffect } from 'react'
-import { Menu, X, Search, Languages, User, ShoppingBag, Heart, ChevronDown, Shield, Crown, Calculator } from 'lucide-react'
+import { Menu, X, Search, Languages, User, ShoppingBag, Heart, ChevronDown, Shield, Crown, Calculator, Package } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { NotificationBell } from '@/components/features/notifications/notification-bell'
 import { ThemeToggle } from '@/components/features/theme/theme-toggle'
@@ -22,7 +22,7 @@ export function Header() {
   const [langMenuOpen, setLangMenuOpen] = useState(false)
   const [userMenuOpen, setUserMenuOpen] = useState(false)
   const [currencyModalOpen, setCurrencyModalOpen] = useState(false)
-  const { currentUser, logout, isAuthenticated } = useAuth()
+  const { currentUser, logout, isAuthenticated, isLoading } = useAuth()
   const router = useRouter()
   const pathname = usePathname()
   const langMenuRef = useRef<HTMLDivElement>(null)
@@ -67,7 +67,7 @@ export function Header() {
   return (
     <header id="navigation" role="banner" className="sticky top-0 z-50 w-full bg-white/95 dark:bg-gray-900/95 backdrop-blur supports-[backdrop-filter]:bg-white/60 supports-[backdrop-filter]:dark:bg-gray-900/60 border-b border-gray-200 dark:border-gray-800">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12">
-        <div className="flex items-center justify-between h-16 gap-4 lg:gap-8">
+        <div className="flex items-center h-16 gap-4 lg:gap-8 justify-between">
           {/* 로고 영역 */}
           <div className="flex-shrink-0">
             <Link href="/" className="flex items-center">
@@ -77,40 +77,55 @@ export function Header() {
             </Link>
           </div>
 
-          {/* 데스크톱 네비게이션 */}
-          <nav className="hidden md:flex items-center space-x-4 lg:space-x-8 flex-shrink-0">
-            <Link href="/hotdeals" className="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 font-medium transition-colors whitespace-nowrap">
-              핫딜
-            </Link>
-            <button onClick={handleOrderClick} className="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 font-medium transition-colors whitespace-nowrap">
-              대리 구매
-            </button>
-            <button 
-              onClick={() => setCurrencyModalOpen(true)}
-              className="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 font-medium transition-colors flex items-center gap-1 whitespace-nowrap"
-            >
-              <Calculator className="w-4 h-4" />
-              환율 계산기
-            </button>
-            
-            {/* 회원 전용 메뉴 */}
-            <ShowForRole roles={['member', 'admin']}>
+          {/* 관리자 전용 중앙 네비게이션 */}
+          <ShowForRole roles={['admin']}>
+            <nav className="hidden md:flex items-center space-x-4 lg:space-x-8 flex-shrink-0">
+              <Link 
+                href="/hotdeals" 
+                className="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 font-medium transition-colors whitespace-nowrap px-3 py-2 rounded-md hover:bg-blue-50 dark:hover:bg-gray-800"
+              >
+                핫딜
+              </Link>
+              <Link 
+                href="/admin" 
+                className="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 font-medium transition-colors flex items-center gap-2 whitespace-nowrap px-4 py-2 rounded-md bg-blue-50 dark:bg-gray-800 border border-blue-200 dark:border-gray-700"
+              >
+                <Shield className="w-4 h-4" />
+                관리자 대시보드
+              </Link>
+            </nav>
+          </ShowForRole>
+
+          {/* 일반 사용자/회원 네비게이션 */}
+          <ShowForRole roles={['guest', 'member']} includeHigherRoles={false}>
+            <nav className="hidden md:flex items-center space-x-4 lg:space-x-8 flex-shrink-0">
+              <Link href="/hotdeals" className="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 font-medium transition-colors whitespace-nowrap">
+                핫딜
+              </Link>
+              <button onClick={handleOrderClick} className="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 font-medium transition-colors whitespace-nowrap">
+                대리 구매
+              </button>
+              <button 
+                onClick={() => setCurrencyModalOpen(true)}
+                className="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 font-medium transition-colors flex items-center gap-1 whitespace-nowrap"
+              >
+                <Calculator className="w-4 h-4" />
+                환율 계산기
+              </button>
+            </nav>
+          </ShowForRole>
+          
+          {/* 회원 전용 메뉴 */}
+          <ShowForRole roles={['member']} includeHigherRoles={false}>
+            <nav className="hidden md:flex items-center space-x-4 lg:space-x-8 flex-shrink-0">
               <Link href="/mypage" className="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 font-medium transition-colors whitespace-nowrap">
                 마이페이지
               </Link>
-            </ShowForRole>
-            
-            {/* 관리자 전용 메뉴 */}
-            <ShowForRole roles={['admin']}>
-              <Link href="/admin" className="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 font-medium transition-colors flex items-center gap-1 whitespace-nowrap">
-                <Shield className="w-4 h-4" />
-                관리자
-              </Link>
-            </ShowForRole>
-          </nav>
+            </nav>
+          </ShowForRole>
 
-          {/* 검색바 (데스크톱) - 핫딜/검색 페이지에서는 숨김 */}
-          {!hideSearchBar && (
+          {/* 검색바 (데스크톱) - 핫딜/검색 페이지에서는 숨김, 관리자는 숨김 */}
+          {!hideSearchBar && currentUser?.role !== 'admin' && (
             <form onSubmit={handleSearch} className="hidden lg:flex items-center flex-1 max-w-md mx-4 xl:mx-8">
               <div className="relative w-full">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
@@ -127,43 +142,47 @@ export function Header() {
 
           {/* 우측 메뉴 */}
           <div className="flex items-center space-x-2 lg:space-x-4 flex-shrink-0">
-            {/* 언어 선택 - native dropdown */}
-            <div className="relative" ref={langMenuRef}>
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                className="flex items-center gap-1 px-2"
-                onClick={() => setLangMenuOpen(!langMenuOpen)}
-              >
-                <Languages className="w-4 h-4" />
-                <span className="text-sm font-medium">{currentLang.code.toUpperCase()}</span>
-                <ChevronDown className="w-3 h-3" />
-              </Button>
-              {langMenuOpen && (
-                <Card className="absolute right-0 top-full mt-1 w-40 py-1 shadow-lg z-50">
-                  {languages.map((lang) => (
-                    <button
-                      key={lang.code}
-                      onClick={() => {
-                        console.log('Language changed to:', lang.code)
-                        setLangMenuOpen(false)
-                      }}
-                      className={`w-full px-3 py-2 text-left text-sm hover:bg-gray-100 dark:hover:bg-gray-800 flex items-center ${
-                        currentLang.code === lang.code ? 'bg-blue-50 dark:bg-blue-900/20' : ''
-                      }`}
-                    >
-                      <span className="mr-2 text-lg">{lang.flag}</span>
-                      <span className="text-sm">{lang.code.toUpperCase()}</span>
-                    </button>
-                  ))}
-                </Card>
-              )}
-            </div>
+            {/* 언어 선택 - 관리자가 아닌 경우만 표시 */}
+            {currentUser?.role !== 'admin' && (
+              <div className="relative" ref={langMenuRef}>
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="flex items-center gap-1 px-2"
+                  onClick={() => setLangMenuOpen(!langMenuOpen)}
+                >
+                  <Languages className="w-4 h-4" />
+                  <span className="text-sm font-medium">{currentLang.code.toUpperCase()}</span>
+                  <ChevronDown className="w-3 h-3" />
+                </Button>
+                {langMenuOpen && (
+                  <Card className="absolute right-0 top-full mt-1 w-40 py-1 shadow-lg z-50">
+                    {languages.map((lang) => (
+                      <button
+                        key={lang.code}
+                        onClick={() => {
+                          console.log('Language changed to:', lang.code)
+                          setLangMenuOpen(false)
+                        }}
+                        className={`w-full px-3 py-2 text-left text-sm hover:bg-gray-100 dark:hover:bg-gray-800 flex items-center ${
+                          currentLang.code === lang.code ? 'bg-blue-50 dark:bg-blue-900/20' : ''
+                        }`}
+                      >
+                        <span className="mr-2 text-lg">{lang.flag}</span>
+                        <span className="text-sm">{lang.code.toUpperCase()}</span>
+                      </button>
+                    ))}
+                  </Card>
+                )}
+              </div>
+            )}
 
-            {/* 환율 선택기 */}
-            <div className="flex items-center">
-              <CurrencySelector />
-            </div>
+            {/* 환율 선택기 - 관리자가 아닌 경우만 표시 */}
+            {currentUser?.role !== 'admin' && (
+              <div className="flex items-center">
+                <CurrencySelector />
+              </div>
+            )}
 
             {/* 테마 토글 */}
             <ThemeToggle />
@@ -201,24 +220,14 @@ export function Header() {
                         관리자 대시보드
                       </Link>
                     ) : (
-                      <>
-                        <Link 
-                          href="/mypage"
-                          className="flex items-center w-full px-3 py-2 text-left text-sm hover:bg-gray-100 dark:hover:bg-gray-800"
-                          onClick={() => setUserMenuOpen(false)}
-                        >
-                          <User className="w-4 h-4 mr-2" />
-                          마이페이지
-                        </Link>
-                        <Link 
-                          href="/mypage"
-                          className="flex items-center w-full px-3 py-2 text-left text-sm hover:bg-gray-100 dark:hover:bg-gray-800"
-                          onClick={() => setUserMenuOpen(false)}
-                        >
-                          <ShoppingBag className="w-4 h-4 mr-2" />
-                          내 주문 내역
-                        </Link>
-                      </>
+                      <Link 
+                        href="/mypage"
+                        className="flex items-center w-full px-3 py-2 text-left text-sm hover:bg-gray-100 dark:hover:bg-gray-800"
+                        onClick={() => setUserMenuOpen(false)}
+                      >
+                        <User className="w-4 h-4 mr-2" />
+                        마이페이지
+                      </Link>
                     )}
                     <div className="border-t border-gray-200 dark:border-gray-700 my-1"></div>
                     <button 
@@ -255,8 +264,8 @@ export function Header() {
           </div>
         </div>
 
-        {/* 모바일 검색바 - 핫딜/검색 페이지에서는 숨김 */}
-        {!hideSearchBar && (
+        {/* 모바일 검색바 - 핫딜/검색 페이지에서는 숨김, 관리자는 숨김 */}
+        {!hideSearchBar && currentUser?.role !== 'admin' && (
           <div className="lg:hidden border-t border-gray-200 dark:border-gray-800 pt-3 pb-3">
             <form onSubmit={handleSearch} className="flex items-center">
               <div className="relative flex-1">
@@ -278,39 +287,68 @@ export function Header() {
       {isMobileMenuOpen && (
         <div className="md:hidden border-t border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900">
           <div className="px-4 py-4 space-y-2">
-            <Link
-              href="/hotdeals"
-              className="block px-3 py-2 text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-gray-800 rounded-md transition-colors"
-              onClick={() => setIsMobileMenuOpen(false)}
-            >
-              핫딜
-            </Link>
-            <button
-              onClick={(e) => {
-                handleOrderClick(e)
-                setIsMobileMenuOpen(false)
-              }}
-              className="block w-full text-left px-3 py-2 text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-gray-800 rounded-md transition-colors"
-            >
-              대리 구매
-            </button>
-            <button
-              onClick={() => {
-                setCurrencyModalOpen(true)
-                setIsMobileMenuOpen(false)
-              }}
-              className="flex items-center gap-2 w-full text-left px-3 py-2 text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-gray-800 rounded-md transition-colors"
-            >
-              <Calculator className="w-4 h-4" />
-              환율 계산기
-            </button>
-            <Link
-              href="/mypage"
-              className="block px-3 py-2 text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-gray-800 rounded-md transition-colors"
-              onClick={() => setIsMobileMenuOpen(false)}
-            >
-              마이페이지
-            </Link>
+            {/* 관리자 전용 모바일 메뉴 */}
+            <ShowForRole roles={['admin']}>
+              <div className="space-y-2">
+                <Link
+                  href="/hotdeals"
+                  className="flex items-center gap-3 px-4 py-3 text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-gray-800 rounded-lg transition-colors font-medium"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  <Package className="w-5 h-5" />
+                  핫딜
+                </Link>
+                <Link
+                  href="/admin"
+                  className="flex items-center gap-3 px-4 py-3 text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 bg-blue-50 dark:bg-gray-800 border border-blue-200 dark:border-gray-700 rounded-lg transition-colors font-medium"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  <Shield className="w-5 h-5" />
+                  관리자 대시보드
+                </Link>
+              </div>
+            </ShowForRole>
+            
+            {/* 일반 사용자 메뉴 */}
+            <ShowForRole roles={['guest', 'member']} includeHigherRoles={false}>
+              <Link
+                href="/hotdeals"
+                className="block px-3 py-2 text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-gray-800 rounded-md transition-colors"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                핫딜
+              </Link>
+              <button
+                onClick={(e) => {
+                  handleOrderClick(e)
+                  setIsMobileMenuOpen(false)
+                }}
+                className="block w-full text-left px-3 py-2 text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-gray-800 rounded-md transition-colors"
+              >
+                대리 구매
+              </button>
+              <button
+                onClick={() => {
+                  setCurrencyModalOpen(true)
+                  setIsMobileMenuOpen(false)
+                }}
+                className="flex items-center gap-2 w-full text-left px-3 py-2 text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-gray-800 rounded-md transition-colors"
+              >
+                <Calculator className="w-4 h-4" />
+                환율 계산기
+              </button>
+            </ShowForRole>
+            
+            {/* 회원 전용 메뉴 */}
+            <ShowForRole roles={['member']} includeHigherRoles={false}>
+              <Link
+                href="/mypage"
+                className="block px-3 py-2 text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-gray-800 rounded-md transition-colors"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                마이페이지
+              </Link>
+            </ShowForRole>
           </div>
         </div>
       )}

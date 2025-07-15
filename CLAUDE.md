@@ -190,3 +190,39 @@ const { t } = useTranslation()
 6. **Translations**: All user-facing text must use i18n system
 7. **Mock Data**: Automatically initializes on first load - check localStorage before testing
 8. **Image Management**: Use provided pnpm scripts for image operations
+
+## Development Rules & Constraints
+
+### File Operations
+- NEVER create files unless absolutely necessary for achieving your goal
+- ALWAYS prefer editing existing files over creating new ones
+- NEVER proactively create documentation files (*.md) or README files unless explicitly requested
+- ALL files use kebab-case naming (`hotdeal-card.tsx`, NOT `HotDealCard.tsx`)
+
+### Code Quality Requirements
+- **TypeScript**: Strict mode enabled, no `any` types allowed
+- **ESLint**: Must pass `pnpm lint` before completing tasks
+- **Testing**: Use `pnpm test` to verify changes don't break existing functionality
+- **Error Handling**: Always use try-catch blocks in Server Actions with proper error messages
+
+### Architecture Constraints
+- **No API Routes**: Use Server Actions in `actions/` directory instead
+- **Component Types**: Server Components by default, Client Components only for interactivity
+- **Database Access**: Repository pattern only, no direct LocalStorage access
+- **State Management**: Jotai for global state, TanStack Query for server state
+- **Forms**: React Hook Form + Zod resolver pattern required
+
+### Korean Context Requirements
+- **HiKo Project**: Shopping assistant platform for foreigners in Korea
+- **Multi-language**: All text must use i18n system (7 languages: EN, ZH, VI, MN, TH, JA, RU)
+- **Hot Deal Crawling**: System crawls 6 Korean communities (Ppomppu, Ruliweb, Clien, Quasarzone, Coolenjoy, Itcm)
+- **Order Service**: 8% commission "Buy for me" service for Korean shopping sites
+- **Admin Account**: Email: admin@hiko.kr, Password: admin123
+
+### Special Project Rules
+These rules are derived from shrimp-rules.md and must be followed:
+- **Server Components**: Never add 'use client' directive
+- **Client Components**: Never access Repository directly
+- **Hardcoded Text**: All user-facing text must use translation system
+- **Image Handling**: Use Next.js Image component with proper dimensions
+- **Migration Ready**: Repository pattern enables future Supabase migration

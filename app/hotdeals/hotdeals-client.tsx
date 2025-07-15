@@ -77,7 +77,7 @@ export function HotDealsClient({ initialDeals }: HotDealsClientProps) {
         filtered.sort((a, b) => b.price - a.price)
         break
       case 'popular':
-        filtered.sort((a, b) => b.viewCount - a.viewCount)
+        filtered.sort((a, b) => (b.viewCount || 0) - (a.viewCount || 0))
         break
       default: // 'latest'
         filtered.sort((a, b) => new Date(b.crawledAt).getTime() - new Date(a.crawledAt).getTime())

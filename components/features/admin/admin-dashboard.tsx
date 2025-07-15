@@ -19,7 +19,6 @@ import {
 import { Order } from '@/types/order'
 import { StatsCard } from '@/components/features/admin/stats-card'
 import { useBuyForMeAdmin } from '@/hooks/use-buy-for-me'
-import { getCrawlerProgress } from '@/actions/crawler-actions'
 import Link from 'next/link'
 
 interface AdminDashboardProps {
@@ -35,62 +34,15 @@ interface AdminDashboardProps {
   recentOrders: Order[]
 }
 
-interface CrawlerProgress {
-  isRunning: boolean
-  currentStep: string
-  progress: number
-  currentPost: number
-  totalPosts: number
-  source: string
-  timeFilter?: number
-  startTime?: Date
-  estimatedTimeLeft?: number
-}
 
 export function AdminDashboard({ stats, recentOrders }: AdminDashboardProps) {
   const { allRequests } = useBuyForMeAdmin()
   const [isClient, setIsClient] = useState(false)
-  const [crawlerProgress, setCrawlerProgress] = useState<CrawlerProgress>({
-    isRunning: false,
-    currentStep: '',
-    progress: 0,
-    currentPost: 0,
-    totalPosts: 0,
-    source: ''
-  })
   
   useEffect(() => {
     setIsClient(true)
   }, [])
 
-  // 크롤링 진행도 폴링
-  useEffect(() => {
-    let interval: NodeJS.Timeout | null = null
-
-    const checkProgress = async () => {
-      try {
-        const progressData = await getCrawlerProgress()
-        setCrawlerProgress(progressData)
-        
-        // 크롤링이 실행 중일 때만 지속적으로 폴링
-        if (progressData.isRunning && !interval) {
-          interval = setInterval(checkProgress, 1000)
-        } else if (!progressData.isRunning && interval) {
-          clearInterval(interval)
-          interval = null
-        }
-      } catch (error) {
-        console.error('진행도 조회 실패:', error)
-      }
-    }
-
-    // 초기 체크
-    checkProgress()
-
-    return () => {
-      if (interval) clearInterval(interval)
-    }
-  }, [])
   
   const buyForMeStats = {
     total: allRequests.length,
@@ -146,13 +98,12 @@ export function AdminDashboard({ stats, recentOrders }: AdminDashboardProps) {
   ]
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* 헤더 */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold">관리자 대시보드</h1>
-          <p className="text-gray-600 mt-1">대리 구매 요청 및 핫딜 관리</p>
-        </div>
+    <div className="space-y-6">
+      {/* 헤더 */}
+      <div className="border-b border-gray-200 pb-6">
+        <h1 className="text-3xl font-bold text-gray-900">관리자 대시보드</h1>
+        <p className="text-gray-600 mt-2">HiKo 플랫폼의 모든 비즈니스 운영을 관리하세요</p>
+      </div>
 
         {/* 통계 카드 */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
@@ -161,58 +112,6 @@ export function AdminDashboard({ stats, recentOrders }: AdminDashboardProps) {
           ))}
         </div>
 
-        {/* 크롤링 진행도 카드 */}
-        {crawlerProgress.isRunning && (
-          <Card className="mb-8 border-blue-200 bg-blue-50">
-            <CardHeader className="pb-3">
-              <CardTitle className="flex items-center gap-2 text-blue-900">
-                <RefreshCw className="h-5 w-5 animate-spin" />
-                크롤링 진행 중
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                <div className="flex justify-between text-sm">
-                  <span className="text-blue-700">{crawlerProgress.currentStep}</span>
-                  <span className="font-medium text-blue-900">{crawlerProgress.progress}%</span>
-                </div>
-                <Progress value={crawlerProgress.progress} className="h-2" />
-                
-                {crawlerProgress.totalPosts > 0 && (
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-                    <div>
-                      <p className="text-blue-600">진행 상황</p>
-                      <p className="font-medium text-blue-900">
-                        {crawlerProgress.currentPost} / {crawlerProgress.totalPosts}
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-blue-600">소스</p>
-                      <p className="font-medium text-blue-900 capitalize">{crawlerProgress.source}</p>
-                    </div>
-                    {crawlerProgress.estimatedTimeLeft && (
-                      <div>
-                        <p className="text-blue-600">예상 완료</p>
-                        <p className="font-medium text-blue-900 flex items-center gap-1">
-                          <Clock className="h-3 w-3" />
-                          {Math.floor(crawlerProgress.estimatedTimeLeft / 60)}분 {crawlerProgress.estimatedTimeLeft % 60}초
-                        </p>
-                      </div>
-                    )}
-                    <div>
-                      <Link href="/admin/crawler">
-                        <Button size="sm" variant="outline" className="border-blue-600 text-blue-700 hover:bg-blue-100">
-                          <Database className="w-4 h-4 mr-2" />
-                          크롤러 페이지
-                        </Button>
-                      </Link>
-                    </div>
-                  </div>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-        )}
         
         {/* 대리 구매 알림 카드 */}
         {isClient && buyForMeStats.pending > 0 && (
@@ -313,7 +212,7 @@ export function AdminDashboard({ stats, recentOrders }: AdminDashboardProps) {
               <CardHeader>
                 <CardTitle className="flex items-center justify-between">
                   <span>핫딜 관리</span>
-                  <Link href="/admin/hotdeals">
+                  <Link href="/admin/hotdeal-manager">
                     <Button variant="outline" size="sm">
                       전체 보기
                     </Button>
@@ -333,7 +232,7 @@ export function AdminDashboard({ stats, recentOrders }: AdminDashboardProps) {
                     </div>
                   </div>
                   <div className="text-center">
-                    <Link href="/admin/hotdeals">
+                    <Link href="/admin/hotdeal-manager">
                       <Button className="w-full">
                         <TrendingUp className="w-4 h-4 mr-2" />
                         핫딜 관리 페이지로 이동
@@ -345,7 +244,6 @@ export function AdminDashboard({ stats, recentOrders }: AdminDashboardProps) {
             </Card>
           </TabsContent>
         </Tabs>
-      </div>
     </div>
   )
 }

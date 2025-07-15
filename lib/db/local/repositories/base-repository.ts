@@ -4,7 +4,7 @@ export abstract class BaseRepository<T extends { id: string }> {
   protected abstract tableName: string
 
   async findAll(): Promise<T[]> {
-    const data = storage.get(this.tableName)
+    const data = storage.get<T[]>(this.tableName)
     return data || []
   }
 

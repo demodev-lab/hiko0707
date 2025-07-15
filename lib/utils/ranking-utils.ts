@@ -10,7 +10,7 @@ export function calculateTodayRankings(hotdeals: HotDeal[]): HotDeal[] {
   
   // 오늘 크롤링된 핫딜만 필터링
   const todayDeals = hotdeals.filter(deal => {
-    const crawledDate = new Date(deal.crawledAt || deal.createdAt)
+    const crawledDate = new Date(deal.crawledAt)
     return crawledDate.toDateString() === todayStr
   })
   

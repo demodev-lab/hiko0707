@@ -23,15 +23,22 @@ function getImageUrl(deal: any, index: number): string {
 }
 
 // 기존 HotDeal mock 데이터 (날짜 변환 및 이미지 URL 수정)
-const baseMockHotDeals: HotDeal[] = hotDealMockData.map((deal, index) => ({
-  ...deal,
-  crawledAt: new Date(deal.crawledAt),
-  updatedAt: new Date(deal.updatedAt),
-  startDate: (deal as any).startDate ? new Date((deal as any).startDate) : undefined,
-  endDate: (deal as any).endDate ? new Date((deal as any).endDate) : undefined,
-  // 이미지 URL을 스크래핑된 이미지 또는 플레이스홀더로 변경
-  imageUrl: getImageUrl(deal, index)
-} as HotDeal))
+const baseMockHotDeals: HotDeal[] = hotDealMockData.map((deal, index) => {
+  // Convert the mock data to HotDeal format
+  const hotDeal: HotDeal = {
+    id: (deal as any).id || `mock-${index}`,
+    title: (deal as any).title || '',
+    price: (deal as any).price || 0,
+    originalUrl: (deal as any).originalUrl || '',
+    seller: (deal as any).seller || '',
+    source: (deal as any).source || 'ppomppu',
+    sourcePostId: (deal as any).sourcePostId || `mock-${index}`,
+    crawledAt: new Date((deal as any).crawledAt || Date.now()),
+    status: (deal as any).status || 'active',
+    imageUrl: getImageUrl(deal, index)
+  }
+  return hotDeal
+})
 
 // 임시 테스트용 - 기존 목업 데이터 사용
 export const mockHotDeals: HotDeal[] = baseMockHotDeals.slice(0, 5)
@@ -162,7 +169,7 @@ export function initializeMockData(): void {
   }
   
   // 핫딜 데이터는 초기화하지 않음 (크롤링 데이터 보존)
-  const existingHotDeals = storage.get('hotdeals') || []
+  const existingHotDeals = storage.get<HotDeal[]>('hotdeals') || []
   if (!existingHotDeals || existingHotDeals.length === 0) {
     // 빈 배열로 초기화하여 오류 방지
     storage.set('hotdeals', [])

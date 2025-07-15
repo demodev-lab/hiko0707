@@ -40,8 +40,7 @@ export async function POST(request: NextRequest) {
               // Update existing hotdeal
               await db.hotdeals.update(existing.id, {
                 ...hotdeal,
-                id: existing.id,
-                createdAt: existing.createdAt
+                id: existing.id
               })
               updatedDeals++
             } else {

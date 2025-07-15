@@ -85,7 +85,7 @@ export class DataLoader {
       
       // 날짜순 정렬
       return Array.from(uniqueDeals.values())
-        .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
+        .sort((a, b) => b.crawledAt.getTime() - a.crawledAt.getTime())
     } catch (error) {
       console.error('병합 데이터 로드 실패:', error)
       return []
@@ -94,8 +94,8 @@ export class DataLoader {
   
   // CrawledHotDeal을 HotDeal로 변환
   private static convertToHotDeal(crawled: CrawledHotDeal): HotDeal {
-    // 고유 ID 생성 (기존 ID가 있으면 사용, 없으면 생성)
-    const id = crawled.id || `${crawled.source}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
+    // 고유 ID 생성
+    const id = `${crawled.source}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
     
     // 이미지 URL 처리 - 고해상도 원본 이미지 우선
     const imageUrl = crawled.originalImageUrl || crawled.imageUrl || crawled.thumbnailImageUrl || ''
@@ -104,42 +104,22 @@ export class DataLoader {
       id,
       title: crawled.title,
       price: crawled.price,
-      originalPrice: crawled.originalPrice || crawled.price,
-      discount: crawled.discount || 0,
       seller: crawled.seller,
-      source: crawled.source,
+      source: crawled.source as any, // Type conversion needed for HotDealSource
+      sourcePostId: `${crawled.source}-${crawled.crawledAt.getTime()}`, // Generate sourcePostId
       originalUrl: crawled.originalUrl,
-      imageUrl, // 고해상도 우선
-      thumbnailImageUrl: crawled.thumbnailImageUrl, // 썸네일용 저해상도 이미지
-      originalImageUrl: crawled.originalImageUrl, // 상세 페이지용 고해상도 이미지
-      category: crawled.category || '기타',
-      description: crawled.productComment || '',
-      status: crawled.status || 'active',
-      shipping: crawled.shipping || { isFree: false },
-      
-      // 커뮤니티 정보
-      userId: crawled.userId || '익명',
-      viewCount: crawled.viewCount || 0,
-      likeCount: crawled.likeCount || 0,
-      commentCount: crawled.commentCount || 0,
-      
-      // 추가 정보
-      tags: crawled.tags || [],
-      specifications: crawled.specifications || {},
-      
-      // 번역 정보
-      translationStatus: crawled.translationStatus || 'pending',
-      translations: crawled.translations || {},
-      
-      // 날짜 정보
-      createdAt: new Date(crawled.createdAt),
-      updatedAt: new Date(crawled.updatedAt),
-      expiresAt: crawled.expiresAt ? new Date(crawled.expiresAt) : undefined,
-      
-      // 추가 메타데이터
+      imageUrl,
+      thumbnailImageUrl: crawled.thumbnailImageUrl,
+      originalImageUrl: crawled.originalImageUrl,
+      category: crawled.category,
+      productComment: crawled.productComment,
+      status: 'active' as const,
+      shipping: crawled.shipping,
+      userId: crawled.userId,
+      viewCount: crawled.viewCount,
       communityCommentCount: crawled.communityCommentCount,
       communityRecommendCount: crawled.communityRecommendCount,
-      crawledAt: new Date(crawled.crawledAt)
+      crawledAt: crawled.crawledAt,
     }
   }
   

@@ -12,18 +12,22 @@ interface OptimizedImageProps extends Omit<ImageProps, 'onLoad' | 'onError'> {
   containerClassName?: string
   onLoadComplete?: () => void
   onError?: () => void
+  showFallbackIcon?: boolean
+  fallbackText?: string
 }
 
 export function OptimizedImage({
   src,
   alt,
-  fallbackSrc = 'https://via.placeholder.com/400x300/f3f4f6/6b7280?text=이미지+없음',
+  fallbackSrc,
   showLoader = true,
   blurDataURL,
   className,
   containerClassName,
   onLoadComplete,
   onError,
+  showFallbackIcon = true,
+  fallbackText,
   ...props
 }: OptimizedImageProps) {
   const [isLoading, setIsLoading] = useState(true)
@@ -52,11 +56,13 @@ export function OptimizedImage({
       hasError
     })
     setIsLoading(false)
-    setHasError(true)
-    if (fallbackSrc && currentSrc !== fallbackSrc) {
+    
+    if (fallbackSrc && currentSrc !== fallbackSrc && !hasError) {
       console.log('🔄 Trying fallback image:', fallbackSrc)
       setCurrentSrc(fallbackSrc)
-      setHasError(false)
+      setIsLoading(true)
+    } else {
+      setHasError(true)
     }
     onError?.()
   }, [fallbackSrc, currentSrc, onError, alt, hasError])
@@ -82,24 +88,31 @@ export function OptimizedImage({
         priority={props.priority}
         quality={props.quality || 85}
         sizes={props.sizes || '(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw'}
-        unoptimized={currentSrc.startsWith('/images/')}
+        unoptimized={typeof currentSrc === 'string' && currentSrc.startsWith('/images/')}
       />
       
       {/* 로딩 스켈레톤 */}
       {isLoading && showLoader && (
-        <div className="absolute inset-0 bg-gray-200 dark:bg-gray-800 animate-pulse flex items-center justify-center">
-          <div className="w-8 h-8 border-2 border-gray-300 border-t-blue-600 rounded-full animate-spin"></div>
+        <div className="absolute inset-0 bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800 flex items-center justify-center">
+          <div className="flex flex-col items-center gap-2">
+            <div className="w-8 h-8 border-2 border-gray-300 border-t-blue-500 rounded-full animate-spin"></div>
+            <div className="w-16 h-2 bg-gray-300 dark:bg-gray-600 rounded animate-pulse"></div>
+          </div>
         </div>
       )}
       
       {/* 에러 상태 */}
-      {hasError && !fallbackSrc && (
-        <div className="absolute inset-0 bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
-          <div className="text-center text-gray-500 dark:text-gray-400">
-            <svg className="w-12 h-12 mx-auto mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-            </svg>
-            <p className="text-sm">이미지를 불러올 수 없습니다</p>
+      {hasError && (
+        <div className="absolute inset-0 bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-900 flex items-center justify-center border-2 border-dashed border-gray-300 dark:border-gray-600">
+          <div className="text-center text-gray-500 dark:text-gray-400 max-w-[80%]">
+            {showFallbackIcon && (
+              <div className="w-12 h-12 mx-auto mb-3 bg-gray-200 dark:bg-gray-700 rounded-full flex items-center justify-center">
+                <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+              </div>
+            )}
+            <p className="text-xs font-medium leading-tight">{fallbackText || '이미지 없음'}</p>
           </div>
         </div>
       )}

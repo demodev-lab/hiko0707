@@ -46,10 +46,7 @@ async function importLatestHotdeals() {
     for (const hotdeal of hotdeals) {
       try {
         await db.hotdeals.create({
-          ...hotdeal,
-          createdAt: new Date(hotdeal.createdAt),
-          updatedAt: new Date(hotdeal.updatedAt),
-          postDate: new Date(hotdeal.postDate)
+          ...hotdeal
         })
         savedCount++
       } catch (error) {
@@ -62,13 +59,13 @@ async function importLatestHotdeals() {
     // Show statistics
     const stats = await db.hotdeals.findAll()
     const categories = new Set(stats.map(h => h.category))
-    const stores = new Set(stats.map(h => h.storeName).filter(Boolean))
+    const stores = new Set(stats.map(h => h.seller).filter(Boolean))
     
     console.log('\n📈 통계:')
     console.log(`- 총 핫딜 수: ${stats.length}`)
     console.log(`- 카테고리: ${categories.size}개`)
     console.log(`- 쇼핑몰: ${stores.size}개`)
-    console.log(`- 무료배송: ${stats.filter(h => h.isFreeShipping).length}개`)
+    console.log(`- 무료배송: ${stats.filter(h => h.shipping?.isFree).length}개`)
     console.log(`- 인기 게시글: ${stats.filter(h => h.isPopular).length}개`)
     
   } catch (error) {

@@ -46,8 +46,8 @@ export class PlaywrightWrapper {
       // 클라이언트 환경에서만 실행
       if (typeof window !== 'undefined') {
         // @ts-ignore - MCP 함수는 전역에 주입됨
-        if (typeof mcp__playwright__playwright_navigate === 'function') {
-          await mcp__playwright__playwright_navigate({
+        if (typeof (globalThis as any).mcp__playwright__playwright_navigate === 'function') {
+          await (globalThis as any).mcp__playwright__playwright_navigate({
             url: options.url,
             waitUntil: options.waitUntil,
             timeout: options.timeout,
@@ -77,8 +77,8 @@ export class PlaywrightWrapper {
       
       if (typeof window !== 'undefined') {
         // @ts-ignore
-        if (typeof mcp__playwright__playwright_click === 'function') {
-          await mcp__playwright__playwright_click({ selector })
+        if (typeof (globalThis as any).mcp__playwright__playwright_click === 'function') {
+          await (globalThis as any).mcp__playwright__playwright_click({ selector })
           return true
         }
       }
@@ -97,8 +97,8 @@ export class PlaywrightWrapper {
       
       if (typeof window !== 'undefined') {
         // @ts-ignore
-        if (typeof mcp__playwright__playwright_evaluate === 'function') {
-          const result = await mcp__playwright__playwright_evaluate({ script })
+        if (typeof (globalThis as any).mcp__playwright__playwright_evaluate === 'function') {
+          const result = await (globalThis as any).mcp__playwright__playwright_evaluate({ script })
           return { success: true, data: result }
         }
       }
@@ -152,8 +152,8 @@ export class PlaywrightWrapper {
       
       if (typeof window !== 'undefined') {
         // @ts-ignore
-        if (typeof mcp__playwright__playwright_screenshot === 'function') {
-          const result = await mcp__playwright__playwright_screenshot({
+        if (typeof (globalThis as any).mcp__playwright__playwright_screenshot === 'function') {
+          const result = await (globalThis as any).mcp__playwright__playwright_screenshot({
             name: options.name,
             fullPage: options.fullPage || false,
             selector: options.selector,
@@ -177,8 +177,8 @@ export class PlaywrightWrapper {
       
       if (typeof window !== 'undefined') {
         // @ts-ignore
-        if (typeof mcp__playwright__playwright_close === 'function') {
-          await mcp__playwright__playwright_close({})
+        if (typeof (globalThis as any).mcp__playwright__playwright_close === 'function') {
+          await (globalThis as any).mcp__playwright__playwright_close({})
         }
       }
       
@@ -197,7 +197,7 @@ export class PlaywrightWrapper {
   async getCurrentUrl(): Promise<string | null> {
     try {
       const result = await this.evaluate<string>('window.location.href')
-      return result.success ? result.data : null
+      return result.success ? (result.data || null) : null
     } catch (error) {
       console.error('URL 가져오기 실패:', error)
       return null
@@ -208,7 +208,7 @@ export class PlaywrightWrapper {
   async getTitle(): Promise<string | null> {
     try {
       const result = await this.evaluate<string>('document.title')
-      return result.success ? result.data : null
+      return result.success ? (result.data || null) : null
     } catch (error) {
       console.error('타이틀 가져오기 실패:', error)
       return null

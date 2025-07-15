@@ -26,7 +26,9 @@ export function TranslatedContent({
   
   // 한국어는 원본 표시
   if (language === 'ko') {
-    const content = field === 'productComment' ? hotDeal.productComment : hotDeal[field]
+    const content = field === 'productComment' ? hotDeal.productComment : 
+                    field === 'title' ? hotDeal.title : 
+                    field === 'description' ? hotDeal.productComment : ''
     return <span className={className}>{content}</span>
   }
   
@@ -37,7 +39,9 @@ export function TranslatedContent({
   
   // 번역이 없거나 대기/진행 중
   if (!translation || translation.status === 'pending' || translation.status === 'translating') {
-    const content = field === 'productComment' ? hotDeal.productComment : hotDeal[field]
+    const content = field === 'productComment' ? hotDeal.productComment : 
+                    field === 'title' ? hotDeal.title : 
+                    field === 'description' ? hotDeal.productComment : ''
     return (
       <div className="space-y-1">
         <span className={className}>{content}</span>
@@ -54,7 +58,9 @@ export function TranslatedContent({
   
   // 번역 실패
   if (translation.status === 'failed') {
-    const content = field === 'productComment' ? hotDeal.productComment : hotDeal[field]
+    const content = field === 'productComment' ? hotDeal.productComment : 
+                    field === 'title' ? hotDeal.title : 
+                    field === 'description' ? hotDeal.productComment : ''
     return (
       <div className="space-y-1">
         <span className={className}>{content}</span>
@@ -71,7 +77,9 @@ export function TranslatedContent({
   
   // 번역 완료
   const translatedField = field === 'productComment' ? 'translatedProductComment' : field
-  const originalContent = field === 'productComment' ? hotDeal.productComment : hotDeal[field]
+  const originalContent = field === 'productComment' ? hotDeal.productComment : 
+                          field === 'title' ? hotDeal.title : 
+                          field === 'description' ? hotDeal.productComment : ''
   
   return (
     <div className="space-y-1">

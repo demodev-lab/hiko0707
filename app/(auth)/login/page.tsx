@@ -14,14 +14,15 @@ export default function LoginPage() {
 
   // 이미 로그인된 사용자 리디렉션
   useEffect(() => {
-    if (currentUser) {
+    // 로딩이 완료되고 사용자가 있을 때만 리디렉션
+    if (!isLoading && currentUser) {
       if (currentUser.role === 'admin') {
         router.push('/admin')
       } else {
         router.push('/hotdeals')
       }
     }
-  }, [currentUser, router])
+  }, [currentUser, router, isLoading])
 
   const handleSubmit = async (data: any) => {
     try {

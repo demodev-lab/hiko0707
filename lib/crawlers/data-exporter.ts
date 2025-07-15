@@ -224,7 +224,8 @@ export class DataExporter {
     const stats = {} as Record<HotDealSource, number>
     
     deals.forEach(deal => {
-      stats[deal.source] = (stats[deal.source] || 0) + 1
+      const source = deal.source as HotDealSource
+      stats[source] = (stats[source] || 0) + 1
     })
     
     return stats
@@ -252,14 +253,14 @@ export class DataExporter {
       
       // CSV 내용 생성
       const rows = deals.map(deal => [
-        deal.id,
+        '', // CrawledHotDeal doesn't have id field
         `"${deal.title.replace(/"/g, '""')}"`,
         deal.price,
         deal.originalUrl,
         deal.seller,
         deal.source,
         deal.category,
-        deal.status,
+        '', // status field not available in CrawledHotDeal
         deal.imageUrl || '',
         deal.userId || '',
         deal.viewCount || 0,
@@ -267,7 +268,7 @@ export class DataExporter {
         deal.communityRecommendCount || 0,
         deal.shipping?.isFree ? 'Y' : 'N',
         deal.crawledAt.toISOString(),
-        deal.createdAt.toISOString()
+        deal.crawledAt.toISOString() // using crawledAt as equivalent to createdAt
       ])
       
       const csvContent = [

@@ -76,7 +76,7 @@ async function startTranslation(hotDealId: string, language: Language) {
   
   // 3초 후에 번역 완료 시뮬레이션
   setTimeout(async () => {
-    const translations = getSimulatedTranslation(hotdeal.title, hotdeal.description, language)
+    const translations = getSimulatedTranslation(hotdeal.title, hotdeal.productComment, language)
     
     await db.translations.updateTranslationStatus(
       translationId,

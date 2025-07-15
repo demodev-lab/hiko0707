@@ -1,5 +1,5 @@
 import { CommunityCrawler, CommunitySelectors } from './community-crawler'
-import { CrawledHotDeal, CrawlerConfig } from './types'
+import { CrawledHotDeal, CrawlerConfig, CrawlerResult } from './types'
 
 // 뽐뿌 셀렉터 정의
 const PPOMPPU_SELECTORS: CommunitySelectors = {
@@ -79,7 +79,7 @@ export class PpomppuRealCrawler extends CommunityCrawler {
     const imageUrl = originalImageUrl || thumbnailImageUrl || ''
     
     return {
-      id: `ppomppu-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      // id field not part of CrawledHotDeal interface - will be generated in convertToHotDeal
       title,
       price: this.parsePrice(title),
       originalUrl: rawData.link || '',
@@ -98,12 +98,7 @@ export class PpomppuRealCrawler extends CommunityCrawler {
       shipping: {
         isFree: this.checkFreeShipping(title)
       },
-      status: rawData.isEnded ? 'ended' : 'active' as const,
-      likeCount: 0,
-      commentCount: 0,
-      translationStatus: 'pending' as const,
-      createdAt: this.parseDate(rawData.date || ''),
-      updatedAt: new Date(),
+      // status, likeCount, commentCount, translationStatus, createdAt, updatedAt not in CrawledHotDeal interface
       crawlerId: 'ppomppu-crawler',
       crawlerVersion: '1.0.0'
     }

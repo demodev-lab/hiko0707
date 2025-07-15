@@ -26,7 +26,8 @@ const setUserToStorage = (user: User | null) => {
   }
 }
 
-// 초기값을 null로 설정 (SSR 호환성을 위해)
+// 초기값은 항상 null로 설정 (SSR 호환성을 위해)
+// 클라이언트에서는 useAuth 훅의 useEffect에서 로컬스토리지에서 가져옴
 export const currentUserAtom = atom<User | null>(null)
 
 // 사용자 상태 변경 시 로컬 스토리지에도 저장
@@ -39,4 +40,5 @@ export const setCurrentUserAtom = atom(
 )
 
 export const isAuthenticatedAtom = atom((get) => get(currentUserAtom) !== null)
-export const isLoadingAuthAtom = atom(false)
+// 초기 로딩 상태를 true로 설정하여 하이드레이션 문제 방지
+export const isLoadingAuthAtom = atom(true)

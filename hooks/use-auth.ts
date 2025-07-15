@@ -15,62 +15,72 @@ export function useAuth() {
   const [isLoading, setIsLoading] = useAtom(isLoadingAuthAtom)
   const router = useRouter()
 
-  // 클라이언트 사이드에서 로컬 스토리지에서 사용자 정보 복원 (선택적)
+  // 클라이언트 사이드에서 로컬 스토리지에서 사용자 정보 복원
   useEffect(() => {
-    if (typeof window !== 'undefined' && !currentUser) {
+    // 클라이언트 사이드에서만 실행
+    if (typeof window !== 'undefined') {
       const savedUser = localStorage.getItem('currentUser')
-      // 개발 중 자동 로그인 비활성화 - 사용자가 수동으로 로그인해야 함
-      // 자동 로그인을 원한다면 아래 주석을 해제하세요
-      /*
       if (savedUser) {
         try {
           const user = JSON.parse(savedUser)
           setCurrentUser(user)
+          console.log('저장된 사용자 정보로 자동 로그인:', user.email)
         } catch (error) {
+          console.error('저장된 사용자 정보 파싱 오류:', error)
           localStorage.removeItem('currentUser')
         }
       }
-      */
-      
-      // 대신 저장된 사용자 정보만 정리
-      if (savedUser) {
-        console.log('저장된 사용자 정보가 있습니다. 수동 로그인이 필요합니다.')
-      }
+      // 로딩 완료 - 항상 false로 설정
+      setIsLoading(false)
     }
-  }, [currentUser, setCurrentUser])
+  }, [setCurrentUser, setIsLoading]) // 필요한 의존성 추가
 
   const login = useCallback(async (email: string, password: string) => {
+    console.log('로그인 시도:', email)
     try {
       setIsLoading(true)
-      const user = await db.users.findByEmail(email)
       
-      if (!user && email !== 'admin@hiko.kr') {
-        throw new Error('등록되지 않은 이메일입니다')
-      }
-      
-      // TODO: 실제 프로덕션에서는 bcrypt 등으로 비밀번호 해싱 필요
-      // 현재는 개발용으로 단순 비교
-      // 데모용 관리자 계정 하드코딩
+      // 데모용 계정 체크 (하드코딩)
       if (email === 'admin@hiko.kr' && password === 'admin123') {
-        const adminUser = user || await db.users.create({
-          email: 'admin@hiko.kr',
-          name: '관리자',
-          role: 'admin',
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        })
+        console.log('관리자 계정 로그인 시도')
+        
+        // 관리자 계정 찾기 또는 생성
+        let adminUser = await db.users.findByEmail(email)
+        if (!adminUser) {
+          console.log('관리자 계정 생성')
+          adminUser = await db.users.create({
+            email: 'admin@hiko.kr',
+            name: '관리자',
+            role: 'admin',
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          })
+        }
         setCurrentUser(adminUser)
+        
+        // 로그인한 사용자 정보를 localStorage에 저장
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('currentUser', JSON.stringify(adminUser))
+        }
+        
         router.push(ROUTES.ADMIN)
         return adminUser
       }
       
-      // 일반 사용자 로그인 (데모용으로 비밀번호 체크 생략)
-      if (user && user.email === email) {
+      // 일반 사용자 로그인
+      const user = await db.users.findByEmail(email)
+      if (user) {
         setCurrentUser(user)
+        
+        // 로그인한 사용자 정보를 localStorage에 저장
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('currentUser', JSON.stringify(user))
+        }
+        
         router.push(ROUTES.HOTDEALS)  // 핫딜 페이지로 이동
         return user
       } else {
-        throw new Error('비밀번호가 일치하지 않습니다')
+        throw new Error('이메일 또는 비밀번호가 일치하지 않습니다')
       }
     } catch (error) {
       console.error('Login failed:', error)
@@ -109,6 +119,10 @@ export function useAuth() {
 
   const logout = useCallback(() => {
     setCurrentUser(null)
+    // localStorage 정리도 확실히 하기
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('currentUser')
+    }
     router.push(ROUTES.HOME)
   }, [setCurrentUser, router])
 

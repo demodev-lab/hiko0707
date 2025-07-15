@@ -58,6 +58,12 @@ export function useCurrency(options: UseCurrencyOptions = {}) {
     return formatPrice(amount, code, locale)
   }, [selectedCurrency])
 
+  // 소수점 포함 가격 포맷팅
+  const formatWithDecimals = useCallback((amount: number, currencyCode?: string, locale?: string, decimals: number = 2): string => {
+    const code = currencyCode || selectedCurrency
+    return currencyService.formatCurrencyWithDecimals(amount, code, locale, decimals)
+  }, [selectedCurrency])
+
   // 환율 가져오기
   const getRate = useCallback((from: string, to?: string): number | null => {
     const targetCurrency = to || selectedCurrency
@@ -76,6 +82,7 @@ export function useCurrency(options: UseCurrencyOptions = {}) {
     isLoading,
     convert,
     format,
+    formatWithDecimals,
     getRate,
     changeCurrency,
     refreshRates,

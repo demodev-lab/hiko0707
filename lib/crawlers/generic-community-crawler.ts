@@ -62,7 +62,7 @@ export class GenericCommunityCrawler extends CommunityCrawler {
     const imageUrl = originalImageUrl || thumbnailImageUrl || ''
     
     return {
-      id: `${this.communityName}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      // id field not part of CrawledHotDeal interface - will be generated in convertToHotDeal
       title,
       price: this.parsePrice(title),
       originalUrl: rawData.link || '',
@@ -81,12 +81,7 @@ export class GenericCommunityCrawler extends CommunityCrawler {
       shipping: {
         isFree: this.checkFreeShipping(title)
       },
-      status: rawData.isEnded ? 'ended' : 'active' as const,
-      likeCount: 0,
-      commentCount: 0,
-      translationStatus: 'pending' as const,
-      createdAt: this.parseDate(rawData.date || ''),
-      updatedAt: new Date(),
+      // status, likeCount, commentCount, translationStatus, createdAt, updatedAt not part of CrawledHotDeal interface
       crawlerId: `${this.communityName}-crawler`,
       crawlerVersion: '1.0.0'
     }

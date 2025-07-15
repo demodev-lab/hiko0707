@@ -131,8 +131,26 @@ class CurrencyService {
         maximumFractionDigits: 0,
       }).format(amount)
     } catch {
+      // 지원하지 않는 통화의 경우 기본 포맷 사용 (콤마 포맷팅 적용)
+      return `${currency.symbol}${amount.toLocaleString('ko-KR')}`
+    }
+  }
+
+  formatCurrencyWithDecimals(amount: number, currencyCode: string, locale?: string, decimals: number = 2): string {
+    const currency = currencies.find(c => c.code === currencyCode)
+    if (!currency) return `${amount.toFixed(decimals)} ${currencyCode}`
+
+    try {
+      // Intl.NumberFormat을 사용하여 각 통화에 맞는 형식으로 포맷 (소수점 포함)
+      return new Intl.NumberFormat(locale || 'ko-KR', {
+        style: 'currency',
+        currency: currencyCode,
+        minimumFractionDigits: decimals,
+        maximumFractionDigits: decimals,
+      }).format(amount)
+    } catch {
       // 지원하지 않는 통화의 경우 기본 포맷 사용
-      return `${currency.symbol}${amount.toLocaleString()}`
+      return `${currency.symbol}${amount.toFixed(decimals).replace(/\B(?=(\d{3})+(?!\d))/g, ',')}`
     }
   }
 

@@ -186,12 +186,12 @@ function generateHotDeal(index: number): HotDeal {
   const hotDeal: HotDeal = {
     id: uuidv4(),
     title: `${sourcePrefixes[source]} ${product.title}`,
-    description: `${product.title} 특가 할인! 역대급 가격으로 만나보세요. 한정 수량 특가 진행중!`,
+    productComment: `${product.title} 특가 할인! 역대급 가격으로 만나보세요. 한정 수량 특가 진행중!`,
     price,
-    originalPrice,
-    discountRate,
     category,
     source,
+    seller: 'Mock Store',
+    sourcePostId: `mock-${index}`,
     originalUrl: `https://example.com/hotdeal/${index}`,
     imageUrl: getRandomElement(categoryImages[category]),
     viewCount: getRandomNumber(100, 50000),
@@ -199,9 +199,7 @@ function generateHotDeal(index: number): HotDeal {
     commentCount: getRandomNumber(5, 500),
     shipping: getRandomElement(shippingTemplates),
     status,
-    endDate,
-    crawledAt,
-    updatedAt: crawledAt
+    crawledAt
   };
   
   return hotDeal;
@@ -234,7 +232,8 @@ async function generateMockData() {
   
   // 카테고리별 통계 출력
   const stats = hotdeals.reduce((acc, deal) => {
-    acc[deal.category] = (acc[deal.category] || 0) + 1;
+    const category = deal.category || 'other';
+    acc[category] = (acc[category] || 0) + 1;
     return acc;
   }, {} as Record<string, number>);
   
