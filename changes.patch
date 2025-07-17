@@ -1,0 +1,2181 @@
+diff --git a/app/admin/hotdeal-manager/page.tsx b/app/admin/hotdeal-manager/page.tsx
+index eb3ce2a..4ab84f3 100644
+--- a/app/admin/hotdeal-manager/page.tsx
++++ b/app/admin/hotdeal-manager/page.tsx
+@@ -1,25 +1,37 @@
+-'use client'
+-
+-import { useState, useEffect } from 'react'
+-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+-import { Button } from '@/components/ui/button'
+-import { Badge } from '@/components/ui/badge'
+-import { Alert, AlertDescription } from '@/components/ui/alert'
+-import { Progress } from '@/components/ui/progress'
+-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+-import { Switch } from '@/components/ui/switch'
+-import { Label } from '@/components/ui/label'
+-import { Input } from '@/components/ui/input'
+-import {
+-  RefreshCw,
+-  Download,
+-  Upload,
+-  Play,
+-  Pause,
+-  Clock,
+-  CheckCircle2,
+-  AlertCircle,
++'use client';
++
++import { useState, useEffect } from 'react';
++import {
++  Card,
++  CardContent,
++  CardDescription,
++  CardHeader,
++  CardTitle,
++} from '@/components/ui/card';
++import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
++import { Button } from '@/components/ui/button';
++import { Badge } from '@/components/ui/badge';
++import { Alert, AlertDescription } from '@/components/ui/alert';
++import { Progress } from '@/components/ui/progress';
++import {
++  Select,
++  SelectContent,
++  SelectItem,
++  SelectTrigger,
++  SelectValue,
++} from '@/components/ui/select';
++import { Switch } from '@/components/ui/switch';
++import { Label } from '@/components/ui/label';
++import { Input } from '@/components/ui/input';
++import {
++  RefreshCw,
++  Download,
++  Upload,
++  Play,
++  Pause,
++  Clock,
++  CheckCircle2,
++  AlertCircle,
+   Trash2,
+   Save,
+   History,
+@@ -27,137 +39,144 @@ import {
+   Activity,
+   Database,
+   FileJson,
+-  TrendingUp
+-} from 'lucide-react'
+-import { toast } from 'sonner'
+-import { useHotDeals } from '@/hooks/use-local-db'
++  TrendingUp,
++} from 'lucide-react';
++import { toast } from 'sonner';
++import { useHotDeals } from '@/hooks/use-local-db';
+ // import { runCrawler } from '@/actions/crawler-actions' // API Route 사용으로 변경
+
+ // 크롤링 스케줄 타입
+ interface CrawlSchedule {
+-  enabled: boolean
+-  intervalType: 'minutes' | 'hours' | 'daily'
+-  intervalValue: number
+-  lastRun?: Date
+-  nextRun?: Date
++  enabled: boolean;
++  intervalType: 'minutes' | 'hours' | 'daily';
++  intervalValue: number;
++  lastRun?: Date;
++  nextRun?: Date;
+ }
+
+ // 크롤링 히스토리 타입
+ interface CrawlHistory {
+-  id: string
+-  timestamp: Date
+-  source: string
+-  itemsCount: number
+-  status: 'success' | 'failed' | 'partial'
+-  duration: number
+-  errorMessage?: string
++  id: string;
++  timestamp: Date;
++  source: string;
++  itemsCount: number;
++  status: 'success' | 'failed' | 'partial';
++  duration: number;
++  errorMessage?: string;
+ }
+
+ export default function HotDealManagerPage() {
+   // 상태 관리
+-  const [activeTab, setActiveTab] = useState('dashboard')
+-  const [isCrawling, setIsCrawling] = useState(false)
+-  const [crawlProgress, setCrawlProgress] = useState(0)
+-  const [crawlStatus, setCrawlStatus] = useState<string>('')
+-  const [selectedSource, setSelectedSource] = useState('ppomppu')
+-  const [crawlPages, setCrawlPages] = useState(5)
+-  const [crawlMode, setCrawlMode] = useState<'pages' | 'time'>('time')
+-  const [timeRange, setTimeRange] = useState<'today' | 'hours' | 'days' | 'custom'>('today')
+-  const [customTimeValue, setCustomTimeValue] = useState(6)
+-  const [customTimeUnit, setCustomTimeUnit] = useState<'hours' | 'days'>('hours')
+-  const [autoImport, setAutoImport] = useState(true)
++  const [activeTab, setActiveTab] = useState('dashboard');
++  const [isCrawling, setIsCrawling] = useState(false);
++  const [crawlProgress, setCrawlProgress] = useState(0);
++  const [crawlStatus, setCrawlStatus] = useState<string>('');
++  const [selectedSource, setSelectedSource] = useState('ppomppu');
++  const [crawlPages, setCrawlPages] = useState(5);
++  const [crawlMode, setCrawlMode] = useState<'pages' | 'time'>('time');
++  const [timeRange, setTimeRange] = useState<
++    'today' | 'hours' | 'days' | 'custom'
++  >('today');
++  const [customTimeValue, setCustomTimeValue] = useState(6);
++  const [customTimeUnit, setCustomTimeUnit] = useState<'hours' | 'days'>(
++    'hours',
++  );
++  const [autoImport, setAutoImport] = useState(true);
+   const [schedule, setSchedule] = useState<CrawlSchedule>({
+     enabled: false,
+     intervalType: 'minutes',
+-    intervalValue: 30
+-  })
+-  const [crawlHistory, setCrawlHistory] = useState<CrawlHistory[]>([])
+-  const [jsonFiles, setJsonFiles] = useState<string[]>([])
+-
+-  const { hotdeals, refetch: refetchHotDeals } = useHotDeals()
++    intervalValue: 30,
++  });
++  const [crawlHistory, setCrawlHistory] = useState<CrawlHistory[]>([]);
++  const [jsonFiles, setJsonFiles] = useState<string[]>([]);
++
++  const { hotdeals, refetch: refetchHotDeals } = useHotDeals();
+
+   // 통계 계산
+   const stats = {
+     total: hotdeals.length,
+-    active: hotdeals.filter(h => h.status === 'active').length,
+-    today: hotdeals.filter(h =>
+-      new Date(h.crawledAt).toDateString() === new Date().toDateString()
++    active: hotdeals.filter((h) => h.status === 'active').length,
++    today: hotdeals.filter(
++      (h) => new Date(h.crawledAt).toDateString() === new Date().toDateString(),
+     ).length,
+-    sources: [...new Set(hotdeals.map(h => h.source))].length,
+-  }
++    sources: [...new Set(hotdeals.map((h) => h.source))].length,
++  };
+
+   // JSON 파일 목록 로드
+   const loadJsonFiles = async () => {
+     try {
+-      const response = await fetch('/api/placeholder/list-exports')
++      const response = await fetch('/api/placeholder/list-exports');
+       if (response.ok) {
+-        const files = await response.json()
+-        setJsonFiles(files)
++        const files = await response.json();
++        setJsonFiles(files);
+       }
+     } catch (error) {
+-      console.error('Failed to load JSON files:', error)
++      console.error('Failed to load JSON files:', error);
+     }
+-  }
++  };
+
+   // 크롤링 실행 - 완전히 새로운 구현
+   const handleCrawl = async () => {
+-    console.log('handleCrawl 시작')
+-
++    console.log('handleCrawl 시작');
++
+     // 상태 초기화
+-    setIsCrawling(true)
+-    setCrawlProgress(0)
+-    setCrawlStatus('크롤링 준비 중...')
+-
+-    const startTime = Date.now()
+-    let progressInterval: NodeJS.Timeout | null = null
+-
++    setIsCrawling(true);
++    setCrawlProgress(0);
++    setCrawlStatus('크롤링 준비 중...');
++
++    const startTime = Date.now();
++    let progressInterval: NodeJS.Timeout | null = null;
++
+     try {
+       // 시간 기준 설정
+-      let actualPages = crawlPages
+-      let targetHours: number | undefined
+-      let timeBasedMessage = ''
+-
++      let actualPages = crawlPages;
++      let targetHours: number | undefined;
++      let timeBasedMessage = '';
++
+       if (crawlMode === 'time') {
+         if (timeRange === 'today') {
+-          targetHours = 24
+-          timeBasedMessage = '최근 24시간'
++          targetHours = 24;
++          timeBasedMessage = '최근 24시간';
+         } else if (timeRange === 'hours') {
+-          targetHours = customTimeValue
+-          timeBasedMessage = `최근 ${customTimeValue}시간`
++          targetHours = customTimeValue;
++          timeBasedMessage = `최근 ${customTimeValue}시간`;
+         } else if (timeRange === 'days') {
+-          targetHours = customTimeValue * 24
+-          timeBasedMessage = `최근 ${customTimeValue}일`
++          targetHours = customTimeValue * 24;
++          timeBasedMessage = `최근 ${customTimeValue}일`;
+         } else if (timeRange === 'custom') {
+-          targetHours = customTimeUnit === 'hours' ? customTimeValue : customTimeValue * 24
+-          timeBasedMessage = `최근 ${customTimeValue}${customTimeUnit === 'hours' ? '시간' : '일'}`
++          targetHours =
++            customTimeUnit === 'hours' ? customTimeValue : customTimeValue * 24;
++          timeBasedMessage = `최근 ${customTimeValue}${
++            customTimeUnit === 'hours' ? '시간' : '일'
++          }`;
+         }
+-
++
+         // 시간 기준일 때는 충분히 많은 페이지로 설정하되, 크롤러가 시간 범위를 벗어나면 자동 중단
+-        actualPages = 50
+-        setCrawlStatus(`${timeBasedMessage} 기간 내 게시물 크롤링 중...`)
++        actualPages = 50;
++        setCrawlStatus(`${timeBasedMessage} 기간 내 게시물 크롤링 중...`);
+       } else {
+-        setCrawlStatus('크롤링 시작...')
++        setCrawlStatus('크롤링 시작...');
+       }
+-
++
+       // UI 업데이트를 위한 짧은 대기
+-      console.log('UI 대기 시작')
++      console.log('UI 대기 시작');
+       await new Promise<void>((resolve) => {
+         const timer = setTimeout(() => {
+-          console.log('UI 대기 완료')
+-          resolve()
+-        }, 1000)
+-      })
+-
++          console.log('UI 대기 완료');
++          resolve();
++        }, 1000);
++      });
++
+       // 진행 상황 시뮬레이션
+-      console.log('진행 상황 시뮬레이션 시작')
++      console.log('진행 상황 시뮬레이션 시작');
+       progressInterval = setInterval(() => {
+         setCrawlProgress((prev) => {
+-          const next = Math.min(prev + 10, 90)
+-          console.log('진행률:', next)
+-          return next
+-        })
+-      }, 1000)
+-
++          const next = Math.min(prev + 10, 90);
++          console.log('진행률:', next);
++          return next;
++        });
++      }, 1000);
++
+       const crawlerOptions = {
+         source: selectedSource,
+         pages: actualPages,
+@@ -165,79 +184,84 @@ export default function HotDealManagerPage() {
+         saveToJson: true,
+         saveToDb: autoImport,
+         groupBySource: false,
+-        timeFilterHours: crawlMode === 'time' ? targetHours : undefined
+-      }
+-
+-      console.log('크롤러 시작:', crawlerOptions)
+-
++        timeFilterHours: crawlMode === 'time' ? targetHours : undefined,
++      };
++
++      console.log('크롤러 시작:', crawlerOptions);
++
+       // API Route 사용
+-      let response
+-      let result
+-
++      let response;
++      let result;
++
+       try {
+         response = await fetch('/api/crawler', {
+           method: 'POST',
+           headers: {
+             'Content-Type': 'application/json',
+           },
+-          body: JSON.stringify(crawlerOptions)
+-        })
+-
++          body: JSON.stringify(crawlerOptions),
++        });
++
+         if (!response.ok) {
+-          throw new Error(`HTTP error! status: ${response.status}`)
++          throw new Error(`HTTP error! status: ${response.status}`);
+         }
+-
+-        result = await response.json()
++
++        result = await response.json();
+       } catch (fetchError) {
+-        console.error('Fetch 에러:', fetchError)
+-        throw new Error(`API 호출 실패: ${fetchError instanceof Error ? fetchError.message : '알 수 없는 오류'}`)
++        console.error('Fetch 에러:', fetchError);
++        throw new Error(
++          `API 호출 실패: ${
++            fetchError instanceof Error ? fetchError.message : '알 수 없는 오류'
++          }`,
++        );
+       }
+-
+-      console.log('크롤러 결과:', result)
+-
+-      if (progressInterval) clearInterval(progressInterval)
+-      setCrawlProgress(100)
+-
++
++      console.log('크롤러 결과:', result);
++
++      if (progressInterval) clearInterval(progressInterval);
++      setCrawlProgress(100);
++
+       // 결과 처리
+       if (!result.success) {
+-        throw new Error(result.error || '크롤링 실패')
++        throw new Error(result.error || '크롤링 실패');
+       }
+-
+-      const duration = Date.now() - startTime
++
++      const duration = Date.now() - startTime;
+       const historyItem: CrawlHistory = {
+         id: Date.now().toString(),
+         timestamp: new Date(),
+         source: selectedSource,
+         itemsCount: result.data?.results[0]?.totalDeals || 0,
+         status: 'success',
+-        duration: Math.round(duration / 1000)
+-      }
+-
+-      setCrawlHistory(prev => [historyItem, ...prev.slice(0, 9)])
+-
++        duration: Math.round(duration / 1000),
++      };
++
++      setCrawlHistory((prev) => [historyItem, ...prev.slice(0, 9)]);
++
+       if (autoImport && result.data?.exportedFiles?.length > 0) {
+-        const filename = result.data.exportedFiles[0].split('/').pop()
++        const filename = result.data.exportedFiles[0].split('/').pop();
+         if (filename) {
+-          await handleImportJson(filename)
++          await handleImportJson(filename);
+         }
+       }
+-
+-      const successMessage = crawlMode === 'time'
+-        ? `${timeBasedMessage} 크롤링 완료! ${historyItem.itemsCount}개 아이템 수집`
+-        : `크롤링 완료! ${historyItem.itemsCount}개 아이템 수집`
+-
+-      toast.success(successMessage)
+-      await loadJsonFiles()
+-
++
++      const successMessage =
++        crawlMode === 'time'
++          ? `${timeBasedMessage} 크롤링 완료! ${historyItem.itemsCount}개 아이템 수집`
++          : `크롤링 완료! ${historyItem.itemsCount}개 아이템 수집`;
++
++      toast.success(successMessage);
++      await loadJsonFiles();
+     } catch (error) {
+-      if (progressInterval) clearInterval(progressInterval)
+-      setCrawlProgress(0)
+-      setCrawlStatus('크롤링 실패')
+-
+-      const errorMessage = error instanceof Error ? error.message : '알 수 없는 오류'
+-      console.error('크롤링 오류:', error)
+-      toast.error(`크롤링 실패: ${errorMessage}`)
+-
++      if (progressInterval) clearInterval(progressInterval);
++      setCrawlProgress(0);
++      setCrawlStatus('크롤링 실패');
++
++      const errorMessage =
++        error instanceof Error ? error.message : '알 수 없는 오류';
++      console.error('크롤링 오류:', error);
++      toast.error(`크롤링 실패: ${errorMessage}`);
++
+       const historyItem: CrawlHistory = {
+         id: Date.now().toString(),
+         timestamp: new Date(),
+@@ -245,49 +269,71 @@ export default function HotDealManagerPage() {
+         itemsCount: 0,
+         status: 'failed',
+         duration: Math.round((Date.now() - startTime) / 1000),
+-        errorMessage
+-      }
+-
+-      setCrawlHistory(prev => [historyItem, ...prev.slice(0, 9)])
++        errorMessage,
++      };
++
++      setCrawlHistory((prev) => [historyItem, ...prev.slice(0, 9)]);
+     } finally {
+-      setIsCrawling(false)
+-      setCrawlProgress(0)
+-      setCrawlStatus('')
++      setIsCrawling(false);
++      setCrawlProgress(0);
++      setCrawlStatus('');
+     }
+-  }
++  };
+
+   // JSON 파일 가져오기
+   const handleImportJson = async (filename: string) => {
+     try {
+       // 파일 읽기
+-      const response = await fetch(`/api/placeholder/exports/${filename}`)
+-      const data = await response.json()
+-
++      const response = await fetch(`/api/placeholder/exports/${filename}`);
++      if (!response.ok) {
++        const errorText = await response.text();
++        console.error('API 응답 에러:', errorText);
++        throw new Error(`JSON 파일을 읽을 수 없습니다 (${response.status})`);
++      }
++
++      // Content-Type 확인
++      const contentType = response.headers.get('content-type');
++      if (!contentType || !contentType.includes('application/json')) {
++        const responseText = await response.text();
++        console.error('예상치 못한 응답 형식:', responseText.substring(0, 200));
++        throw new Error('서버에서 JSON 대신 다른 형식의 응답을 받았습니다');
++      }
++
++      let data;
++      try {
++        data = await response.json();
++      } catch (parseError) {
++        console.error('JSON 파싱 에러:', parseError);
++        throw new Error('응답을 JSON으로 파싱할 수 없습니다');
++      }
++
+       if (!data.hotdeals || !Array.isArray(data.hotdeals)) {
+-        throw new Error('잘못된 JSON 형식')
++        throw new Error('잘못된 JSON 형식');
+       }
+-
++
+       // localStorage에 저장 - 안전한 데이터 처리
+       const newHotdeals = data.hotdeals.map((deal: any, index: number) => ({
+         ...deal,
+-        id: `hotdeals_${Date.now()}_${index}_${Math.random().toString(36).substr(2, 9)}`,
++        id: `hotdeals_${Date.now()}_${index}_${Math.random()
++          .toString(36)
++          .substr(2, 9)}`,
+         // 필수 필드 기본값 설정
+         communityCommentCount: deal.communityCommentCount || 0,
+         communityRecommendCount: deal.communityRecommendCount || 0,
+         viewCount: deal.viewCount || 0,
+         price: deal.price || 0,
+-        crawledAt: deal.crawledAt || deal.postDate || new Date().toISOString()
+-      }))
+-
+-      localStorage.setItem('hiko_hotdeals', JSON.stringify(newHotdeals))
+-      await refetchHotDeals()
+-
+-      toast.success(`${newHotdeals.length}개의 핫딜을 가져왔습니다`)
++        crawledAt: deal.crawledAt || deal.postDate || new Date().toISOString(),
++      }));
++
++      localStorage.setItem('hiko_hotdeals', JSON.stringify(newHotdeals));
++      await refetchHotDeals();
++
++      toast.success(`${newHotdeals.length}개의 핫딜을 가져왔습니다`);
+     } catch (error) {
+-      toast.error('JSON 가져오기 실패')
+-      console.error(error)
++      toast.error('JSON 가져오기 실패');
++      console.error(error);
+     }
+-  }
++  };
+
+   // 현재 데이터 내보내기
+   const handleExportData = async () => {
+@@ -295,66 +341,70 @@ export default function HotDealManagerPage() {
+       const response = await fetch('/api/placeholder/export-current-data', {
+         method: 'POST',
+         headers: { 'Content-Type': 'application/json' },
+-        body: JSON.stringify({ hotdeals })
+-      })
+-
+-      const result = await response.json()
++        body: JSON.stringify({ hotdeals }),
++      });
++
++      const result = await response.json();
+       if (result.success) {
+-        toast.success('데이터를 성공적으로 내보냈습니다')
+-        await loadJsonFiles()
++        toast.success('데이터를 성공적으로 내보냈습니다');
++        await loadJsonFiles();
+       } else {
+-        throw new Error(result.error)
++        throw new Error(result.error);
+       }
+     } catch (error) {
+-      toast.error('데이터 내보내기 실패')
+-      console.error(error)
++      toast.error('데이터 내보내기 실패');
++      console.error(error);
+     }
+-  }
++  };
+
+   // 모든 데이터 삭제
+   const handleClearAll = async () => {
+-    if (!confirm('정말로 모든 핫딜 데이터를 삭제하시겠습니까?')) return
+-
+-    localStorage.setItem('hiko_hotdeals', JSON.stringify([]))
+-    await refetchHotDeals()
+-    toast.success('모든 데이터가 삭제되었습니다')
+-  }
++    if (!confirm('정말로 모든 핫딜 데이터를 삭제하시겠습니까?')) return;
++
++    localStorage.setItem('hiko_hotdeals', JSON.stringify([]));
++    await refetchHotDeals();
++    toast.success('모든 데이터가 삭제되었습니다');
++  };
+
+   // 초기 로드
+   useEffect(() => {
+-    loadJsonFiles()
+-
++    loadJsonFiles();
++
+     // 로컬 스토리지에서 설정 로드
+-    const savedSchedule = localStorage.getItem('hiko_crawl_schedule')
++    const savedSchedule = localStorage.getItem('hiko_crawl_schedule');
+     if (savedSchedule) {
+-      setSchedule(JSON.parse(savedSchedule))
++      setSchedule(JSON.parse(savedSchedule));
+     }
+-
+-    const savedHistory = localStorage.getItem('hiko_crawl_history')
++
++    const savedHistory = localStorage.getItem('hiko_crawl_history');
+     if (savedHistory) {
+-      setCrawlHistory(JSON.parse(savedHistory))
++      setCrawlHistory(JSON.parse(savedHistory));
+     }
+-  }, [])
++  }, []);
+
+   // 스케줄 저장
+   useEffect(() => {
+-    localStorage.setItem('hiko_crawl_schedule', JSON.stringify(schedule))
+-  }, [schedule])
++    localStorage.setItem('hiko_crawl_schedule', JSON.stringify(schedule));
++  }, [schedule]);
+
+   // 히스토리 저장
+   useEffect(() => {
+-    localStorage.setItem('hiko_crawl_history', JSON.stringify(crawlHistory))
+-  }, [crawlHistory])
++    localStorage.setItem('hiko_crawl_history', JSON.stringify(crawlHistory));
++  }, [crawlHistory]);
+
+   return (
+     <div className="container mx-auto py-6 space-y-6">
+       <div className="flex justify-between items-center">
+         <div>
+           <h1 className="text-3xl font-bold">핫딜 통합 관리</h1>
+-          <p className="text-muted-foreground">크롤링, 데이터 관리, 자동화를 한 곳에서</p>
++          <p className="text-muted-foreground">
++            크롤링, 데이터 관리, 자동화를 한 곳에서
++          </p>
+         </div>
+-        <Badge variant={isCrawling ? "default" : "secondary"} className="gap-2">
+-          <Activity className={`h-3 w-3 ${isCrawling ? 'animate-pulse' : ''}`} />
++        <Badge variant={isCrawling ? 'default' : 'secondary'} className="gap-2">
++          <Activity
++            className={`h-3 w-3 ${isCrawling ? 'animate-pulse' : ''}`}
++          />
+           {isCrawling ? '크롤링 중' : '대기 중'}
+         </Badge>
+       </div>
+@@ -414,18 +464,25 @@ export default function HotDealManagerPage() {
+             <CardHeader>
+               <CardTitle>빠른 실행</CardTitle>
+               <CardDescription>
+-                {crawlMode === 'time'
+-                  ? `시간 기준 크롤링 (${timeRange === 'today' ? '오늘'
+-                      : timeRange === 'hours' ? `${customTimeValue}시간`
+-                      : timeRange === 'days' ? `${customTimeValue}일`
+-                      : `${customTimeValue}${customTimeUnit === 'hours' ? '시간' : '일'}`}) - ${selectedSource}`
++                {crawlMode === 'time'
++                  ? `시간 기준 크롤링 (${
++                      timeRange === 'today'
++                        ? '오늘'
++                        : timeRange === 'hours'
++                        ? `${customTimeValue}시간`
++                        : timeRange === 'days'
++                        ? `${customTimeValue}일`
++                        : `${customTimeValue}${
++                            customTimeUnit === 'hours' ? '시간' : '일'
++                          }`
++                    }) - ${selectedSource}`
+                   : `페이지 기준 크롤링 (${crawlPages}페이지) - ${selectedSource}`}
+               </CardDescription>
+             </CardHeader>
+             <CardContent className="space-y-4">
+               <div className="flex gap-4">
+-                <Button
+-                  onClick={() => handleCrawl()}
++                <Button
++                  onClick={() => handleCrawl()}
+                   disabled={isCrawling}
+                   size="lg"
+                   className="flex-1"
+@@ -447,7 +504,7 @@ export default function HotDealManagerPage() {
+                   새로고침
+                 </Button>
+               </div>
+-
++
+               {isCrawling && (
+                 <div className="space-y-2">
+                   <div className="flex justify-between text-sm">
+@@ -469,10 +526,15 @@ export default function HotDealManagerPage() {
+             <CardContent>
+               <div className="space-y-2">
+                 {crawlHistory.length === 0 ? (
+-                  <p className="text-muted-foreground text-center py-4">아직 크롤링 기록이 없습니다</p>
++                  <p className="text-muted-foreground text-center py-4">
++                    아직 크롤링 기록이 없습니다
++                  </p>
+                 ) : (
+-                  crawlHistory.map(history => (
+-                    <div key={history.id} className="flex items-center justify-between p-3 border rounded-lg">
++                  crawlHistory.map((history) => (
++                    <div
++                      key={history.id}
++                      className="flex items-center justify-between p-3 border rounded-lg"
++                    >
+                       <div className="flex items-center gap-3">
+                         {history.status === 'success' ? (
+                           <CheckCircle2 className="h-4 w-4 text-green-500" />
+@@ -482,13 +544,17 @@ export default function HotDealManagerPage() {
+                         <div>
+                           <p className="font-medium">{history.source}</p>
+                           <p className="text-sm text-muted-foreground">
+-                            {new Date(history.timestamp).toLocaleString('ko-KR')}
++                            {new Date(history.timestamp).toLocaleString(
++                              'ko-KR',
++                            )}
+                           </p>
+                         </div>
+                       </div>
+                       <div className="text-right">
+                         <p className="font-medium">{history.itemsCount}개</p>
+-                        <p className="text-sm text-muted-foreground">{history.duration}초</p>
++                        <p className="text-sm text-muted-foreground">
++                          {history.duration}초
++                        </p>
+                       </div>
+                     </div>
+                   ))
+@@ -510,14 +576,21 @@ export default function HotDealManagerPage() {
+                 {/* 크롤링 소스 */}
+                 <div className="space-y-2">
+                   <Label>크롤링 소스</Label>
+-                  <Select value={selectedSource} onValueChange={setSelectedSource}>
++                  <Select
++                    value={selectedSource}
++                    onValueChange={setSelectedSource}
++                  >
+                     <SelectTrigger>
+                       <SelectValue />
+                     </SelectTrigger>
+                     <SelectContent>
+                       <SelectItem value="ppomppu">뽐뿌</SelectItem>
+-                      <SelectItem value="ruliweb" disabled>루리웹 (준비중)</SelectItem>
+-                      <SelectItem value="clien" disabled>클리앙 (준비중)</SelectItem>
++                      <SelectItem value="ruliweb" disabled>
++                        루리웹 (준비중)
++                      </SelectItem>
++                      <SelectItem value="clien" disabled>
++                        클리앙 (준비중)
++                      </SelectItem>
+                     </SelectContent>
+                   </Select>
+                 </div>
+@@ -525,7 +598,10 @@ export default function HotDealManagerPage() {
+                 {/* 크롤링 방식 선택 */}
+                 <div className="space-y-2">
+                   <Label>크롤링 방식</Label>
+-                  <Select value={crawlMode} onValueChange={(v: 'pages' | 'time') => setCrawlMode(v)}>
++                  <Select
++                    value={crawlMode}
++                    onValueChange={(v: 'pages' | 'time') => setCrawlMode(v)}
++                  >
+                     <SelectTrigger>
+                       <SelectValue />
+                     </SelectTrigger>
+@@ -541,12 +617,17 @@ export default function HotDealManagerPage() {
+                   <div className="space-y-4 p-4 border rounded-lg bg-blue-50">
+                     <div className="space-y-2">
+                       <Label>크롤링 기간</Label>
+-                      <Select value={timeRange} onValueChange={(v: any) => setTimeRange(v)}>
++                      <Select
++                        value={timeRange}
++                        onValueChange={(v: any) => setTimeRange(v)}
++                      >
+                         <SelectTrigger>
+                           <SelectValue />
+                         </SelectTrigger>
+                         <SelectContent>
+-                          <SelectItem value="today">🌅 오늘 (최근 24시간)</SelectItem>
++                          <SelectItem value="today">
++                            🌅 오늘 (최근 24시간)
++                          </SelectItem>
+                           <SelectItem value="hours">⏰ 최근 몇 시간</SelectItem>
+                           <SelectItem value="days">📅 최근 몇 일</SelectItem>
+                           <SelectItem value="custom">⚙️ 직접 설정</SelectItem>
+@@ -555,12 +636,16 @@ export default function HotDealManagerPage() {
+                     </div>
+
+                     {/* 시간/일 직접 설정 */}
+-                    {(timeRange === 'hours' || timeRange === 'days' || timeRange === 'custom') && (
++                    {(timeRange === 'hours' ||
++                      timeRange === 'days' ||
++                      timeRange === 'custom') && (
+                       <div className="space-y-2">
+                         <Label>
+-                          {timeRange === 'hours' ? '시간 입력' :
+-                           timeRange === 'days' ? '일 입력' :
+-                           '기간 설정'}
++                          {timeRange === 'hours'
++                            ? '시간 입력'
++                            : timeRange === 'days'
++                            ? '일 입력'
++                            : '기간 설정'}
+                         </Label>
+                         <div className="flex gap-2">
+                           <Input
+@@ -568,12 +653,19 @@ export default function HotDealManagerPage() {
+                             min="1"
+                             max={timeRange === 'hours' ? 72 : 30}
+                             value={customTimeValue}
+-                            onChange={(e) => setCustomTimeValue(parseInt(e.target.value) || 1)}
++                            onChange={(e) =>
++                              setCustomTimeValue(parseInt(e.target.value) || 1)
++                            }
+                             className="flex-1"
+                             placeholder="숫자 입력"
+                           />
+                           {timeRange === 'custom' && (
+-                            <Select value={customTimeUnit} onValueChange={(v: 'hours' | 'days') => setCustomTimeUnit(v)}>
++                            <Select
++                              value={customTimeUnit}
++                              onValueChange={(v: 'hours' | 'days') =>
++                                setCustomTimeUnit(v)
++                              }
++                            >
+                               <SelectTrigger className="w-24">
+                                 <SelectValue />
+                               </SelectTrigger>
+@@ -585,9 +677,14 @@ export default function HotDealManagerPage() {
+                           )}
+                         </div>
+                         <p className="text-xs text-gray-500">
+-                          {timeRange === 'hours' && `최근 ${customTimeValue}시간 동안의 게시글을 크롤링합니다`}
+-                          {timeRange === 'days' && `최근 ${customTimeValue}일 동안의 게시글을 크롤링합니다`}
+-                          {timeRange === 'custom' && `최근 ${customTimeValue}${customTimeUnit === 'hours' ? '시간' : '일'} 동안의 게시글을 크롤링합니다`}
++                          {timeRange === 'hours' &&
++                            `최근 ${customTimeValue}시간 동안의 게시글을 크롤링합니다`}
++                          {timeRange === 'days' &&
++                            `최근 ${customTimeValue}일 동안의 게시글을 크롤링합니다`}
++                          {timeRange === 'custom' &&
++                            `최근 ${customTimeValue}${
++                              customTimeUnit === 'hours' ? '시간' : '일'
++                            } 동안의 게시글을 크롤링합니다`}
+                         </p>
+                       </div>
+                     )}
+@@ -600,8 +697,8 @@ export default function HotDealManagerPage() {
+                           variant="outline"
+                           size="sm"
+                           onClick={() => {
+-                            setTimeRange('hours')
+-                            setCustomTimeValue(1)
++                            setTimeRange('hours');
++                            setCustomTimeValue(1);
+                           }}
+                         >
+                           1시간
+@@ -610,8 +707,8 @@ export default function HotDealManagerPage() {
+                           variant="outline"
+                           size="sm"
+                           onClick={() => {
+-                            setTimeRange('hours')
+-                            setCustomTimeValue(6)
++                            setTimeRange('hours');
++                            setCustomTimeValue(6);
+                           }}
+                         >
+                           6시간
+@@ -620,8 +717,8 @@ export default function HotDealManagerPage() {
+                           variant="outline"
+                           size="sm"
+                           onClick={() => {
+-                            setTimeRange('hours')
+-                            setCustomTimeValue(12)
++                            setTimeRange('hours');
++                            setCustomTimeValue(12);
+                           }}
+                         >
+                           12시간
+@@ -637,8 +734,8 @@ export default function HotDealManagerPage() {
+                           variant="outline"
+                           size="sm"
+                           onClick={() => {
+-                            setTimeRange('days')
+-                            setCustomTimeValue(3)
++                            setTimeRange('days');
++                            setCustomTimeValue(3);
+                           }}
+                         >
+                           3일
+@@ -647,8 +744,8 @@ export default function HotDealManagerPage() {
+                           variant="outline"
+                           size="sm"
+                           onClick={() => {
+-                            setTimeRange('days')
+-                            setCustomTimeValue(7)
++                            setTimeRange('days');
++                            setCustomTimeValue(7);
+                           }}
+                         >
+                           1주일
+@@ -669,14 +766,19 @@ export default function HotDealManagerPage() {
+                           min="1"
+                           max="50"
+                           value={crawlPages}
+-                          onChange={(e) => setCrawlPages(parseInt(e.target.value) || 1)}
++                          onChange={(e) =>
++                            setCrawlPages(parseInt(e.target.value) || 1)
++                          }
+                           className="flex-1"
+                           placeholder="페이지 수 입력"
+                         />
+-                        <span className="flex items-center text-sm text-gray-500">페이지</span>
++                        <span className="flex items-center text-sm text-gray-500">
++                          페이지
++                        </span>
+                       </div>
+                       <p className="text-xs text-gray-500">
+-                        총 {crawlPages}페이지를 크롤링합니다 (페이지당 약 20-30개 게시글)
++                        총 {crawlPages}페이지를 크롤링합니다 (페이지당 약
++                        20-30개 게시글)
+                       </p>
+                     </div>
+
+@@ -724,18 +826,20 @@ export default function HotDealManagerPage() {
+                   </div>
+                 )}
+               </div>
+-
++
+               <div className="flex items-center space-x-2">
+-                <Switch
+-                  id="auto-import"
++                <Switch
++                  id="auto-import"
+                   checked={autoImport}
+                   onCheckedChange={setAutoImport}
+                 />
+-                <Label htmlFor="auto-import">크롤링 후 자동으로 데이터 가져오기</Label>
++                <Label htmlFor="auto-import">
++                  크롤링 후 자동으로 데이터 가져오기
++                </Label>
+               </div>
+-
+-              <Button
+-                onClick={() => handleCrawl()}
++
++              <Button
++                onClick={() => handleCrawl()}
+                 disabled={isCrawling}
+                 className="w-full"
+               >
+@@ -748,18 +852,22 @@ export default function HotDealManagerPage() {
+           <Card>
+             <CardHeader>
+               <CardTitle>자동 크롤링 스케줄</CardTitle>
+-              <CardDescription>실시간 핫딜 수집을 위한 자동 크롤링 설정</CardDescription>
++              <CardDescription>
++                실시간 핫딜 수집을 위한 자동 크롤링 설정
++              </CardDescription>
+             </CardHeader>
+             <CardContent className="space-y-4">
+               <div className="flex items-center space-x-2">
+-                <Switch
+-                  id="schedule-enabled"
++                <Switch
++                  id="schedule-enabled"
+                   checked={schedule.enabled}
+-                  onCheckedChange={(checked) => setSchedule(prev => ({ ...prev, enabled: checked }))}
++                  onCheckedChange={(checked) =>
++                    setSchedule((prev) => ({ ...prev, enabled: checked }))
++                  }
+                 />
+                 <Label htmlFor="schedule-enabled">자동 크롤링 활성화</Label>
+               </div>
+-
++
+               {schedule.enabled && (
+                 <div className="space-y-4">
+                   <div className="space-y-4">
+@@ -769,21 +877,32 @@ export default function HotDealManagerPage() {
+                         <Input
+                           type="number"
+                           min="1"
+-                          max={schedule.intervalType === 'minutes' ? 60 : schedule.intervalType === 'hours' ? 24 : 30}
++                          max={
++                            schedule.intervalType === 'minutes'
++                              ? 60
++                              : schedule.intervalType === 'hours'
++                              ? 24
++                              : 30
++                          }
+                           value={schedule.intervalValue?.toString() || '1'}
+-                          onChange={(e) => setSchedule(prev => ({
+-                            ...prev,
+-                            intervalValue: parseInt(e.target.value) || 1
+-                          }))}
++                          onChange={(e) =>
++                            setSchedule((prev) => ({
++                              ...prev,
++                              intervalValue: parseInt(e.target.value) || 1,
++                            }))
++                          }
+                           className="w-20"
+                         />
+-                        <Select
+-                          value={schedule.intervalType}
+-                          onValueChange={(v: any) => setSchedule(prev => ({
+-                            ...prev,
+-                            intervalType: v,
+-                            intervalValue: v === 'minutes' ? 30 : v === 'hours' ? 1 : 1
+-                          }))}
++                        <Select
++                          value={schedule.intervalType}
++                          onValueChange={(v: any) =>
++                            setSchedule((prev) => ({
++                              ...prev,
++                              intervalType: v,
++                              intervalValue:
++                                v === 'minutes' ? 30 : v === 'hours' ? 1 : 1,
++                            }))
++                          }
+                         >
+                           <SelectTrigger className="flex-1">
+                             <SelectValue />
+@@ -796,92 +915,137 @@ export default function HotDealManagerPage() {
+                         </Select>
+                       </div>
+                     </div>
+-
++
+                     <div className="space-y-2">
+                       <Label>빠른 설정</Label>
+                       <div className="flex flex-wrap gap-2">
+                         <Button
+                           variant="outline"
+                           size="sm"
+-                          onClick={() => setSchedule(prev => ({ ...prev, intervalType: 'minutes', intervalValue: 10 }))}
++                          onClick={() =>
++                            setSchedule((prev) => ({
++                              ...prev,
++                              intervalType: 'minutes',
++                              intervalValue: 10,
++                            }))
++                          }
+                         >
+                           10분
+                         </Button>
+                         <Button
+                           variant="outline"
+                           size="sm"
+-                          onClick={() => setSchedule(prev => ({ ...prev, intervalType: 'minutes', intervalValue: 30 }))}
++                          onClick={() =>
++                            setSchedule((prev) => ({
++                              ...prev,
++                              intervalType: 'minutes',
++                              intervalValue: 30,
++                            }))
++                          }
+                         >
+                           30분
+                         </Button>
+                         <Button
+                           variant="outline"
+                           size="sm"
+-                          onClick={() => setSchedule(prev => ({ ...prev, intervalType: 'hours', intervalValue: 1 }))}
++                          onClick={() =>
++                            setSchedule((prev) => ({
++                              ...prev,
++                              intervalType: 'hours',
++                              intervalValue: 1,
++                            }))
++                          }
+                         >
+                           1시간
+                         </Button>
+                         <Button
+                           variant="outline"
+                           size="sm"
+-                          onClick={() => setSchedule(prev => ({ ...prev, intervalType: 'hours', intervalValue: 2 }))}
++                          onClick={() =>
++                            setSchedule((prev) => ({
++                              ...prev,
++                              intervalType: 'hours',
++                              intervalValue: 2,
++                            }))
++                          }
+                         >
+                           2시간
+                         </Button>
+                         <Button
+                           variant="outline"
+                           size="sm"
+-                          onClick={() => setSchedule(prev => ({ ...prev, intervalType: 'hours', intervalValue: 6 }))}
++                          onClick={() =>
++                            setSchedule((prev) => ({
++                              ...prev,
++                              intervalType: 'hours',
++                              intervalValue: 6,
++                            }))
++                          }
+                         >
+                           6시간
+                         </Button>
+                         <Button
+                           variant="outline"
+                           size="sm"
+-                          onClick={() => setSchedule(prev => ({ ...prev, intervalType: 'daily', intervalValue: 1 }))}
++                          onClick={() =>
++                            setSchedule((prev) => ({
++                              ...prev,
++                              intervalType: 'daily',
++                              intervalValue: 1,
++                            }))
++                          }
+                         >
+                           매일
+                         </Button>
+                       </div>
+                     </div>
+                   </div>
+-
++
+                   <div className="grid gap-4 md:grid-cols-1">
+                     <div className="space-y-2">
+                       <Label>스케줄 정보</Label>
+                       <div className="p-3 bg-muted rounded-md">
+                         <p className="text-sm font-medium">
+-                          {schedule.intervalValue} {schedule.intervalType === 'minutes' ? '분' : schedule.intervalType === 'hours' ? '시간' : '일'}마다 자동 크롤링
++                          {schedule.intervalValue}{' '}
++                          {schedule.intervalType === 'minutes'
++                            ? '분'
++                            : schedule.intervalType === 'hours'
++                            ? '시간'
++                            : '일'}
++                          마다 자동 크롤링
+                         </p>
+                         <p className="text-xs text-muted-foreground mt-1">
+                           실시간 핫딜 업데이트를 위한 자동 수집이 활성화됩니다
+                         </p>
+                         {schedule.lastRun && (
+                           <p className="text-xs text-muted-foreground mt-1">
+-                            마지막 실행: {new Date(schedule.lastRun).toLocaleString('ko-KR')}
++                            마지막 실행:{' '}
++                            {new Date(schedule.lastRun).toLocaleString('ko-KR')}
+                           </p>
+                         )}
+                       </div>
+                     </div>
+                   </div>
+-
++
+                   <Alert>
+                     <AlertCircle className="h-4 w-4" />
+                     <AlertDescription>
+-                      자동 크롤링은 서버 환경에서만 작동합니다.
+-                      현재는 설정값만 저장되며, 실제 자동 실행을 위해서는 서버 크론 작업이 필요합니다.
++                      자동 크롤링은 서버 환경에서만 작동합니다. 현재는 설정값만
++                      저장되며, 실제 자동 실행을 위해서는 서버 크론 작업이
++                      필요합니다.
+                     </AlertDescription>
+                   </Alert>
+-
+-                  {schedule.intervalType === 'minutes' && schedule.intervalValue < 10 && (
+-                    <Alert className="border-yellow-500">
+-                      <AlertCircle className="h-4 w-4 text-yellow-500" />
+-                      <AlertDescription className="text-yellow-700">
+-                        너무 짧은 간격은 서버에 부담을 줄 수 있습니다.
+-                        최소 10분 이상을 권장합니다.
+-                      </AlertDescription>
+-                    </Alert>
+-                  )}
++
++                  {schedule.intervalType === 'minutes' &&
++                    schedule.intervalValue < 10 && (
++                      <Alert className="border-yellow-500">
++                        <AlertCircle className="h-4 w-4 text-yellow-500" />
++                        <AlertDescription className="text-yellow-700">
++                          너무 짧은 간격은 서버에 부담을 줄 수 있습니다. 최소
++                          10분 이상을 권장합니다.
++                        </AlertDescription>
++                      </Alert>
++                    )}
+                 </div>
+               )}
+             </CardContent>
+@@ -893,20 +1057,22 @@ export default function HotDealManagerPage() {
+           <Card>
+             <CardHeader>
+               <CardTitle>데이터 관리</CardTitle>
+-              <CardDescription>핫딜 데이터를 가져오거나 내보내세요</CardDescription>
++              <CardDescription>
++                핫딜 데이터를 가져오거나 내보내세요
++              </CardDescription>
+             </CardHeader>
+             <CardContent className="space-y-4">
+               <div className="flex gap-2">
+-                <Button
+-                  variant="outline"
++                <Button
++                  variant="outline"
+                   className="flex-1"
+                   onClick={handleExportData}
+                 >
+                   <Download className="mr-2 h-4 w-4" />
+                   현재 데이터 내보내기
+                 </Button>
+-                <Button
+-                  variant="destructive"
++                <Button
++                  variant="destructive"
+                   onClick={handleClearAll}
+                   className="flex-1"
+                 >
+@@ -926,10 +1092,15 @@ export default function HotDealManagerPage() {
+             <CardContent>
+               <div className="space-y-2">
+                 {jsonFiles.length === 0 ? (
+-                  <p className="text-muted-foreground text-center py-4">저장된 파일이 없습니다</p>
++                  <p className="text-muted-foreground text-center py-4">
++                    저장된 파일이 없습니다
++                  </p>
+                 ) : (
+-                  jsonFiles.slice(0, 10).map(file => (
+-                    <div key={file} className="flex items-center justify-between p-3 border rounded-lg">
++                  jsonFiles.slice(0, 10).map((file) => (
++                    <div
++                      key={file}
++                      className="flex items-center justify-between p-3 border rounded-lg"
++                    >
+                       <div className="flex items-center gap-2">
+                         <FileJson className="h-4 w-4 text-muted-foreground" />
+                         <span className="text-sm font-mono">{file}</span>
+@@ -955,7 +1126,9 @@ export default function HotDealManagerPage() {
+           <Card>
+             <CardHeader>
+               <CardTitle>시스템 설정</CardTitle>
+-              <CardDescription>크롤링 시스템의 고급 설정을 관리하세요</CardDescription>
++              <CardDescription>
++                크롤링 시스템의 고급 설정을 관리하세요
++              </CardDescription>
+             </CardHeader>
+             <CardContent className="space-y-4">
+               <Alert>
+@@ -969,5 +1142,5 @@ export default function HotDealManagerPage() {
+         </TabsContent>
+       </Tabs>
+     </div>
+-  )
+-}
+\ No newline at end of file
++  );
++}
+diff --git a/app/debug/load-hotdeals/page.tsx b/app/debug/load-hotdeals/page.tsx
+index 5c318ce..517d58d 100644
+--- a/app/debug/load-hotdeals/page.tsx
++++ b/app/debug/load-hotdeals/page.tsx
+@@ -1,96 +1,123 @@
+-'use client'
++'use client';
+
+-import React, { useState } from 'react'
+-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+-import { Button } from '@/components/ui/button'
+-import { Badge } from '@/components/ui/badge'
+-import { Alert, AlertDescription } from '@/components/ui/alert'
+-import { Upload, CheckCircle, AlertCircle, RefreshCw } from 'lucide-react'
+-import { toast } from 'sonner'
++import React, { useState } from 'react';
++import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
++import { Button } from '@/components/ui/button';
++import { Badge } from '@/components/ui/badge';
++import { Alert, AlertDescription } from '@/components/ui/alert';
++import { Upload, CheckCircle, AlertCircle, RefreshCw } from 'lucide-react';
++import { toast } from 'sonner';
+
+ export default function LoadHotDealsPage() {
+-  const [loading, setLoading] = useState(false)
+-  const [hotdealsCount, setHotdealsCount] = useState(0)
+-  const [lastLoaded, setLastLoaded] = useState<string | null>(null)
++  const [loading, setLoading] = useState(false);
++  const [hotdealsCount, setHotdealsCount] = useState(0);
++  const [lastLoaded, setLastLoaded] = useState<string | null>(null);
+
+   // 최신 JSON 파일을 자동으로 로드
+   const loadLatestHotdeals = async () => {
+-    setLoading(true)
++    setLoading(true);
+     try {
+       // JSON 파일 목록 가져오기
+-      const filesResponse = await fetch('/api/placeholder/list-exports')
+-      const files = await filesResponse.json()
+-
++      const filesResponse = await fetch('/api/placeholder/list-exports');
++      const files = await filesResponse.json();
++
+       if (files.length === 0) {
+-        toast.error('저장된 JSON 파일이 없습니다')
+-        return
++        toast.error('저장된 JSON 파일이 없습니다');
++        return;
+       }
+-
++
+       // 가장 최신 파일 선택
+-      const latestFile = files[0]
+-
++      const latestFile = files[0];
++
+       // 파일 내용 가져오기
+-      const dataResponse = await fetch(`/api/placeholder/exports/${latestFile}`)
+-      const data = await dataResponse.json()
+-
++      const dataResponse = await fetch(
++        `/api/placeholder/exports/${latestFile}`,
++      );
++      if (!dataResponse.ok) {
++        const errorText = await dataResponse.text();
++        console.error('API 응답 에러:', errorText);
++        throw new Error(
++          `JSON 파일을 읽을 수 없습니다 (${dataResponse.status})`,
++        );
++      }
++
++      // Content-Type 확인
++      const contentType = dataResponse.headers.get('content-type');
++      if (!contentType || !contentType.includes('application/json')) {
++        const responseText = await dataResponse.text();
++        console.error('예상치 못한 응답 형식:', responseText.substring(0, 200));
++        throw new Error('서버에서 JSON 대신 다른 형식의 응답을 받았습니다');
++      }
++
++      let data;
++      try {
++        data = await dataResponse.json();
++      } catch (parseError) {
++        console.error('JSON 파싱 에러:', parseError);
++        throw new Error('응답을 JSON으로 파싱할 수 없습니다');
++      }
++
+       if (!data.hotdeals || !Array.isArray(data.hotdeals)) {
+-        toast.error('잘못된 JSON 형식입니다')
+-        return
++        toast.error('잘못된 JSON 형식입니다');
++        return;
+       }
+-
++
+       // localStorage에 저장 - 안전한 데이터 처리
+       const newHotdeals = data.hotdeals.map((deal: any, index: number) => ({
+         ...deal,
+-        id: `hotdeals_${Date.now()}_${index}_${Math.random().toString(36).substr(2, 9)}`,
++        id: `hotdeals_${Date.now()}_${index}_${Math.random()
++          .toString(36)
++          .substr(2, 9)}`,
+         // 필수 필드 기본값 설정
+         communityCommentCount: deal.communityCommentCount || 0,
+         communityRecommendCount: deal.communityRecommendCount || 0,
+         viewCount: deal.viewCount || 0,
+         price: deal.price || 0,
+-        crawledAt: deal.crawledAt || deal.postDate || new Date().toISOString()
+-      }))
+-
+-      localStorage.setItem('hiko_hotdeals', JSON.stringify(newHotdeals))
+-      setHotdealsCount(newHotdeals.length)
+-      setLastLoaded(latestFile)
+-
+-      toast.success(`${newHotdeals.length}개의 핫딜을 성공적으로 로드했습니다!`)
+-
++        crawledAt: deal.crawledAt || deal.postDate || new Date().toISOString(),
++      }));
++
++      localStorage.setItem('hiko_hotdeals', JSON.stringify(newHotdeals));
++      setHotdealsCount(newHotdeals.length);
++      setLastLoaded(latestFile);
++
++      toast.success(
++        `${newHotdeals.length}개의 핫딜을 성공적으로 로드했습니다!`,
++      );
+     } catch (error) {
+-      console.error('핫딜 로드 오류:', error)
+-      toast.error('핫딜 로드 중 오류가 발생했습니다')
++      console.error('핫딜 로드 오류:', error);
++      toast.error('핫딜 로드 중 오류가 발생했습니다');
+     } finally {
+-      setLoading(false)
++      setLoading(false);
+     }
+-  }
++  };
+
+   // 현재 localStorage 상태 확인
+   const checkCurrentState = () => {
+     try {
+-      const hotdealsData = localStorage.getItem('hiko_hotdeals')
++      const hotdealsData = localStorage.getItem('hiko_hotdeals');
+       if (hotdealsData) {
+-        const parsed = JSON.parse(hotdealsData)
+-        setHotdealsCount(Array.isArray(parsed) ? parsed.length : 0)
++        const parsed = JSON.parse(hotdealsData);
++        setHotdealsCount(Array.isArray(parsed) ? parsed.length : 0);
+       } else {
+-        setHotdealsCount(0)
++        setHotdealsCount(0);
+       }
+     } catch (error) {
+-      setHotdealsCount(0)
++      setHotdealsCount(0);
+     }
+-  }
++  };
+
+   // 데이터 초기화
+   const clearData = () => {
+-    localStorage.removeItem('hiko_hotdeals')
+-    setHotdealsCount(0)
+-    setLastLoaded(null)
+-    toast.success('핫딜 데이터를 삭제했습니다')
+-  }
++    localStorage.removeItem('hiko_hotdeals');
++    setHotdealsCount(0);
++    setLastLoaded(null);
++    toast.success('핫딜 데이터를 삭제했습니다');
++  };
+
+   // 페이지 로드 시 상태 확인
+   React.useEffect(() => {
+-    checkCurrentState()
+-  }, [])
++    checkCurrentState();
++  }, []);
+
+   return (
+     <div className="container mx-auto py-6 space-y-6">
+@@ -142,8 +169,8 @@ export default function LoadHotDealsPage() {
+             <p className="text-gray-600">
+               최신 크롤링 데이터를 localStorage에 로드합니다.
+             </p>
+-            <Button
+-              onClick={loadLatestHotdeals}
++            <Button
++              onClick={loadLatestHotdeals}
+               disabled={loading}
+               className="w-full"
+             >
+@@ -161,8 +188,8 @@ export default function LoadHotDealsPage() {
+             <p className="text-gray-600">
+               현재 localStorage의 핫딜 데이터를 삭제합니다.
+             </p>
+-            <Button
+-              onClick={clearData}
++            <Button
++              onClick={clearData}
+               variant="destructive"
+               className="w-full"
+             >
+@@ -176,12 +203,16 @@ export default function LoadHotDealsPage() {
+       <Alert>
+         <AlertCircle className="h-4 w-4" />
+         <AlertDescription>
+-          <strong>사용 방법:</strong><br />
+-          1. &quot;최신 핫딜 로드&quot; 버튼을 클릭하여 크롤링된 데이터를 로드하세요<br />
+-          2. 메인 페이지로 돌아가서 핫딜 카드가 표시되는지 확인하세요<br />
++          <strong>사용 방법:</strong>
++          <br />
++          1. &quot;최신 핫딜 로드&quot; 버튼을 클릭하여 크롤링된 데이터를
++          로드하세요
++          <br />
++          2. 메인 페이지로 돌아가서 핫딜 카드가 표시되는지 확인하세요
++          <br />
+           3. 문제가 계속되면 브라우저를 새로고침해보세요
+         </AlertDescription>
+       </Alert>
+     </div>
+-  )
+-}
+\ No newline at end of file
++  );
++}
+diff --git a/hooks/use-local-db.ts b/hooks/use-local-db.ts
+index 0d1641c..49aa930 100644
+--- a/hooks/use-local-db.ts
++++ b/hooks/use-local-db.ts
+@@ -1,282 +1,357 @@
+-'use client'
++'use client';
+
+-import { useState, useEffect, useCallback } from 'react'
+-import { db } from '@/lib/db/database-service'
+-import { User, Post, Comment } from '@/lib/db/local/models'
+-import { HotDeal } from '@/types/hotdeal'
++import { useState, useEffect, useCallback } from 'react';
++import { db } from '@/lib/db/database-service';
++import { User, Post, Comment } from '@/lib/db/local/models';
++import { HotDeal } from '@/types/hotdeal';
+
+ export function useUsers() {
+-  const [users, setUsers] = useState<User[]>([])
+-  const [loading, setLoading] = useState(true)
+-  const [error, setError] = useState<Error | null>(null)
++  const [users, setUsers] = useState<User[]>([]);
++  const [loading, setLoading] = useState(true);
++  const [error, setError] = useState<Error | null>(null);
+
+   const loadUsers = useCallback(async () => {
+     try {
+-      setLoading(true)
+-      const data = await db.users.findAll()
+-      setUsers(data)
+-      setError(null)
++      setLoading(true);
++      const data = await db.users.findAll();
++      setUsers(data);
++      setError(null);
+     } catch (err) {
+-      setError(err as Error)
+-      console.error('Failed to load users:', err)
++      setError(err as Error);
++      console.error('Failed to load users:', err);
+     } finally {
+-      setLoading(false)
++      setLoading(false);
+     }
+-  }, [])
++  }, []);
+
+   useEffect(() => {
+-    loadUsers()
+-  }, [loadUsers])
++    loadUsers();
++  }, [loadUsers]);
+
+-  const createUser = useCallback(async (userData: Omit<User, 'id'>) => {
+-    try {
+-      const newUser = await db.users.create(userData)
+-      await loadUsers()
+-      return newUser
+-    } catch (err) {
+-      console.error('Failed to create user:', err)
+-      throw err
+-    }
+-  }, [loadUsers])
+-
+-  const updateUser = useCallback(async (id: string, userData: Partial<User>) => {
+-    try {
+-      const updatedUser = await db.users.update(id, userData)
+-      await loadUsers()
+-      return updatedUser
+-    } catch (err) {
+-      console.error('Failed to update user:', err)
+-      throw err
+-    }
+-  }, [loadUsers])
++  const createUser = useCallback(
++    async (userData: Omit<User, 'id'>) => {
++      try {
++        const newUser = await db.users.create(userData);
++        await loadUsers();
++        return newUser;
++      } catch (err) {
++        console.error('Failed to create user:', err);
++        throw err;
++      }
++    },
++    [loadUsers],
++  );
+
+-  const deleteUser = useCallback(async (id: string) => {
+-    try {
+-      const result = await db.users.delete(id)
+-      await loadUsers()
+-      return result
+-    } catch (err) {
+-      console.error('Failed to delete user:', err)
+-      throw err
+-    }
+-  }, [loadUsers])
++  const updateUser = useCallback(
++    async (id: string, userData: Partial<User>) => {
++      try {
++        const updatedUser = await db.users.update(id, userData);
++        await loadUsers();
++        return updatedUser;
++      } catch (err) {
++        console.error('Failed to update user:', err);
++        throw err;
++      }
++    },
++    [loadUsers],
++  );
+
+-  return { users, loading, error, createUser, updateUser, deleteUser, refetch: loadUsers }
++  const deleteUser = useCallback(
++    async (id: string) => {
++      try {
++        const result = await db.users.delete(id);
++        await loadUsers();
++        return result;
++      } catch (err) {
++        console.error('Failed to delete user:', err);
++        throw err;
++      }
++    },
++    [loadUsers],
++  );
++
++  return {
++    users,
++    loading,
++    error,
++    createUser,
++    updateUser,
++    deleteUser,
++    refetch: loadUsers,
++  };
+ }
+
+ export function usePosts() {
+-  const [posts, setPosts] = useState<Post[]>([])
+-  const [loading, setLoading] = useState(true)
+-  const [error, setError] = useState<Error | null>(null)
++  const [posts, setPosts] = useState<Post[]>([]);
++  const [loading, setLoading] = useState(true);
++  const [error, setError] = useState<Error | null>(null);
+
+   const loadPosts = useCallback(async () => {
+     try {
+-      setLoading(true)
+-      const data = await db.posts.findAll()
+-      setPosts(data)
+-      setError(null)
++      setLoading(true);
++      const data = await db.posts.findAll();
++      setPosts(data);
++      setError(null);
+     } catch (err) {
+-      setError(err as Error)
+-      console.error('Failed to load posts:', err)
++      setError(err as Error);
++      console.error('Failed to load posts:', err);
+     } finally {
+-      setLoading(false)
++      setLoading(false);
+     }
+-  }, [])
++  }, []);
+
+   useEffect(() => {
+-    loadPosts()
+-  }, [loadPosts])
++    loadPosts();
++  }, [loadPosts]);
+
+-  const createPost = useCallback(async (postData: Omit<Post, 'id' | 'createdAt' | 'updatedAt'>) => {
+-    try {
+-      const postWithDates = {
+-        ...postData,
+-        createdAt: new Date(),
+-        updatedAt: new Date()
++  const createPost = useCallback(
++    async (postData: Omit<Post, 'id' | 'createdAt' | 'updatedAt'>) => {
++      try {
++        const postWithDates = {
++          ...postData,
++          createdAt: new Date(),
++          updatedAt: new Date(),
++        };
++        const newPost = await db.posts.create(postWithDates);
++        await loadPosts();
++        return newPost;
++      } catch (err) {
++        console.error('Failed to create post:', err);
++        throw err;
+       }
+-      const newPost = await db.posts.create(postWithDates)
+-      await loadPosts()
+-      return newPost
+-    } catch (err) {
+-      console.error('Failed to create post:', err)
+-      throw err
+-    }
+-  }, [loadPosts])
+-
+-  const updatePost = useCallback(async (id: string, postData: Partial<Post>) => {
+-    try {
+-      const updatedPost = await db.posts.update(id, postData)
+-      await loadPosts()
+-      return updatedPost
+-    } catch (err) {
+-      console.error('Failed to update post:', err)
+-      throw err
+-    }
+-  }, [loadPosts])
++    },
++    [loadPosts],
++  );
+
+-  const deletePost = useCallback(async (id: string) => {
+-    try {
+-      const result = await db.posts.delete(id)
+-      await loadPosts()
+-      return result
+-    } catch (err) {
+-      console.error('Failed to delete post:', err)
+-      throw err
+-    }
+-  }, [loadPosts])
++  const updatePost = useCallback(
++    async (id: string, postData: Partial<Post>) => {
++      try {
++        const updatedPost = await db.posts.update(id, postData);
++        await loadPosts();
++        return updatedPost;
++      } catch (err) {
++        console.error('Failed to update post:', err);
++        throw err;
++      }
++    },
++    [loadPosts],
++  );
+
+-  return { posts, loading, error, createPost, updatePost, deletePost, refetch: loadPosts }
++  const deletePost = useCallback(
++    async (id: string) => {
++      try {
++        const result = await db.posts.delete(id);
++        await loadPosts();
++        return result;
++      } catch (err) {
++        console.error('Failed to delete post:', err);
++        throw err;
++      }
++    },
++    [loadPosts],
++  );
++
++  return {
++    posts,
++    loading,
++    error,
++    createPost,
++    updatePost,
++    deletePost,
++    refetch: loadPosts,
++  };
+ }
+
+ export function usePost(id: string) {
+-  const [post, setPost] = useState<Post | null>(null)
+-  const [loading, setLoading] = useState(true)
+-  const [error, setError] = useState<Error | null>(null)
++  const [post, setPost] = useState<Post | null>(null);
++  const [loading, setLoading] = useState(true);
++  const [error, setError] = useState<Error | null>(null);
+
+   useEffect(() => {
+     const loadPost = async () => {
+       try {
+-        setLoading(true)
+-        const data = await db.posts.findById(id)
+-        setPost(data)
+-        setError(null)
++        setLoading(true);
++        const data = await db.posts.findById(id);
++        setPost(data);
++        setError(null);
+       } catch (err) {
+-        setError(err as Error)
+-        console.error('Failed to load post:', err)
++        setError(err as Error);
++        console.error('Failed to load post:', err);
+       } finally {
+-        setLoading(false)
++        setLoading(false);
+       }
+-    }
++    };
+
+-    loadPost()
+-  }, [id])
++    loadPost();
++  }, [id]);
+
+-  return { post, loading, error }
++  return { post, loading, error };
+ }
+
+ export function useComments(postId?: string) {
+-  const [comments, setComments] = useState<Comment[]>([])
+-  const [loading, setLoading] = useState(true)
+-  const [error, setError] = useState<Error | null>(null)
++  const [comments, setComments] = useState<Comment[]>([]);
++  const [loading, setLoading] = useState(true);
++  const [error, setError] = useState<Error | null>(null);
+
+   const loadComments = useCallback(async () => {
+     try {
+-      setLoading(true)
+-      const data = postId
++      setLoading(true);
++      const data = postId
+         ? await db.comments.findByPost(postId)
+-        : await db.comments.findAll()
+-      setComments(data)
+-      setError(null)
++        : await db.comments.findAll();
++      setComments(data);
++      setError(null);
+     } catch (err) {
+-      setError(err as Error)
+-      console.error('Failed to load comments:', err)
++      setError(err as Error);
++      console.error('Failed to load comments:', err);
+     } finally {
+-      setLoading(false)
++      setLoading(false);
+     }
+-  }, [postId])
++  }, [postId]);
+
+   useEffect(() => {
+-    loadComments()
+-  }, [loadComments])
++    loadComments();
++  }, [loadComments]);
+
+-  const createComment = useCallback(async (commentData: Omit<Comment, 'id' | 'createdAt' | 'updatedAt'>) => {
+-    try {
+-      const commentWithDates = {
+-        ...commentData,
+-        createdAt: new Date(),
+-        updatedAt: new Date()
++  const createComment = useCallback(
++    async (commentData: Omit<Comment, 'id' | 'createdAt' | 'updatedAt'>) => {
++      try {
++        const commentWithDates = {
++          ...commentData,
++          createdAt: new Date(),
++          updatedAt: new Date(),
++        };
++        const newComment = await db.comments.create(commentWithDates);
++        await loadComments();
++        return newComment;
++      } catch (err) {
++        console.error('Failed to create comment:', err);
++        throw err;
+       }
+-      const newComment = await db.comments.create(commentWithDates)
+-      await loadComments()
+-      return newComment
+-    } catch (err) {
+-      console.error('Failed to create comment:', err)
+-      throw err
+-    }
+-  }, [loadComments])
++    },
++    [loadComments],
++  );
+
+-  const deleteComment = useCallback(async (id: string) => {
+-    try {
+-      const result = await db.comments.delete(id)
+-      await loadComments()
+-      return result
+-    } catch (err) {
+-      console.error('Failed to delete comment:', err)
+-      throw err
+-    }
+-  }, [loadComments])
+-
+-  return { comments, loading, error, createComment, deleteComment, refetch: loadComments }
++  const deleteComment = useCallback(
++    async (id: string) => {
++      try {
++        const result = await db.comments.delete(id);
++        await loadComments();
++        return result;
++      } catch (err) {
++        console.error('Failed to delete comment:', err);
++        throw err;
++      }
++    },
++    [loadComments],
++  );
++
++  return {
++    comments,
++    loading,
++    error,
++    createComment,
++    deleteComment,
++    refetch: loadComments,
++  };
+ }
+
+ export function useHotDeals() {
+-  const [hotdeals, setHotDeals] = useState<HotDeal[]>([])
+-  const [loading, setLoading] = useState(true)
+-  const [error, setError] = useState<Error | null>(null)
++  const [hotdeals, setHotDeals] = useState<HotDeal[]>([]);
++  const [loading, setLoading] = useState(true);
++  const [error, setError] = useState<Error | null>(null);
+
+   const loadHotDeals = useCallback(async () => {
+     try {
+-      setLoading(true)
+-      const data = await db.hotdeals.findAll()
+-
++      setLoading(true);
++      const data = await db.hotdeals.findAll();
++
+       // 데이터가 없거나 매우 적을 경우 JSON 파일에서 자동 로드
+       if (data.length < 10) {
+-        console.log('핫딜 데이터가 부족합니다. 최신 JSON 파일에서 로드를 시도합니다.')
+-        await loadFromLatestJson()
++        console.log(
++          '핫딜 데이터가 부족합니다. 최신 JSON 파일에서 로드를 시도합니다.',
++        );
++        await loadFromLatestJson();
+         // 다시 데이터베이스에서 로드
+-        const updatedData = await db.hotdeals.findAll()
+-        setHotDeals(updatedData)
++        const updatedData = await db.hotdeals.findAll();
++        setHotDeals(updatedData);
+       } else {
+-        setHotDeals(data)
++        setHotDeals(data);
+       }
+-
+-      setError(null)
++
++      setError(null);
+     } catch (err) {
+-      setError(err as Error)
+-      console.error('Failed to load hotdeals:', err)
++      setError(err as Error);
++      console.error('Failed to load hotdeals:', err);
+     } finally {
+-      setLoading(false)
++      setLoading(false);
+     }
+-  }, [])
++  }, []);
+
+   // 최신 JSON 파일에서 데이터 로드
+   const loadFromLatestJson = useCallback(async () => {
+     try {
+-      console.log('최신 JSON 파일에서 핫딜 데이터를 로드합니다...')
+-
++      console.log('최신 JSON 파일에서 핫딜 데이터를 로드합니다...');
++
+       // JSON 파일 목록 가져오기
+-      const filesResponse = await fetch('/api/placeholder/list-exports')
++      const filesResponse = await fetch('/api/placeholder/list-exports');
+       if (!filesResponse.ok) {
+-        throw new Error('JSON 파일 목록을 가져올 수 없습니다')
++        throw new Error('JSON 파일 목록을 가져올 수 없습니다');
+       }
+-
+-      const files = await filesResponse.json()
++
++      const files = await filesResponse.json();
+       if (!Array.isArray(files) || files.length === 0) {
+-        throw new Error('사용 가능한 JSON 파일이 없습니다')
++        throw new Error('사용 가능한 JSON 파일이 없습니다');
+       }
+-
++
+       // 가장 최신 파일 선택
+-      const latestFile = files[0]
+-      console.log(`최신 파일 선택: ${latestFile}`)
+-
++      const latestFile = files[0];
++      console.log(`최신 파일 선택: ${latestFile}`);
++
+       // 파일 내용 가져오기
+-      const dataResponse = await fetch(`/api/placeholder/exports/${latestFile}`)
++      const dataResponse = await fetch(
++        `/api/placeholder/exports/${latestFile}`,
++      );
+       if (!dataResponse.ok) {
+-        throw new Error('JSON 파일을 읽을 수 없습니다')
++        const errorText = await dataResponse.text();
++        console.error('API 응답 에러:', errorText);
++        throw new Error(
++          `JSON 파일을 읽을 수 없습니다 (${dataResponse.status})`,
++        );
++      }
++
++      // Content-Type 확인
++      const contentType = dataResponse.headers.get('content-type');
++      if (!contentType || !contentType.includes('application/json')) {
++        const responseText = await dataResponse.text();
++        console.error('예상치 못한 응답 형식:', responseText.substring(0, 200));
++        throw new Error('서버에서 JSON 대신 다른 형식의 응답을 받았습니다');
++      }
++
++      let data;
++      try {
++        data = await dataResponse.json();
++      } catch (parseError) {
++        console.error('JSON 파싱 에러:', parseError);
++        throw new Error('응답을 JSON으로 파싱할 수 없습니다');
+       }
+-
+-      const data = await dataResponse.json()
+-
++
+       if (!data.hotdeals || !Array.isArray(data.hotdeals)) {
+-        throw new Error('잘못된 JSON 형식입니다')
++        throw new Error('잘못된 JSON 형식입니다');
+       }
+-
+-      console.log(`JSON 파일에서 ${data.hotdeals.length}개의 핫딜을 발견했습니다`)
+-
++
++      console.log(
++        `JSON 파일에서 ${data.hotdeals.length}개의 핫딜을 발견했습니다`,
++      );
++
+       // localStorage에 저장 - 안전한 데이터 처리
+       const newHotdeals = data.hotdeals.map((deal: any, index: number) => ({
+         ...deal,
+-        id: deal.id || `hotdeal_${Date.now()}_${index}_${Math.random().toString(36).substr(2, 9)}`,
++        id:
++          deal.id ||
++          `hotdeal_${Date.now()}_${index}_${Math.random()
++            .toString(36)
++            .substr(2, 9)}`,
+         // 필수 필드 기본값 설정
+         communityCommentCount: deal.communityCommentCount || 0,
+         communityRecommendCount: deal.communityRecommendCount || 0,
+@@ -284,91 +359,102 @@ export function useHotDeals() {
+         price: deal.price || 0,
+         crawledAt: deal.crawledAt || deal.postDate || new Date().toISOString(),
+         // Date 객체 변환 처리
+-        ...(deal.crawledAt && { crawledAt: new Date(deal.crawledAt) })
+-      }))
+-
++        ...(deal.crawledAt && { crawledAt: new Date(deal.crawledAt) }),
++      }));
++
+       // localStorage에 저장
+-      localStorage.setItem('hiko_hotdeals', JSON.stringify(newHotdeals))
+-      console.log(`${newHotdeals.length}개의 핫딜을 localStorage에 저장했습니다`)
+-
+-      return newHotdeals
++      localStorage.setItem('hiko_hotdeals', JSON.stringify(newHotdeals));
++      console.log(
++        `${newHotdeals.length}개의 핫딜을 localStorage에 저장했습니다`,
++      );
++
++      return newHotdeals;
+     } catch (error) {
+-      console.error('JSON 파일에서 핫딜 로드 실패:', error)
+-      throw error
++      console.error('JSON 파일에서 핫딜 로드 실패:', error);
++      throw error;
+     }
+-  }, [])
++  }, []);
+
+   useEffect(() => {
+-    loadHotDeals()
+-  }, [loadHotDeals])
++    loadHotDeals();
++  }, [loadHotDeals]);
+
+-  const createHotDeal = useCallback(async (hotdealData: Omit<HotDeal, 'id'>) => {
+-    try {
+-      const newHotDeal = await db.hotdeals.create(hotdealData)
+-      await loadHotDeals()
+-      return newHotDeal
+-    } catch (err) {
+-      console.error('Failed to create hotdeal:', err)
+-      throw err
+-    }
+-  }, [loadHotDeals])
++  const createHotDeal = useCallback(
++    async (hotdealData: Omit<HotDeal, 'id'>) => {
++      try {
++        const newHotDeal = await db.hotdeals.create(hotdealData);
++        await loadHotDeals();
++        return newHotDeal;
++      } catch (err) {
++        console.error('Failed to create hotdeal:', err);
++        throw err;
++      }
++    },
++    [loadHotDeals],
++  );
+
+-  const updateHotDeal = useCallback(async (id: string, hotdealData: Partial<HotDeal>) => {
+-    try {
+-      const updatedHotDeal = await db.hotdeals.update(id, hotdealData)
+-      await loadHotDeals()
+-      return updatedHotDeal
+-    } catch (err) {
+-      console.error('Failed to update hotdeal:', err)
+-      throw err
+-    }
+-  }, [loadHotDeals])
++  const updateHotDeal = useCallback(
++    async (id: string, hotdealData: Partial<HotDeal>) => {
++      try {
++        const updatedHotDeal = await db.hotdeals.update(id, hotdealData);
++        await loadHotDeals();
++        return updatedHotDeal;
++      } catch (err) {
++        console.error('Failed to update hotdeal:', err);
++        throw err;
++      }
++    },
++    [loadHotDeals],
++  );
+
+-  const deleteHotDeal = useCallback(async (id: string) => {
+-    try {
+-      const result = await db.hotdeals.delete(id)
+-      await loadHotDeals()
+-      return result
+-    } catch (err) {
+-      console.error('Failed to delete hotdeal:', err)
+-      throw err
+-    }
+-  }, [loadHotDeals])
++  const deleteHotDeal = useCallback(
++    async (id: string) => {
++      try {
++        const result = await db.hotdeals.delete(id);
++        await loadHotDeals();
++        return result;
++      } catch (err) {
++        console.error('Failed to delete hotdeal:', err);
++        throw err;
++      }
++    },
++    [loadHotDeals],
++  );
+
+   const deleteAllHotDeals = useCallback(async () => {
+     try {
+-      await db.hotdeals.deleteAll()
+-      await loadHotDeals()
+-      return true
++      await db.hotdeals.deleteAll();
++      await loadHotDeals();
++      return true;
+     } catch (err) {
+-      console.error('Failed to delete all hotdeals:', err)
+-      throw err
++      console.error('Failed to delete all hotdeals:', err);
++      throw err;
+     }
+-  }, [loadHotDeals])
++  }, [loadHotDeals]);
+
+   // 수동으로 JSON에서 데이터 로드
+   const loadFromJson = useCallback(async () => {
+     try {
+-      setLoading(true)
+-      await loadFromLatestJson()
+-      await loadHotDeals()
++      setLoading(true);
++      await loadFromLatestJson();
++      await loadHotDeals();
+     } catch (err) {
+-      setError(err as Error)
+-      console.error('Failed to load from JSON:', err)
++      setError(err as Error);
++      console.error('Failed to load from JSON:', err);
+     } finally {
+-      setLoading(false)
++      setLoading(false);
+     }
+-  }, [loadFromLatestJson, loadHotDeals])
+-
+-  return {
+-    hotdeals,
+-    loading,
+-    error,
+-    createHotDeal,
+-    updateHotDeal,
+-    deleteHotDeal,
+-    deleteAllHotDeals,
++  }, [loadFromLatestJson, loadHotDeals]);
++
++  return {
++    hotdeals,
++    loading,
++    error,
++    createHotDeal,
++    updateHotDeal,
++    deleteHotDeal,
++    deleteAllHotDeals,
+     refetch: loadHotDeals,
+-    loadFromJson
+-  }
+-}
+\ No newline at end of file
++    loadFromJson,
++  };
++}
+diff --git a/pnpm-lock.yaml b/pnpm-lock.yaml
+index 51e0984..0f667a8 100644
+--- a/pnpm-lock.yaml
