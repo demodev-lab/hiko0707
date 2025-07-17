@@ -3,11 +3,14 @@
 import { useEffect, useState } from 'react'
 import { SearchBar } from '@/components/features/search/search-bar'
 import { Loading } from '@/components/ui/loading'
-import { TrendingUp, Zap } from 'lucide-react'
+import { TrendingUp, Zap, Download, RefreshCw } from 'lucide-react'
 import { Card } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { Alert, AlertDescription } from '@/components/ui/alert'
 import { HotDealsClient } from './hotdeals-client'
 import { HotDeal } from '@/types/hotdeal'
 import { useHotDeals } from '@/hooks/use-local-db'
+import { toast } from 'sonner'
 
 function HotDealsStats({ deals }: { deals: HotDeal[] }) {
   const activeDeals = deals.filter(d => d.status === 'active')
@@ -57,12 +60,27 @@ function HotDealsStats({ deals }: { deals: HotDeal[] }) {
 }
 
 export default function HotDealsPage() {
-  const { hotdeals, loading, refetch } = useHotDeals()
+  const { hotdeals, loading, refetch, loadFromJson } = useHotDeals()
+  const [isLoadingJson, setIsLoadingJson] = useState(false)
 
   // 페이지 로드시 데이터 새로고침
   useEffect(() => {
     refetch()
   }, [refetch])
+
+  // JSON에서 데이터 로드 함수
+  const handleLoadFromJson = async () => {
+    setIsLoadingJson(true)
+    try {
+      await loadFromJson()
+      toast.success('최신 핫딜 데이터를 성공적으로 로드했습니다!')
+    } catch (error) {
+      console.error('JSON 로드 실패:', error)
+      toast.error('데이터 로드에 실패했습니다. 다시 시도해주세요.')
+    } finally {
+      setIsLoadingJson(false)
+    }
+  }
 
   if (loading) {
     return (
@@ -71,6 +89,9 @@ export default function HotDealsPage() {
       </div>
     )
   }
+
+  // 데이터가 부족한 경우 안내 메시지 표시
+  const isDataInsufficient = hotdeals.length < 10
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -81,6 +102,41 @@ export default function HotDealsPage() {
           실시간 한국 쇼핑 정보를 확인하세요
         </p>
       </div>
+
+      {/* 데이터 부족 안내 및 로드 버튼 */}
+      {isDataInsufficient && (
+        <Alert className="mb-6 sm:mb-8 max-w-2xl mx-auto">
+          <Download className="h-4 w-4" />
+          <AlertDescription>
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+              <div>
+                <p className="font-medium">핫딜 데이터가 부족합니다</p>
+                <p className="text-sm text-gray-600">
+                  최신 핫딜 데이터를 불러와서 더 많은 상품을 확인하세요
+                </p>
+              </div>
+              <Button 
+                onClick={handleLoadFromJson}
+                disabled={isLoadingJson}
+                size="sm"
+                className="shrink-0"
+              >
+                {isLoadingJson ? (
+                  <>
+                    <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
+                    로딩 중...
+                  </>
+                ) : (
+                  <>
+                    <Download className="w-4 h-4 mr-2" />
+                    최신 데이터 로드
+                  </>
+                )}
+              </Button>
+            </div>
+          </AlertDescription>
+        </Alert>
+      )}
 
       {/* 통계 */}
       <HotDealsStats deals={hotdeals} />
