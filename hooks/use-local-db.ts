@@ -218,13 +218,83 @@ export function useHotDeals() {
     try {
       setLoading(true)
       const data = await db.hotdeals.findAll()
-      setHotDeals(data)
+      
+      // 데이터가 없거나 매우 적을 경우 JSON 파일에서 자동 로드
+      if (data.length < 10) {
+        console.log('핫딜 데이터가 부족합니다. 최신 JSON 파일에서 로드를 시도합니다.')
+        await loadFromLatestJson()
+        // 다시 데이터베이스에서 로드
+        const updatedData = await db.hotdeals.findAll()
+        setHotDeals(updatedData)
+      } else {
+        setHotDeals(data)
+      }
+      
       setError(null)
     } catch (err) {
       setError(err as Error)
       console.error('Failed to load hotdeals:', err)
     } finally {
       setLoading(false)
+    }
+  }, [])
+
+  // 최신 JSON 파일에서 데이터 로드
+  const loadFromLatestJson = useCallback(async () => {
+    try {
+      console.log('최신 JSON 파일에서 핫딜 데이터를 로드합니다...')
+      
+      // JSON 파일 목록 가져오기
+      const filesResponse = await fetch('/api/placeholder/list-exports')
+      if (!filesResponse.ok) {
+        throw new Error('JSON 파일 목록을 가져올 수 없습니다')
+      }
+      
+      const files = await filesResponse.json()
+      if (!Array.isArray(files) || files.length === 0) {
+        throw new Error('사용 가능한 JSON 파일이 없습니다')
+      }
+      
+      // 가장 최신 파일 선택
+      const latestFile = files[0]
+      console.log(`최신 파일 선택: ${latestFile}`)
+      
+      // 파일 내용 가져오기
+      const dataResponse = await fetch(`/api/placeholder/exports/${latestFile}`)
+      if (!dataResponse.ok) {
+        throw new Error('JSON 파일을 읽을 수 없습니다')
+      }
+      
+      const data = await dataResponse.json()
+      
+      if (!data.hotdeals || !Array.isArray(data.hotdeals)) {
+        throw new Error('잘못된 JSON 형식입니다')
+      }
+      
+      console.log(`JSON 파일에서 ${data.hotdeals.length}개의 핫딜을 발견했습니다`)
+      
+      // localStorage에 저장 - 안전한 데이터 처리
+      const newHotdeals = data.hotdeals.map((deal: any, index: number) => ({
+        ...deal,
+        id: deal.id || `hotdeal_${Date.now()}_${index}_${Math.random().toString(36).substr(2, 9)}`,
+        // 필수 필드 기본값 설정
+        communityCommentCount: deal.communityCommentCount || 0,
+        communityRecommendCount: deal.communityRecommendCount || 0,
+        viewCount: deal.viewCount || 0,
+        price: deal.price || 0,
+        crawledAt: deal.crawledAt || deal.postDate || new Date().toISOString(),
+        // Date 객체 변환 처리
+        ...(deal.crawledAt && { crawledAt: new Date(deal.crawledAt) })
+      }))
+      
+      // localStorage에 저장
+      localStorage.setItem('hiko_hotdeals', JSON.stringify(newHotdeals))
+      console.log(`${newHotdeals.length}개의 핫딜을 localStorage에 저장했습니다`)
+      
+      return newHotdeals
+    } catch (error) {
+      console.error('JSON 파일에서 핫딜 로드 실패:', error)
+      throw error
     }
   }, [])
 
@@ -276,5 +346,29 @@ export function useHotDeals() {
     }
   }, [loadHotDeals])
 
-  return { hotdeals, loading, error, createHotDeal, updateHotDeal, deleteHotDeal, deleteAllHotDeals, refetch: loadHotDeals }
+  // 수동으로 JSON에서 데이터 로드
+  const loadFromJson = useCallback(async () => {
+    try {
+      setLoading(true)
+      await loadFromLatestJson()
+      await loadHotDeals()
+    } catch (err) {
+      setError(err as Error)
+      console.error('Failed to load from JSON:', err)
+    } finally {
+      setLoading(false)
+    }
+  }, [loadFromLatestJson, loadHotDeals])
+
+  return { 
+    hotdeals, 
+    loading, 
+    error, 
+    createHotDeal, 
+    updateHotDeal, 
+    deleteHotDeal, 
+    deleteAllHotDeals, 
+    refetch: loadHotDeals,
+    loadFromJson 
+  }
 }
