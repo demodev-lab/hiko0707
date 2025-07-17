@@ -8,8 +8,6 @@ import { MobileNav } from '@/components/layout/mobile-nav'
 import { SkipLinks } from '@/components/common/skip-links'
 import { Toaster } from 'sonner'
 import { WebsiteJsonLd, OrganizationJsonLd } from '@/components/seo/json-ld'
-import { StagewiseToolbar } from '@stagewise/toolbar-next'
-import ReactPlugin from '@stagewise-plugins/react'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -69,7 +67,6 @@ export default function RootLayout({
           </div>
           <Toaster richColors position="top-center" />
         </Providers>
-        <StagewiseToolbar config={{ plugins: [ReactPlugin] }} />
       </body>
     </html>
   )
