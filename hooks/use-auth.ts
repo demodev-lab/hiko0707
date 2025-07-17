@@ -67,6 +67,33 @@ export function useAuth() {
         return adminUser
       }
       
+      // 데모용 일반 사용자 계정 (하드코딩)
+      if (email === 'user@example.com' && password === 'password') {
+        console.log('테스트 사용자 계정 로그인 시도')
+        
+        // 테스트 사용자 계정 찾기 또는 생성
+        let testUser = await db.users.findByEmail(email)
+        if (!testUser) {
+          console.log('테스트 사용자 계정 생성')
+          testUser = await db.users.create({
+            email: 'user@example.com',
+            name: '테스트 사용자',
+            role: 'member',
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          })
+        }
+        setCurrentUser(testUser)
+        
+        // 로그인한 사용자 정보를 localStorage에 저장
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('currentUser', JSON.stringify(testUser))
+        }
+        
+        router.push(ROUTES.HOTDEALS)
+        return testUser
+      }
+      
       // 일반 사용자 로그인
       const user = await db.users.findByEmail(email)
       if (user) {

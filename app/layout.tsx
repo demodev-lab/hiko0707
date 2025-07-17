@@ -10,6 +10,7 @@ import { Toaster } from 'sonner'
 import { WebsiteJsonLd, OrganizationJsonLd } from '@/components/seo/json-ld'
 import { StagewiseToolbar } from '@stagewise/toolbar-next'
 import ReactPlugin from '@stagewise-plugins/react'
+import { AuthSwitcher } from '@/components/features/auth-switcher'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -61,6 +62,7 @@ export default function RootLayout({
           <SkipLinks />
           <div className="min-h-screen flex flex-col pb-16 md:pb-0 bg-white dark:bg-gray-900">
             <Header />
+            <AuthSwitcher />
             <main id="main-content" className="flex-1" tabIndex={-1}>
               {children}
             </main>
