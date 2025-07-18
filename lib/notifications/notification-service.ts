@@ -74,16 +74,17 @@ class NotificationService {
       (target === 'admin' && currentUser?.role === 'admin') ||
       (target === 'user' && userId === currentUser?.id)
     
-    if (shouldShowToast) {
-      const toastType = type === 'error' ? 'error' : type === 'warning' ? 'warning' : type === 'success' ? 'success' : 'message'
-      toast[toastType](title, {
-        description: message,
-        action: actionUrl ? {
-          label: '확인하기',
-          onClick: () => window.location.href = actionUrl
-        } : undefined
-      })
-    }
+    // 토스트 표시 제거 - order-form-v2에서 직접 처리
+    // if (shouldShowToast) {
+    //   const toastType = type === 'error' ? 'error' : type === 'warning' ? 'warning' : type === 'success' ? 'success' : 'message'
+    //   toast[toastType](title, {
+    //     description: message,
+    //     action: actionUrl ? {
+    //       label: '확인하기',
+    //       onClick: () => window.location.href = actionUrl
+    //     } : undefined
+    //   })
+    // }
 
     return notification
   }

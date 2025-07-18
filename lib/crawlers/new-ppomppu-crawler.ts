@@ -638,17 +638,10 @@ export class PpomppuCrawler extends BaseHotdealCrawler {
   }
 
   private convertToHotDeal(post: PpomppuPost, detail?: { content: string; images: string[]; matchedImage?: string }): HotDeal {
-    const priceStr = this.parsePrice(post.title)
+    const priceNum = this.parsePrice(post.title)
     const storeName = this.parseStore(post.title)
     const category = post.category || this.inferCategory(post.title)
     const isFreeShipping = this.isFreeShipping(post.title)
-    
-    // 가격을 숫자로 변환 (콤마 제거)
-    let priceNum = 0
-    if (priceStr) {
-      // 콤마를 제거하고 숫자로 변환
-      priceNum = parseInt(priceStr.replace(/,/g, ''))
-    }
     
     // 이미지 우선순위: 매칭된 이미지 > 썸네일 이미지 > null
     const finalImageUrl = detail?.matchedImage || post.thumbnailUrl || null

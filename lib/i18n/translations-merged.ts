@@ -118,6 +118,7 @@ export const translations: Record<LanguageCode, any> = {
       hotdeals: '핫딜',
       order: '대신사줘요',
       mypage: '마이페이지',
+      wishlist: '찜',
     },
     // Header
     header: {
@@ -483,6 +484,7 @@ export const translations: Record<LanguageCode, any> = {
       hotdeals: 'Hot Deals',
       order: 'Buy for Me',
       mypage: 'My Page',
+      wishlist: 'Wishlist',
     },
     // Header
     header: {

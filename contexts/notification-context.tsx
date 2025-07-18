@@ -26,8 +26,8 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     refreshNotifications()
-    // 5초마다 알림 업데이트
-    const interval = setInterval(refreshNotifications, 5000)
+    // 1초마다 알림 업데이트 (더 빠른 반응성을 위해)
+    const interval = setInterval(refreshNotifications, 1000)
     return () => clearInterval(interval)
   }, [])
 

@@ -131,28 +131,47 @@ export abstract class BaseHotdealCrawler {
     await new Promise(resolve => setTimeout(resolve, ms))
   }
 
-  protected parsePrice(text: string): string | null {
-    // 다양한 가격 패턴 매칭: "27,600", "(27,600/무료)", "13,900원", "￦13,900" 등
+  protected parsePrice(text: string): number {
+    // 1순위: 가격 다양인 경우 -1 반환
+    if (/다양|various|varied/i.test(text)) {
+      return -1
+    }
+    
+    // 2순위: 실제 가격 패턴 매칭 (배송비 키워드 무시하고 숫자 우선 추출)
     const patterns = [
-      /(\d{1,3}(?:,\d{3})*(?:\.\d+)?)\s*원/g,  // "13,900원"
-      /\((\d{1,3}(?:,\d{3})*(?:\.\d+)?)[\/\s]/g, // "(27,600/"
-      /￦\s*(\d{1,3}(?:,\d{3})*(?:\.\d+)?)/g,    // "￦13,900"
-      /(\d{1,3}(?:,\d{3})*(?:\.\d+)?)\s*\//g,    // "27,600/"
+      /(\d{1,3}(?:,\d{3})*(?:\.\d+)?)\s*원/g,  // "1,387,860원"
+      /\((\d{1,3}(?:,\d{3})*(?:\.\d+)?)[\/\s]/g, // "(1,387,860/"
+      /￦\s*(\d{1,3}(?:,\d{3})*(?:\.\d+)?)/g,    // "￦1,387,860"
+      /(\d{1,3}(?:,\d{3})*(?:\.\d+)?)\s*\//g,    // "1,387,860/"
       /(\d{4,})/g  // 4자리 이상 숫자 (천원 이상)
     ]
     
     for (const pattern of patterns) {
       const matches = text.match(pattern)
       if (matches && matches.length > 0) {
-        // 숫자만 추출
+        // 숫자만 추출하고 콤마 제거 후 숫자로 변환
         const priceMatch = matches[0].match(/\d{1,3}(?:,\d{3})*(?:\.\d+)?/)
         if (priceMatch) {
-          return priceMatch[0]
+          const priceNum = parseInt(priceMatch[0].replace(/,/g, ''))
+          if (!isNaN(priceNum) && priceNum > 0) {
+            return priceNum
+          }
         }
       }
     }
     
-    return null
+    // 3순위: 프로모션 키워드 체크 (숫자가 없는 경우만)
+    if (/이벤트|event|쿠폰|coupon|프로모션|promotion|추첨|경품/i.test(text)) {
+      return 0
+    }
+    
+    // 4순위: 순수 무료 상품 (숫자가 전혀 없는 무료 상품만)
+    if (!/\d/.test(text) && /무료|free/i.test(text)) {
+      return 0
+    }
+    
+    // 가격을 찾을 수 없는 경우 -1 반환 (가격다양으로 처리)
+    return -1
   }
 
   protected parseStore(title: string): string | null {

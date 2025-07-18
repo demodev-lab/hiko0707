@@ -5,6 +5,19 @@ const nextConfig = {
     // Enable modern bundling optimizations
     optimizePackageImports: ['lucide-react', '@radix-ui/react-avatar', '@radix-ui/react-dropdown-menu'],
   },
+  // 개발 환경에서 청크 로드 에러 방지
+  webpack: (config, { dev, isServer }) => {
+    if (dev && !isServer) {
+      config.optimization.splitChunks = {
+        chunks: 'all',
+        cacheGroups: {
+          default: false,
+          vendors: false,
+        },
+      };
+    }
+    return config;
+  },
   images: {
     // Enable image optimization
     formats: ['image/webp', 'image/avif'],

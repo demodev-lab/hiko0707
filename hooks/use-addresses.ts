@@ -76,7 +76,7 @@ export function useAddresses() {
       await loadAddresses()
       console.log('✅ 배송지 목록 새로고침 완료')
       
-      toast.success('배송지가 저장되었습니다')
+      // toast.success('배송지가 저장되었습니다') // order-form-v2에서 통합 메시지로 처리
       return newAddress
     } catch (error) {
       console.error('❌ createAddress 오류:', error)

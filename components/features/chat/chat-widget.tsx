@@ -147,8 +147,8 @@ export function ChatWidget({
   }
 
   const positionClasses = {
-    'bottom-right': 'bottom-6 right-6',
-    'bottom-left': 'bottom-6 left-6'
+    'bottom-right': 'bottom-24 sm:bottom-28 md:bottom-6 right-6',
+    'bottom-left': 'bottom-24 sm:bottom-28 md:bottom-6 left-6'
   }
 
   return (
@@ -181,8 +181,8 @@ export function ChatWidget({
           className={cn(
             'fixed z-50 transition-all duration-300',
             positionClasses[position],
-            isMinimized ? 'w-80' : 'w-96 h-[600px]',
-            'max-w-[calc(100vw-3rem)] max-h-[calc(100vh-6rem)]'
+            isMinimized ? 'w-80' : 'w-96 h-[400px] sm:h-[500px] md:h-[600px]',
+            'max-w-[calc(100vw-3rem)] max-h-[calc(100vh-12rem)] md:max-h-[calc(100vh-6rem)]'
           )}
         >
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow-2xl border border-gray-200 dark:border-gray-700 flex flex-col h-full">

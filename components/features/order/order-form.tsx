@@ -26,7 +26,7 @@ import { FeeCalculator } from './fee-calculator'
 const orderFormSchema = z.object({
   items: z.array(z.object({
     productName: z.string().min(1, '상품명을 입력해주세요'),
-    productUrl: z.string().url('올바른 URL을 입력해주세요').optional().or(z.literal('')),
+    productUrl: z.string().url('올바른 URL을 입력해주세요').min(1, '상품 URL은 필수 항목입니다'),
     price: z.number().min(0, '가격은 0 이상이어야 합니다'),
     quantity: z.number().min(1, '수량은 1 이상이어야 합니다'),
     options: z.record(z.string()).optional(),

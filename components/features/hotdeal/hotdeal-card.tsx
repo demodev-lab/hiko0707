@@ -3,7 +3,7 @@
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Clock, Eye, Heart, MessageSquare, ThumbsUp, User } from 'lucide-react'
+import { Clock, Eye, Heart, MessageSquare, ThumbsUp, User, Truck } from 'lucide-react'
 import { HotDeal } from '@/types/hotdeal'
 import Link from 'next/link'
 import { OptimizedImage } from '@/components/ui/optimized-image'
@@ -46,13 +46,13 @@ export function HotDealCard({ deal }: HotDealCardProps) {
   
   return (
     <AnimatedCard 
-      className="group relative overflow-hidden border-gray-200 h-full focus-within:ring-2 focus-within:ring-blue-500 focus-within:ring-offset-2"
+      className="group relative overflow-hidden h-full focus-within:ring-2 focus-within:ring-blue-500 focus-within:ring-offset-2"
       role="article"
       aria-labelledby={`deal-title-${deal.id}`}
       aria-describedby={`deal-price-${deal.id}`}
-      hoverScale={1.03}
+      hoverScale={1.01}
     >
-      <Card className="h-full border-none shadow-md group-hover:shadow-lg transition-shadow duration-300 flex flex-col">
+      <Card className="h-full border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-lg hover:border-blue-300 dark:hover:border-blue-600 transition-all duration-300 flex flex-col bg-white dark:bg-gray-800 rounded-xl overflow-hidden">
       {/* 액션 버튼들 - 카드 오른쪽 상단 */}
       <div className="absolute top-2 right-2 z-10 flex gap-1">
         <ShareIconButton
@@ -79,13 +79,13 @@ export function HotDealCard({ deal }: HotDealCardProps) {
       
       {/* 이미지 영역 */}
       <Link href={`/hotdeals/${deal.id}`} className="block">
-        <div className="relative overflow-hidden bg-gray-100 w-full h-64">
+        <div className="relative overflow-hidden bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800 w-full h-48 sm:h-52 lg:h-56 xl:h-60">
           <OptimizedImage
             src={deal.originalImageUrl || ''}
             alt={deal.title}
-            width={320}
-            height={256}
-            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+            width={400}
+            height={320}
+            sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, (max-width: 1024px) 33vw, (max-width: 1280px) 25vw, (max-width: 1536px) 20vw, (max-width: 1920px) 16vw, 14vw"
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
             priority={false}
             quality={85}
@@ -106,38 +106,40 @@ export function HotDealCard({ deal }: HotDealCardProps) {
           
           {/* 핫딜 뱃지 */}
           {isHot && (
-            <Badge className="absolute top-2 right-2 bg-orange-500 border-0">
-              🔥 {t('hotdeals.hot')}
-            </Badge>
+            <div className="absolute top-3 left-3">
+              <Badge className="bg-gradient-to-r from-orange-500 to-red-500 border-0 text-white shadow-lg px-3 py-1.5 text-sm font-semibold">
+                🔥 {t('hotdeals.hot')}
+              </Badge>
+            </div>
           )}
         </div>
       </Link>
       
-      {/* 콘텐츠 영역 - 컴팩트한 디자인 */}
-      <div className="p-3 flex flex-col flex-1">
+      {/* 콘텐츠 영역 - 개선된 패딩과 구분 */}
+      <div className="p-4 sm:p-5 flex flex-col flex-1">
           {/* 쇼핑몰과 커뮤니티 정보 */}
-          <div className="flex items-center gap-2 mb-2 flex-wrap">
-            <Badge variant="secondary" className="text-xs bg-blue-100 text-blue-700 shrink-0">
-              {deal.seller}
+          <div className="flex items-center gap-2 mb-3 flex-wrap">
+            <Badge variant="secondary" className="text-xs bg-gradient-to-r from-blue-50 to-blue-100 dark:from-blue-900/30 dark:to-blue-800/30 text-blue-700 dark:text-blue-300 border-0 shrink-0 font-medium px-3 py-1 shadow-sm">
+              🛒 {deal.seller}
             </Badge>
-            <Badge variant="outline" className="text-xs shrink-0">
-              {sourceLabels[deal.source] || deal.source}
+            <Badge variant="outline" className="text-xs shrink-0 bg-gray-50 dark:bg-gray-800/50 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 px-3 py-1">
+              📍 {sourceLabels[deal.source] || deal.source}
             </Badge>
             
             {/* 라벨들 - HOT, 인기, 순위 순서 */}
             {deal.isHot && (
-              <Badge className="text-xs bg-orange-500 text-white border-0 shrink-0">
-                HOT
+              <Badge className="text-xs bg-gradient-to-r from-orange-400 to-orange-500 text-white border-0 shrink-0 shadow-sm">
+                🔥 HOT
               </Badge>
             )}
             {deal.isPopular && (
-              <Badge className="text-xs bg-red-500 text-white border-0 shrink-0">
-                인기
+              <Badge className="text-xs bg-gradient-to-r from-red-400 to-pink-500 text-white border-0 shrink-0 shadow-sm">
+                ⭐ 인기
               </Badge>
             )}
             {deal.ranking && isToday && (
-              <Badge className="text-xs bg-yellow-500 text-black border-0 shrink-0">
-                {deal.ranking}위
+              <Badge className="text-xs bg-gradient-to-r from-yellow-400 to-amber-500 text-black border-0 shrink-0 shadow-sm font-semibold">
+                🏆 {deal.ranking}위
               </Badge>
             )}
             {/* 번역 상태 표시 */}
@@ -151,27 +153,29 @@ export function HotDealCard({ deal }: HotDealCardProps) {
           </div>
         
           {/* 제목 - 컴팩트한 디자인 */}
-          <Link href={`/hotdeals/${deal.id}`} className="block">
-            <h3 
-              id={`deal-title-${deal.id}`}
-              className="font-medium text-sm mb-2 leading-tight hover:text-blue-600 transition-colors cursor-pointer word-break-keep-all break-words focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1 rounded min-h-[2.2rem]"
-              style={{
-                display: '-webkit-box',
-                WebkitLineClamp: 2,
-                WebkitBoxOrient: 'vertical',
-                overflow: 'hidden'
-              }}
-            >
-              <TranslatedContent 
-                hotDeal={{
-                  ...deal,
-                  // 제목에서 가격 정보 제거
-                  title: deal.title.replace(/\s*\([^)]*원[^)]*\)\s*$/, '').trim()
-                }} 
-                field="title" 
-                showIndicator={false}
-              />
-            </h3>
+          <Link href={`/hotdeals/${deal.id}`} className="block mb-3">
+            <div className="min-h-[3.5rem] sm:min-h-[4rem] flex items-start">
+              <h3 
+                id={`deal-title-${deal.id}`}
+                className="font-bold text-gray-900 dark:text-gray-100 text-base sm:text-lg leading-relaxed hover:text-blue-600 dark:hover:text-blue-400 transition-colors cursor-pointer word-break-keep-all break-words focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1 rounded"
+                style={{
+                  display: '-webkit-box',
+                  WebkitLineClamp: 2,
+                  WebkitBoxOrient: 'vertical',
+                  overflow: 'hidden'
+                }}
+              >
+                <TranslatedContent 
+                  hotDeal={{
+                    ...deal,
+                    // 제목에서 가격 정보 제거
+                    title: deal.title.replace(/\s*\([^)]*원[^)]*\)\s*$/, '').trim()
+                  }} 
+                  field="title" 
+                  showIndicator={false}
+                />
+              </h3>
+            </div>
           </Link>
         
           {/* 가격 정보 */}
@@ -180,45 +184,70 @@ export function HotDealCard({ deal }: HotDealCardProps) {
               id={`deal-price-${deal.id}`}
               className="hover:opacity-80 transition-opacity cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1 rounded"
             >
-              <div className="flex items-center gap-2 flex-wrap">
-                {deal.price ? (
-                  <PriceDisplay 
-                    price={deal.price} 
-                    originalCurrency="KRW"
-                    className="text-lg font-bold text-red-600"
-                  />
-                ) : (
-                  <span className="text-lg font-bold text-red-600">가격 정보 없음</span>
-                )}
-                {/* 배송 정보 - 가격과 같은 라인 */}
-                {deal.shipping?.isFree && (
-                  <span className="text-xs text-green-600 font-medium bg-green-50 px-2 py-1 rounded shrink-0">
-                    무료배송
-                  </span>
+              <div className="flex flex-col items-end gap-1">
+                {/* 가격 정보 */}
+                <div className="text-right">
+                  {(deal.price === 0 && /다양/i.test(deal.title)) ? (
+                    <span className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+                      가격 다양
+                    </span>
+                  ) : deal.price === 0 ? (
+                    <span className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+                      프로모션
+                    </span>
+                  ) : deal.price === -1 ? (
+                    <span className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+                      가격 다양
+                    </span>
+                  ) : deal.price > 0 ? (
+                    <PriceDisplay 
+                      price={deal.price} 
+                      originalCurrency="KRW"
+                      className="text-2xl font-bold text-red-500 dark:text-red-400"
+                    />
+                  ) : (
+                    <span className="text-lg font-semibold text-gray-500 dark:text-gray-400">가격 정보 없음</span>
+                  )}
+                </div>
+                
+                {/* 배송비 정보 - 가격 다양이거나 일반 가격일 때만 표시 */}
+                {(deal.price === -1 || deal.price > 0 || (deal.price === 0 && /다양/i.test(deal.title))) && deal.shipping?.isFree && (
+                  <div className="flex items-center gap-1 text-xs text-green-600 dark:text-green-400">
+                    <Truck className="w-3 h-3" />
+                    <span className="font-medium">무료배송</span>
+                  </div>
                 )}
               </div>
             </div>
           </Link>
 
-          {/* 통계 정보 - 간소화된 디자인 */}
-          <div className="flex items-center justify-between mb-3 mt-auto">
-            <div className="flex items-center gap-2">
-              <span className="flex items-center gap-1 text-xs text-gray-400">
-                <Eye className="w-3 h-3" />
-                {(deal.viewCount || 0) > 999 ? `${Math.floor((deal.viewCount || 0) / 1000)}k` : (deal.viewCount || 0).toLocaleString()}
+          {/* 통계 정보 - 개선된 디자인 */}
+          <div className="flex items-center justify-between mb-4 mt-auto bg-gray-50 dark:bg-gray-800/50 rounded-lg p-3">
+            <div className="flex items-center gap-3">
+              <span className="flex items-center gap-1 text-xs text-gray-600 dark:text-gray-400">
+                <Eye className="w-3.5 h-3.5" />
+                <span className="font-medium">{(deal.viewCount || 0) > 999 ? `${Math.floor((deal.viewCount || 0) / 1000)}k` : (deal.viewCount || 0).toLocaleString()}</span>
               </span>
-              <span className="flex items-center gap-1 text-xs text-blue-600">
-                <ThumbsUp className="w-3 h-3" />
-                {(deal.communityRecommendCount || 0).toLocaleString()}
+              <span className="flex items-center gap-1 text-xs text-blue-600 dark:text-blue-400">
+                <ThumbsUp className="w-3.5 h-3.5" />
+                <span className="font-medium">{(deal.communityRecommendCount || 0).toLocaleString()}</span>
               </span>
-              <span className="flex items-center gap-1 text-xs text-green-600">
-                <MessageSquare className="w-3 h-3" />
-                {deal.commentCount || 0}
+              <span className="flex items-center gap-1 text-xs text-green-600 dark:text-green-400">
+                <MessageSquare className="w-3.5 h-3.5" />
+                <span className="font-medium">{deal.commentCount || 0}</span>
               </span>
+              {/* 게시자 정보 - 모바일 1열 또는 태블릿 2열일 때 표시 */}
+              {deal.userId && (
+                <span className="flex lg:hidden items-center gap-1 text-xs text-gray-500 dark:text-gray-400">
+                  <span className="text-gray-400">•</span>
+                  <User className="w-3 h-3" />
+                  <span className="font-medium truncate max-w-[80px]">{deal.userId}</span>
+                </span>
+              )}
             </div>
             
             {/* 시간 정보 */}
-            <span className="text-xs text-gray-400">
+            <span className="text-xs text-gray-500 dark:text-gray-400 font-medium">
               {getRelativeTimeKorean(deal.crawledAt || new Date())}
             </span>
           </div>
@@ -237,7 +266,7 @@ export function HotDealCard({ deal }: HotDealCardProps) {
               }}
               variant="default"
               size="sm"
-              className="w-full h-9"
+              className="w-full h-10 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-medium shadow-sm"
             />
             
             {/* 원글 링크 버튼 - 보조 액션 */}
@@ -250,9 +279,14 @@ export function HotDealCard({ deal }: HotDealCardProps) {
               <Button
                 variant="outline"
                 size="sm"
-                className="w-full h-9"
+                className="w-full h-10 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800 font-medium"
               >
-                📋 원글 보기
+                <span className="flex items-center justify-center gap-2">
+                  <span>원글 보기</span>
+                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                  </svg>
+                </span>
               </Button>
             </Link>
           </div>

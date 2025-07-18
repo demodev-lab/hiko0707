@@ -61,12 +61,13 @@ export interface Order {
 
 export interface OrderFormData {
   items: Array<{
-    productUrl?: string
+    productUrl: string
     productName: string
     price: number
     quantity: number
     options?: Record<string, string>
     notes?: string
+    imageUrl?: string
   }>
   shippingAddress: ShippingAddress
   paymentMethod: PaymentMethod

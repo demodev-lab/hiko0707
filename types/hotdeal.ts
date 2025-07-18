@@ -5,7 +5,7 @@ export interface HotDeal {
   
   // 크롤링 가능 정보
   title: string; // 상품명
-  price: number; // 가격
+  price: number; // 가격 (0: 프로모션, -1: 가격다양)
   imageUrl?: string; // 기본 이미지 (고해상도 우선)
   thumbnailImageUrl?: string; // 썸네일용 저해상도 이미지
   originalImageUrl?: string; // 상세 페이지용 고해상도 이미지

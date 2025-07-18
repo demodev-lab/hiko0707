@@ -1038,7 +1038,7 @@ export function BuyForMeModal({ open, onOpenChange, hotdeal }: BuyForMeModalProp
       {/* 주소 검색 모달 */}
       <AddressSearchModal
         open={showAddressSearch}
-        onClose={() => setShowAddressSearch(false)}
+        onOpenChange={setShowAddressSearch}
         onSelect={handleAddressSearchSelect}
         initialSearchType={searchType}
       />

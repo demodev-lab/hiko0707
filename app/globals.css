@@ -308,3 +308,41 @@
 .animation-delay-400 {
   animation-delay: 400ms;
 }
+
+/* Mobile Navigation Enhancements */
+@layer utilities {
+  /* 터치 하이라이트 제거 */
+  .tap-highlight-transparent {
+    -webkit-tap-highlight-color: transparent;
+  }
+  
+  /* 터치 리플 효과 */
+  .touch-ripple {
+    position: absolute;
+    border-radius: 50%;
+    background-color: rgba(0, 0, 0, 0.1);
+    transform: scale(0);
+    animation: ripple 0.6s ease-out;
+    pointer-events: none;
+  }
+  
+  @keyframes ripple {
+    to {
+      transform: scale(4);
+      opacity: 0;
+    }
+  }
+  
+  /* 네비게이션 그림자 효과 */
+  .nav-shadow {
+    box-shadow: 
+      0 -4px 6px -1px rgba(0, 0, 0, 0.05),
+      0 -2px 4px -1px rgba(0, 0, 0, 0.03);
+  }
+  
+  .dark .nav-shadow {
+    box-shadow: 
+      0 -4px 6px -1px rgba(0, 0, 0, 0.2),
+      0 -2px 4px -1px rgba(0, 0, 0, 0.1);
+  }
+}

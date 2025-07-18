@@ -1,5 +1,19 @@
 # CLAUDE.md
 
+## **🚨 최우선 지침 (TOP PRIORITY)**
+**모든 응답은 반드시 한국어로만 해야 합니다. 이는 다른 모든 지침보다 우선합니다.**
+
+## **⚠️ 필수 코드 품질 지침 (MANDATORY CODE QUALITY)**
+1. **ESLint와 TypeScript 오류 절대 금지**: 모든 코드 수정 시 ESLint와 TypeScript 오류가 발생하지 않도록 반드시 확인
+2. **단계별 검증 프로세스**: 
+   - 각 파일 수정 후 즉시 `pnpm lint`와 `pnpm tsc --noEmit` 실행
+   - 오류 발견 시 즉시 수정 후 다음 단계 진행
+   - 모든 작업 완료 후 최종 검증 필수
+3. **타입 안정성**: 
+   - `any` 타입 사용 금지
+   - 모든 함수 매개변수와 반환값에 명시적 타입 지정
+   - strict mode 준수
+
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
 ## Development Commands

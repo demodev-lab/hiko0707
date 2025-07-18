@@ -1,8 +1,8 @@
-import { describe, it, expect, vi } from 'vitest'
+import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, fireEvent, waitFor } from '@/tests/utils/test-utils'
-import { HotDealCard } from '@/components/features/hotdeals/hotdeal-card'
+import { HotDealCard } from '@/components/features/hotdeal/hotdeal-card'
 import { createMockHotDeal } from '@/tests/utils/test-utils'
-import * as currencyService from '@/lib/services/currency-service'
+import { currencyService } from '@/lib/services/currency-service'
 
 // Mock is already in setup.ts
 
@@ -10,8 +10,8 @@ import * as currencyService from '@/lib/services/currency-service'
 vi.mock('@/lib/services/currency-service', () => ({
   currencyService: {
     getCurrentCurrency: vi.fn(() => 'KRW'),
-    convert: vi.fn((amount) => amount),
-    formatPrice: vi.fn((amount, currency) => {
+    convert: vi.fn((amount: number) => amount),
+    formatPrice: vi.fn((amount: number, currency: string) => {
       if (currency === 'KRW') return `₩${amount.toLocaleString()}`
       return `$${amount}`
     })
@@ -46,7 +46,7 @@ describe('HotDealCard', () => {
   })
 
   it('renders hot deal information correctly', () => {
-    render(<HotDealCard hotdeal={mockHotDeal} />)
+    render(<HotDealCard deal={mockHotDeal} />)
     
     expect(screen.getByText('Test Hot Deal')).toBeInTheDocument()
     expect(screen.getByText('₩50,000')).toBeInTheDocument()
@@ -56,7 +56,7 @@ describe('HotDealCard', () => {
   })
 
   it('displays view, like, and comment counts', () => {
-    render(<HotDealCard hotdeal={mockHotDeal} />)
+    render(<HotDealCard deal={mockHotDeal} />)
     
     expect(screen.getByText('1,234')).toBeInTheDocument() // views
     expect(screen.getByText('56')).toBeInTheDocument() // likes
@@ -64,14 +64,14 @@ describe('HotDealCard', () => {
   })
 
   it('shows category and source badges', () => {
-    render(<HotDealCard hotdeal={mockHotDeal} />)
+    render(<HotDealCard deal={mockHotDeal} />)
     
     expect(screen.getByText('전자제품')).toBeInTheDocument()
     expect(screen.getByText('뽐뿌')).toBeInTheDocument()
   })
 
   it('navigates to detail page when clicked', () => {
-    render(<HotDealCard hotdeal={mockHotDeal} />)
+    render(<HotDealCard deal={mockHotDeal} />)
     
     const card = screen.getByRole('article')
     fireEvent.click(card)
@@ -81,7 +81,7 @@ describe('HotDealCard', () => {
 
   it('handles like button click', async () => {
     const onLike = vi.fn()
-    render(<HotDealCard hotdeal={mockHotDeal} onLike={onLike} />)
+    render(<HotDealCard deal={mockHotDeal} onLike={onLike} />)
     
     const likeButton = screen.getByRole('button', { name: /좋아요/i })
     fireEvent.click(likeButton)
@@ -93,7 +93,7 @@ describe('HotDealCard', () => {
 
   it('prevents navigation when like button is clicked', () => {
     const onLike = vi.fn()
-    render(<HotDealCard hotdeal={mockHotDeal} onLike={onLike} />)
+    render(<HotDealCard deal={mockHotDeal} onLike={onLike} />)
     
     const likeButton = screen.getByRole('button', { name: /좋아요/i })
     fireEvent.click(likeButton)
@@ -102,7 +102,7 @@ describe('HotDealCard', () => {
   })
 
   it('shows liked state', () => {
-    render(<HotDealCard hotdeal={mockHotDeal} isLiked={true} />)
+    render(<HotDealCard deal={mockHotDeal} isLiked={true} />)
     
     const likeButton = screen.getByRole('button', { name: /좋아요 취소/i })
     expect(likeButton).toHaveClass('text-red-500')
@@ -110,7 +110,7 @@ describe('HotDealCard', () => {
 
   it('handles share button click', async () => {
     const onShare = vi.fn()
-    render(<HotDealCard hotdeal={mockHotDeal} onShare={onShare} />)
+    render(<HotDealCard deal={mockHotDeal} onShare={onShare} />)
     
     const shareButton = screen.getByRole('button', { name: /공유/i })
     fireEvent.click(shareButton)
@@ -166,7 +166,7 @@ describe('HotDealCard', () => {
   })
 
   it('applies hover effects', () => {
-    render(<HotDealCard hotdeal={mockHotDeal} />)
+    render(<HotDealCard deal={mockHotDeal} />)
     
     const card = screen.getByRole('article')
     expect(card).toHaveClass('hover:shadow-lg')
@@ -175,27 +175,27 @@ describe('HotDealCard', () => {
 
   it('shows different view modes', () => {
     // Grid view (default)
-    const { rerender } = render(<HotDealCard hotdeal={mockHotDeal} />)
+    const { rerender } = render(<HotDealCard deal={mockHotDeal} />)
     expect(screen.getByRole('article')).toHaveClass('flex-col')
     
     // List view
-    rerender(<HotDealCard hotdeal={mockHotDeal} view="list" />)
+    rerender(<HotDealCard deal={mockHotDeal} view="list" />)
     expect(screen.getByRole('article')).toHaveClass('flex-row')
   })
 
   it('converts price based on current currency', () => {
-    vi.spyOn(currencyService.currencyService, 'getCurrentCurrency').mockReturnValue('USD')
-    vi.spyOn(currencyService.currencyService, 'convert').mockReturnValue(38.46)
-    vi.spyOn(currencyService.currencyService, 'formatPrice').mockReturnValue('$38.46')
+    vi.spyOn(currencyService, 'getCurrentCurrency').mockReturnValue('USD')
+    vi.spyOn(currencyService, 'convert').mockReturnValue(38.46)
+    vi.spyOn(currencyService, 'formatPrice').mockReturnValue('$38.46')
     
-    render(<HotDealCard hotdeal={mockHotDeal} />)
+    render(<HotDealCard deal={mockHotDeal} />)
     
     expect(screen.getByText('$38.46')).toBeInTheDocument()
-    expect(currencyService.currencyService.convert).toHaveBeenCalledWith(50000, 'KRW', 'USD')
+    expect(currencyService.convert).toHaveBeenCalledWith(50000, 'KRW', 'USD')
   })
 
   it('handles keyboard navigation', () => {
-    render(<HotDealCard hotdeal={mockHotDeal} />)
+    render(<HotDealCard deal={mockHotDeal} />)
     
     const card = screen.getByRole('article')
     card.focus()
@@ -210,20 +210,20 @@ describe('HotDealCard', () => {
   })
 
   it('shows loading skeleton when loading', () => {
-    render(<HotDealCard hotdeal={mockHotDeal} loading />)
+    render(<HotDealCard deal={mockHotDeal} loading />)
     
     expect(screen.getByTestId('hotdeal-card-skeleton')).toBeInTheDocument()
     expect(screen.queryByText('Test Hot Deal')).not.toBeInTheDocument()
   })
 
   it('handles priority prop for different importance levels', () => {
-    const { rerender } = render(<HotDealCard hotdeal={mockHotDeal} priority="high" />)
+    const { rerender } = render(<HotDealCard deal={mockHotDeal} priority="high" />)
     
     let card = screen.getByRole('article')
     expect(card).toHaveClass('border-2')
     expect(card).toHaveClass('border-red-500')
     
-    rerender(<HotDealCard hotdeal={mockHotDeal} priority="normal" />)
+    rerender(<HotDealCard deal={mockHotDeal} priority="normal" />)
     card = screen.getByRole('article')
     expect(card).not.toHaveClass('border-2')
   })
@@ -240,7 +240,7 @@ describe('HotDealCard', () => {
   })
 
   it('applies custom className', () => {
-    render(<HotDealCard hotdeal={mockHotDeal} className="custom-card" />)
+    render(<HotDealCard deal={mockHotDeal} className="custom-card" />)
     
     const card = screen.getByRole('article')
     expect(card).toHaveClass('custom-card')

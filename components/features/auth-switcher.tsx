@@ -7,7 +7,7 @@ import { ChevronUp, ChevronDown, LogOut, Shield, User } from 'lucide-react'
 
 export function AuthSwitcher() {
   const [isOpen, setIsOpen] = useState(false)
-  const { user, login, logout, isLoading } = useAuth()
+  const { currentUser, login, logout, isLoading } = useAuth()
 
   const handleAdminLogin = async () => {
     await login('admin@hiko.kr', 'admin123')
@@ -30,14 +30,14 @@ export function AuthSwitcher() {
         
         {isOpen && (
           <div className="p-4 space-y-3">
-            {user ? (
+            {currentUser ? (
               <>
                 <div className="text-sm text-gray-600 dark:text-gray-400">
                   <div className="flex items-center gap-2">
-                    {user.role === 'admin' ? <Shield className="h-4 w-4" /> : <User className="h-4 w-4" />}
-                    <span className="font-medium">{user.email}</span>
+                    {currentUser.role === 'admin' ? <Shield className="h-4 w-4" /> : <User className="h-4 w-4" />}
+                    <span className="font-medium">{currentUser.email}</span>
                   </div>
-                  <div className="text-xs mt-1">Role: {user.role}</div>
+                  <div className="text-xs mt-1">Role: {currentUser.role}</div>
                 </div>
                 <Button
                   onClick={logout}

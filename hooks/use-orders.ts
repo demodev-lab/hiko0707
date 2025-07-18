@@ -47,7 +47,13 @@ export function useCreateOrder() {
         userId: orderData.userId,
         items: orderData.items.map((item, index) => ({
           id: `item-${Date.now()}-${index}`,
-          ...item
+          productUrl: item.productUrl,
+          productName: item.productName,
+          productImage: item.imageUrl,
+          price: item.price,
+          quantity: item.quantity,
+          options: item.options,
+          notes: item.notes
         })),
         status: 'pending',
         shippingAddress: orderData.shippingAddress,
@@ -64,7 +70,7 @@ export function useCreateOrder() {
 
       // 비용 계산
       const subtotal = order.subtotal
-      order.serviceFee = Math.max(5000, Math.round(subtotal * 0.08)) // 8% 수수료
+      order.serviceFee = Math.max(3000, Math.round(subtotal * 0.08)) // 8% 수수료 (최소 3000원)
       order.domesticShippingFee = 3000 // 기본값
       order.totalAmount = subtotal + order.serviceFee + order.domesticShippingFee
 

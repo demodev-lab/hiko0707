@@ -59,12 +59,20 @@ export class PpomppuCrawler extends BaseCrawler {
 
   // 가격 파싱
   parsePrice(title: string): number {
-    // 다양한 가격 패턴 매칭
+    // 1순위: 가격 다양인 경우 -1 반환
+    if (/다양|various|varied/i.test(title)) {
+      return -1
+    }
+    
+    // 2순위: 실제 가격 패턴 매칭 (배송비 키워드 무시하고 숫자 우선 추출)
     const patterns = [
       /(\d{1,3}(?:,\d{3})*(?:\.\d+)?)\s*원/,
       /₩\s*(\d{1,3}(?:,\d{3})*)/,
       /(\d{1,3}(?:,\d{3})*)\s*~/,
-      /\((\d{1,3}(?:,\d{3})*)[원)]/
+      /\((\d{1,3}(?:,\d{3})*)[원)]/,
+      /\((\d{1,3}(?:,\d{3})*)[\/\s]/,  // "(16,950/"
+      /(\d{1,3}(?:,\d{3})*)\s*\//,     // "16,950/"
+      /(\d{4,})/  // 4자리 이상 숫자
     ]
     
     for (const pattern of patterns) {
@@ -78,7 +86,18 @@ export class PpomppuCrawler extends BaseCrawler {
       }
     }
     
-    return 0
+    // 3순위: 프로모션 키워드 체크 (숫자가 없는 경우만)
+    if (/이벤트|event|쿠폰|coupon|프로모션|promotion|추첨|경품/i.test(title)) {
+      return 0
+    }
+    
+    // 4순위: 순수 무료 상품 (숫자가 전혀 없는 무료 상품만)
+    if (!/\d/.test(title) && /무료|free/i.test(title)) {
+      return 0
+    }
+    
+    // 가격을 찾을 수 없는 경우 -1 반환 (가격다양으로 처리)
+    return -1
   }
 
   // 판매처 추출

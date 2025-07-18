@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from 'vitest'
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { render, screen, fireEvent, waitFor } from '@/tests/utils/test-utils'
 import { OnboardingTour, TourStep } from '@/components/features/onboarding/onboarding-tour'
 
@@ -86,10 +86,14 @@ describe('OnboardingTour', () => {
   })
 
   it('navigates back with previous button', async () => {
-    render(<OnboardingTour {...defaultProps} initialStepIndex={1} />)
+    const { rerender } = render(<OnboardingTour {...defaultProps} />)
     
-    // Start on step 2
-    expect(screen.getByText('Step 2 Title')).toBeInTheDocument()
+    // Navigate to step 2 first
+    fireEvent.click(screen.getByRole('button', { name: '다음' }))
+    await waitFor(() => {
+      expect(screen.getByText('Step 2 Title')).toBeInTheDocument()
+    })
+    
     
     // Click previous
     fireEvent.click(screen.getByRole('button', { name: '이전' }))
@@ -102,7 +106,17 @@ describe('OnboardingTour', () => {
 
   it('completes tour on last step', async () => {
     const onComplete = vi.fn()
-    render(<OnboardingTour {...defaultProps} onComplete={onComplete} initialStepIndex={2} />)
+    render(<OnboardingTour {...defaultProps} onComplete={onComplete} />)
+    
+    // Navigate to last step
+    fireEvent.click(screen.getByRole('button', { name: '다음' }))
+    await waitFor(() => {
+      expect(screen.getByText('Step 2 Title')).toBeInTheDocument()
+    })
+    fireEvent.click(screen.getByRole('button', { name: '다음' }))
+    await waitFor(() => {
+      expect(screen.getByText('Step 3 Title')).toBeInTheDocument()
+    })
     
     // On last step, button should say "완료"
     expect(screen.getByRole('button', { name: '완료' })).toBeInTheDocument()
