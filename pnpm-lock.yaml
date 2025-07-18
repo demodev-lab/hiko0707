@@ -86,9 +86,6 @@ importers:
       date-fns:
         specifier: ^4.1.0
         version: 4.1.0
-      dropdown-menu:
-        specifier: link:@/components/ui/dropdown-menu
-        version: link:@/components/ui/dropdown-menu
       framer-motion:
         specifier: ^11.18.2
         version: 11.18.2(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
@@ -122,12 +119,6 @@ importers:
       recharts:
         specifier: ^3.1.0
         version: 3.1.0(@types/react@19.1.8)(react-dom@19.1.0(react@19.1.0))(react-is@17.0.2)(react@19.1.0)(redux@5.0.1)
-      select:
-        specifier: link:@/components/ui/select
-        version: link:@/components/ui/select
-      separator:
-        specifier: link:@/components/ui/separator
-        version: link:@/components/ui/separator
       sonner:
         specifier: ^2.0.6
         version: 2.0.6(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
@@ -140,9 +131,6 @@ importers:
       tailwindcss-animate:
         specifier: ^1.0.7
         version: 1.0.7(tailwindcss@3.4.17)
-      textarea:
-        specifier: link:@/components/ui/textarea
-        version: link:@/components/ui/textarea
       zod:
         specifier: ^3.23.8
         version: 3.25.75

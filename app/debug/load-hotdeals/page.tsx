@@ -1,96 +1,123 @@
-'use client'
+'use client';
 
-import React, { useState } from 'react'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
-import { Alert, AlertDescription } from '@/components/ui/alert'
-import { Upload, CheckCircle, AlertCircle, RefreshCw } from 'lucide-react'
-import { toast } from 'sonner'
+import React, { useState } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Upload, CheckCircle, AlertCircle, RefreshCw } from 'lucide-react';
+import { toast } from 'sonner';
 
 export default function LoadHotDealsPage() {
-  const [loading, setLoading] = useState(false)
-  const [hotdealsCount, setHotdealsCount] = useState(0)
-  const [lastLoaded, setLastLoaded] = useState<string | null>(null)
+  const [loading, setLoading] = useState(false);
+  const [hotdealsCount, setHotdealsCount] = useState(0);
+  const [lastLoaded, setLastLoaded] = useState<string | null>(null);
 
   // 최신 JSON 파일을 자동으로 로드
   const loadLatestHotdeals = async () => {
-    setLoading(true)
+    setLoading(true);
     try {
       // JSON 파일 목록 가져오기
-      const filesResponse = await fetch('/api/placeholder/list-exports')
-      const files = await filesResponse.json()
-      
+      const filesResponse = await fetch('/api/placeholder/list-exports');
+      const files = await filesResponse.json();
+
       if (files.length === 0) {
-        toast.error('저장된 JSON 파일이 없습니다')
-        return
+        toast.error('저장된 JSON 파일이 없습니다');
+        return;
       }
-      
+
       // 가장 최신 파일 선택
-      const latestFile = files[0]
-      
+      const latestFile = files[0];
+
       // 파일 내용 가져오기
-      const dataResponse = await fetch(`/api/placeholder/exports/${latestFile}`)
-      const data = await dataResponse.json()
-      
-      if (!data.hotdeals || !Array.isArray(data.hotdeals)) {
-        toast.error('잘못된 JSON 형식입니다')
-        return
+      const dataResponse = await fetch(
+        `/api/placeholder/exports/${latestFile}`,
+      );
+      if (!dataResponse.ok) {
+        const errorText = await dataResponse.text();
+        console.error('API 응답 에러:', errorText);
+        throw new Error(
+          `JSON 파일을 읽을 수 없습니다 (${dataResponse.status})`,
+        );
       }
-      
+
+      // Content-Type 확인
+      const contentType = dataResponse.headers.get('content-type');
+      if (!contentType || !contentType.includes('application/json')) {
+        const responseText = await dataResponse.text();
+        console.error('예상치 못한 응답 형식:', responseText.substring(0, 200));
+        throw new Error('서버에서 JSON 대신 다른 형식의 응답을 받았습니다');
+      }
+
+      let data;
+      try {
+        data = await dataResponse.json();
+      } catch (parseError) {
+        console.error('JSON 파싱 에러:', parseError);
+        throw new Error('응답을 JSON으로 파싱할 수 없습니다');
+      }
+
+      if (!data.hotdeals || !Array.isArray(data.hotdeals)) {
+        toast.error('잘못된 JSON 형식입니다');
+        return;
+      }
+
       // localStorage에 저장 - 안전한 데이터 처리
       const newHotdeals = data.hotdeals.map((deal: any, index: number) => ({
         ...deal,
-        id: `hotdeals_${Date.now()}_${index}_${Math.random().toString(36).substr(2, 9)}`,
+        id: `hotdeals_${Date.now()}_${index}_${Math.random()
+          .toString(36)
+          .substr(2, 9)}`,
         // 필수 필드 기본값 설정
         communityCommentCount: deal.communityCommentCount || 0,
         communityRecommendCount: deal.communityRecommendCount || 0,
         viewCount: deal.viewCount || 0,
         price: deal.price || 0,
-        crawledAt: deal.crawledAt || deal.postDate || new Date().toISOString()
-      }))
-      
-      localStorage.setItem('hiko_hotdeals', JSON.stringify(newHotdeals))
-      setHotdealsCount(newHotdeals.length)
-      setLastLoaded(latestFile)
-      
-      toast.success(`${newHotdeals.length}개의 핫딜을 성공적으로 로드했습니다!`)
-      
+        crawledAt: deal.crawledAt || deal.postDate || new Date().toISOString(),
+      }));
+
+      localStorage.setItem('hiko_hotdeals', JSON.stringify(newHotdeals));
+      setHotdealsCount(newHotdeals.length);
+      setLastLoaded(latestFile);
+
+      toast.success(
+        `${newHotdeals.length}개의 핫딜을 성공적으로 로드했습니다!`,
+      );
     } catch (error) {
-      console.error('핫딜 로드 오류:', error)
-      toast.error('핫딜 로드 중 오류가 발생했습니다')
+      console.error('핫딜 로드 오류:', error);
+      toast.error('핫딜 로드 중 오류가 발생했습니다');
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   // 현재 localStorage 상태 확인
   const checkCurrentState = () => {
     try {
-      const hotdealsData = localStorage.getItem('hiko_hotdeals')
+      const hotdealsData = localStorage.getItem('hiko_hotdeals');
       if (hotdealsData) {
-        const parsed = JSON.parse(hotdealsData)
-        setHotdealsCount(Array.isArray(parsed) ? parsed.length : 0)
+        const parsed = JSON.parse(hotdealsData);
+        setHotdealsCount(Array.isArray(parsed) ? parsed.length : 0);
       } else {
-        setHotdealsCount(0)
+        setHotdealsCount(0);
       }
     } catch (error) {
-      setHotdealsCount(0)
+      setHotdealsCount(0);
     }
-  }
+  };
 
   // 데이터 초기화
   const clearData = () => {
-    localStorage.removeItem('hiko_hotdeals')
-    setHotdealsCount(0)
-    setLastLoaded(null)
-    toast.success('핫딜 데이터를 삭제했습니다')
-  }
+    localStorage.removeItem('hiko_hotdeals');
+    setHotdealsCount(0);
+    setLastLoaded(null);
+    toast.success('핫딜 데이터를 삭제했습니다');
+  };
 
   // 페이지 로드 시 상태 확인
   React.useEffect(() => {
-    checkCurrentState()
-  }, [])
+    checkCurrentState();
+  }, []);
 
   return (
     <div className="container mx-auto py-6 space-y-6">
@@ -142,8 +169,8 @@ export default function LoadHotDealsPage() {
             <p className="text-gray-600">
               최신 크롤링 데이터를 localStorage에 로드합니다.
             </p>
-            <Button 
-              onClick={loadLatestHotdeals} 
+            <Button
+              onClick={loadLatestHotdeals}
               disabled={loading}
               className="w-full"
             >
@@ -161,8 +188,8 @@ export default function LoadHotDealsPage() {
             <p className="text-gray-600">
               현재 localStorage의 핫딜 데이터를 삭제합니다.
             </p>
-            <Button 
-              onClick={clearData} 
+            <Button
+              onClick={clearData}
               variant="destructive"
               className="w-full"
             >
@@ -176,12 +203,16 @@ export default function LoadHotDealsPage() {
       <Alert>
         <AlertCircle className="h-4 w-4" />
         <AlertDescription>
-          <strong>사용 방법:</strong><br />
-          1. &quot;최신 핫딜 로드&quot; 버튼을 클릭하여 크롤링된 데이터를 로드하세요<br />
-          2. 메인 페이지로 돌아가서 핫딜 카드가 표시되는지 확인하세요<br />
+          <strong>사용 방법:</strong>
+          <br />
+          1. &quot;최신 핫딜 로드&quot; 버튼을 클릭하여 크롤링된 데이터를
+          로드하세요
+          <br />
+          2. 메인 페이지로 돌아가서 핫딜 카드가 표시되는지 확인하세요
+          <br />
           3. 문제가 계속되면 브라우저를 새로고침해보세요
         </AlertDescription>
       </Alert>
     </div>
-  )
+  );
 }
