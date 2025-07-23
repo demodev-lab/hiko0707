@@ -23,6 +23,7 @@ import { HotDealsSection } from '@/components/features/home/hotdeals-section'
 import { useHotDeals } from '@/hooks/use-local-db'
 import { useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { SignedIn, SignedOut } from '@clerk/nextjs'
 
 
 export default function Home() {
@@ -108,6 +109,26 @@ export default function Home() {
       {/* Hero Section - 핫딜 정보 플랫폼으로 포지셔닝 */}
       <section className="relative py-12 sm:py-16 md:py-20 px-4 overflow-hidden">
         <div className="max-w-7xl mx-auto">
+          {/* Clerk 인증 상태 표시 */}
+          <div className="mb-4 flex justify-center">
+            <SignedIn>
+              <div className="inline-flex items-center gap-2 px-4 py-2 bg-green-50 dark:bg-green-900/20 rounded-full border border-green-200 dark:border-green-800">
+                <CheckCircle className="w-4 h-4 text-green-600" />
+                <span className="text-sm font-medium text-green-700 dark:text-green-300">
+                  로그인되었습니다! 핫딜을 둘러보세요
+                </span>
+              </div>
+            </SignedIn>
+            <SignedOut>
+              <div className="inline-flex items-center gap-2 px-4 py-2 bg-blue-50 dark:bg-blue-900/20 rounded-full border border-blue-200 dark:border-blue-800">
+                <Users className="w-4 h-4 text-blue-600" />
+                <span className="text-sm font-medium text-blue-700 dark:text-blue-300">
+                  로그인하고 더 많은 혜택을 받으세요
+                </span>
+              </div>
+            </SignedOut>
+          </div>
+          
           {/* 실시간 알림 배너 */}
           <div className="mb-8 flex justify-center">
             <div className="inline-flex items-center gap-2 px-4 py-2 bg-red-50 dark:bg-red-900/20 rounded-full border border-red-200 dark:border-red-800">
@@ -159,12 +180,22 @@ export default function Home() {
                 지금 핫딜 보기
               </Link>
             </Button>
-            <Button asChild variant="outline" size="lg" className="border-2 border-gray-300 hover:border-orange-500 hover:bg-orange-50 dark:hover:bg-orange-900/20 transition-all duration-200 text-lg px-8">
-              <Link href="/register">
-                <Users className="w-5 h-5 mr-2" />
-                무료 회원가입
-              </Link>
-            </Button>
+            <SignedOut>
+              <Button asChild variant="outline" size="lg" className="border-2 border-gray-300 hover:border-orange-500 hover:bg-orange-50 dark:hover:bg-orange-900/20 transition-all duration-200 text-lg px-8">
+                <Link href="/sign-up">
+                  <Users className="w-5 h-5 mr-2" />
+                  무료 회원가입
+                </Link>
+              </Button>
+            </SignedOut>
+            <SignedIn>
+              <Button asChild variant="outline" size="lg" className="border-2 border-gray-300 hover:border-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all duration-200 text-lg px-8">
+                <Link href="/order">
+                  <ShoppingBag className="w-5 h-5 mr-2" />
+                  대리구매 시작
+                </Link>
+              </Button>
+            </SignedIn>
           </div>
 
           {/* 핵심 가치 카드 */}
@@ -554,24 +585,46 @@ export default function Home() {
       {/* CTA 섹션 */}
       <section className="py-20 px-4 bg-gradient-to-r from-blue-600 to-purple-600">
         <div className="max-w-4xl mx-auto text-center text-white">
-          <h2 className="text-3xl font-bold mb-6">지금 바로 시작하세요!</h2>
-          <p className="text-xl mb-8 text-blue-100">
-            회원가입하고 첫 주문 시 10% 할인 혜택을 받으세요
-          </p>
-          <div className="flex gap-4 justify-center flex-wrap">
-            <Button asChild size="lg" className="bg-white text-blue-600 hover:bg-gray-100 shadow-2xl hover:shadow-xl hover:scale-105 transition-all duration-200 gap-2 px-10 py-6 text-lg font-semibold">
-              <Link href="/register">
-                <CheckCircle className="w-6 h-6" />
-                무료 회원가입
-              </Link>
-            </Button>
-            <Button asChild size="lg" variant="ghost" className="bg-transparent border-2 border-white/50 text-white hover:bg-white/10 hover:border-white transition-all duration-200 gap-2 px-10 py-6 text-lg">
-              <Link href="/hotdeals">
-                핫딜 둘러보기
-                <ArrowRight className="w-6 h-6" />
-              </Link>
-            </Button>
-          </div>
+          <SignedOut>
+            <h2 className="text-3xl font-bold mb-6">지금 바로 시작하세요!</h2>
+            <p className="text-xl mb-8 text-blue-100">
+              회원가입하고 첫 주문 시 10% 할인 혜택을 받으세요
+            </p>
+            <div className="flex gap-4 justify-center flex-wrap">
+              <Button asChild size="lg" className="bg-white text-blue-600 hover:bg-gray-100 shadow-2xl hover:shadow-xl hover:scale-105 transition-all duration-200 gap-2 px-10 py-6 text-lg font-semibold">
+                <Link href="/sign-up">
+                  <CheckCircle className="w-6 h-6" />
+                  무료 회원가입
+                </Link>
+              </Button>
+              <Button asChild size="lg" variant="ghost" className="bg-transparent border-2 border-white/50 text-white hover:bg-white/10 hover:border-white transition-all duration-200 gap-2 px-10 py-6 text-lg">
+                <Link href="/hotdeals">
+                  핫딜 둘러보기
+                  <ArrowRight className="w-6 h-6" />
+                </Link>
+              </Button>
+            </div>
+          </SignedOut>
+          <SignedIn>
+            <h2 className="text-3xl font-bold mb-6">환영합니다!</h2>
+            <p className="text-xl mb-8 text-blue-100">
+              지금 바로 핫딜을 확인하고 대리구매 서비스를 이용해보세요
+            </p>
+            <div className="flex gap-4 justify-center flex-wrap">
+              <Button asChild size="lg" className="bg-white text-blue-600 hover:bg-gray-100 shadow-2xl hover:shadow-xl hover:scale-105 transition-all duration-200 gap-2 px-10 py-6 text-lg font-semibold">
+                <Link href="/hotdeals">
+                  <TrendingUp className="w-6 h-6" />
+                  핫딜 보러가기
+                </Link>
+              </Button>
+              <Button asChild size="lg" variant="ghost" className="bg-transparent border-2 border-white/50 text-white hover:bg-white/10 hover:border-white transition-all duration-200 gap-2 px-10 py-6 text-lg">
+                <Link href="/order">
+                  대리구매 시작하기
+                  <ArrowRight className="w-6 h-6" />
+                </Link>
+              </Button>
+            </div>
+          </SignedIn>
         </div>
       </section>
 

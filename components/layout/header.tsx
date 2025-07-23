@@ -15,6 +15,7 @@ import { languages } from '@/lib/i18n/config'
 import { useAuth } from '@/hooks/use-auth'
 import { useRouter, usePathname } from 'next/navigation'
 import { ShowForRole, RoleBasedContent } from '@/components/auth/role-based-content'
+import { SignInButton, SignUpButton, SignedIn, SignedOut, UserButton } from '@clerk/nextjs'
 
 export function Header() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
@@ -256,69 +257,36 @@ export function Header() {
             <ThemeToggle />
 
             {/* 알림 - 로그인한 사용자만 */}
-            {currentUser && <NotificationBell />}
+            <SignedIn>
+              <NotificationBell />
+            </SignedIn>
 
-            {/* 사용자 메뉴 - 데스크톱에서만 상세 표시 */}
-            {currentUser ? (
-              <div className="relative" ref={userMenuRef}>
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  className="hidden md:flex items-center space-x-2 px-3"
-                  onClick={() => setUserMenuOpen(!userMenuOpen)}
-                >
-                  <RoleBasedContent
-                    member={<User className="w-5 h-5" />}
-                    admin={<Crown className="w-5 h-5 text-amber-600" />}
-                  />
-                  <span className="hidden lg:inline-block">{currentUser.name}</span>
-                  <RoleBasedContent
-                    admin={<Badge variant="secondary" className="ml-1 hidden lg:inline-flex">Admin</Badge>}
-                  />
-                </Button>
-                {userMenuOpen && (
-                  <Card className="absolute right-0 top-full mt-1 w-48 py-1 shadow-lg z-50">
-                    {currentUser.role === 'admin' ? (
-                      <Link 
-                        href="/admin"
-                        className="flex items-center w-full px-3 py-2 text-left text-sm hover:bg-gray-100 dark:hover:bg-gray-800"
-                        onClick={() => setUserMenuOpen(false)}
-                      >
-                        <User className="w-4 h-4 mr-2" />
-                        관리자 대시보드
-                      </Link>
-                    ) : (
-                      <Link 
-                        href="/mypage"
-                        className="flex items-center w-full px-3 py-2 text-left text-sm hover:bg-gray-100 dark:hover:bg-gray-800"
-                        onClick={() => setUserMenuOpen(false)}
-                      >
-                        <User className="w-4 h-4 mr-2" />
-                        마이페이지
-                      </Link>
-                    )}
-                    <div className="border-t border-gray-200 dark:border-gray-700 my-1"></div>
-                    <button 
-                      className="flex items-center w-full px-3 py-2 text-left text-sm text-red-600 hover:bg-gray-100 dark:hover:bg-gray-800"
-                      onClick={() => {
-                        logout()
-                        router.push('/login')
-                        setUserMenuOpen(false)
-                      }}
-                    >
-                      로그아웃
-                    </button>
-                  </Card>
-                )}
-              </div>
-            ) : (
-              <Link href="/login" className="hidden md:block">
-                <Button variant="ghost" size="sm" className="flex items-center space-x-2">
-                  <User className="w-5 h-5" />
-                  <span className="hidden lg:inline-block">로그인</span>
-                </Button>
-              </Link>
-            )}
+            {/* Clerk 사용자 메뉴 - 데스크톱에서만 상세 표시 */}
+            <div className="hidden md:flex items-center gap-2">
+              <SignedOut>
+                <SignInButton>
+                  <Button variant="ghost" size="sm" className="flex items-center space-x-2">
+                    <User className="w-5 h-5" />
+                    <span className="hidden lg:inline-block">로그인</span>
+                  </Button>
+                </SignInButton>
+                <SignUpButton>
+                  <Button variant="default" size="sm" className="bg-[#6c47ff] text-white hover:bg-[#5a3ad3] flex items-center space-x-2">
+                    <span>회원가입</span>
+                  </Button>
+                </SignUpButton>
+              </SignedOut>
+              <SignedIn>
+                <UserButton 
+                  afterSignOutUrl="/login"
+                  appearance={{
+                    elements: {
+                      avatarBox: "w-8 h-8"
+                    }
+                  }}
+                />
+              </SignedIn>
+            </div>
 
             {/* 모바일 메뉴 버튼 - 크기 증가 */}
             <Button
@@ -402,28 +370,26 @@ export function Header() {
       {isMobileMenuOpen && (
         <div className="md:hidden border-t border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 shadow-lg">
           <div className="px-4 py-3 space-y-1 max-h-[calc(100vh-64px)] overflow-y-auto">
-            {/* 사용자 프로필 섹션 */}
-            {currentUser && (
+            {/* Clerk 사용자 프로필 섹션 */}
+            <SignedIn>
               <div className="mb-4 pb-4 border-b border-gray-200 dark:border-gray-700">
                 <div className="flex items-center gap-3 px-3 py-2">
-                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-semibold">
-                    {currentUser.name.charAt(0).toUpperCase()}
-                  </div>
+                  <UserButton 
+                    afterSignOutUrl="/login"
+                    appearance={{
+                      elements: {
+                        avatarBox: "w-10 h-10"
+                      }
+                    }}
+                  />
                   <div className="flex-1">
-                    <p className="font-medium text-gray-900 dark:text-gray-100">{currentUser.name}</p>
                     <p className="text-sm text-gray-500 dark:text-gray-400">
-                      {currentUser.role === 'admin' ? '관리자' : currentUser.role === 'member' ? '회원' : '게스트'}
+                      Clerk 계정으로 로그인됨
                     </p>
                   </div>
-                  {currentUser.role === 'admin' && (
-                    <Badge variant="secondary" className="bg-amber-100 text-amber-800 dark:bg-amber-900/20 dark:text-amber-300">
-                      <Crown className="w-3 h-3 mr-1" />
-                      Admin
-                    </Badge>
-                  )}
                 </div>
               </div>
-            )}
+            </SignedIn>
 
             {/* 관리자 전용 모바일 메뉴 */}
             <ShowForRole roles={['admin']}>
@@ -482,54 +448,48 @@ export function Header() {
               <div className="my-3 border-t border-gray-200 dark:border-gray-700"></div>
             </ShowForRole>
             
-            {/* 사용자 계정 관련 메뉴 */}
-            {currentUser ? (
+            {/* Clerk 사용자 계정 관련 메뉴 */}
+            <SignedIn>
               <div className="space-y-1 pt-2">
-                {/* 마이페이지 - 회원과 관리자 모두 표시 */}
-                <Link
-                  href={currentUser.role === 'admin' ? '/admin' : '/mypage'}
-                  className="flex items-center gap-3 px-4 py-3 text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-gray-800 rounded-lg transition-all duration-200 group"
-                  onClick={() => setIsMobileMenuOpen(false)}
-                >
-                  <div className="w-10 h-10 rounded-lg bg-gray-100 dark:bg-gray-800 flex items-center justify-center group-hover:bg-blue-100 dark:group-hover:bg-blue-900/20 transition-colors">
-                    <User className="w-5 h-5" />
-                  </div>
-                  <span className="font-medium">
-                    {currentUser.role === 'admin' ? '관리자 프로필' : '마이페이지'}
-                  </span>
-                </Link>
-                
-                {/* 로그아웃 */}
-                <button
-                  onClick={() => {
-                    logout()
-                    router.push('/login')
-                    setIsMobileMenuOpen(false)
-                  }}
-                  className="flex items-center gap-3 w-full px-4 py-3 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-all duration-200 group"
-                >
-                  <div className="w-10 h-10 rounded-lg bg-red-50 dark:bg-red-900/20 flex items-center justify-center group-hover:bg-red-100 dark:group-hover:bg-red-900/30 transition-colors">
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-                    </svg>
-                  </div>
-                  <span className="font-medium">로그아웃</span>
-                </button>
+                <div className="flex items-center gap-3 px-4 py-3">
+                  <UserButton 
+                    afterSignOutUrl="/login"
+                    appearance={{
+                      elements: {
+                        avatarBox: "w-10 h-10"
+                      }
+                    }}
+                  />
+                  <span className="font-medium text-gray-700 dark:text-gray-300">계정 관리</span>
+                </div>
               </div>
-            ) : (
-              <div className="pt-2">
-                <Link
-                  href="/login"
-                  className="flex items-center gap-3 px-4 py-3 text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-gray-800 rounded-lg transition-all duration-200 group"
-                  onClick={() => setIsMobileMenuOpen(false)}
-                >
-                  <div className="w-10 h-10 rounded-lg bg-gray-100 dark:bg-gray-800 flex items-center justify-center group-hover:bg-blue-100 dark:group-hover:bg-blue-900/20 transition-colors">
-                    <User className="w-5 h-5" />
-                  </div>
-                  <span className="font-medium">로그인</span>
-                </Link>
+            </SignedIn>
+            <SignedOut>
+              <div className="pt-2 space-y-1">
+                <SignInButton>
+                  <button
+                    className="flex items-center gap-3 w-full px-4 py-3 text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-gray-800 rounded-lg transition-all duration-200 group"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    <div className="w-10 h-10 rounded-lg bg-gray-100 dark:bg-gray-800 flex items-center justify-center group-hover:bg-blue-100 dark:group-hover:bg-blue-900/20 transition-colors">
+                      <User className="w-5 h-5" />
+                    </div>
+                    <span className="font-medium">로그인</span>
+                  </button>
+                </SignInButton>
+                <SignUpButton>
+                  <button
+                    className="flex items-center gap-3 w-full px-4 py-3 text-white bg-[#6c47ff] hover:bg-[#5a3ad3] rounded-lg transition-all duration-200 group"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    <div className="w-10 h-10 rounded-lg bg-[#5a3ad3] flex items-center justify-center">
+                      <User className="w-5 h-5" />
+                    </div>
+                    <span className="font-medium">회원가입</span>
+                  </button>
+                </SignUpButton>
               </div>
-            )}
+            </SignedOut>
           </div>
         </div>
       )}
