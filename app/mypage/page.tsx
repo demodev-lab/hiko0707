@@ -238,6 +238,11 @@ function MyPageContent() {
   const { requests, isLoading } = useBuyForMe()
   const [activeTab, setActiveTab] = useState('orders')
   const [orderTab, setOrderTab] = useState('active')
+  const [mounted, setMounted] = useState(false)
+  
+  useEffect(() => {
+    setMounted(true)
+  }, [])
   
   const activeRequests = requests.filter(r => 
     !['delivered', 'cancelled'].includes(r.status)
@@ -256,8 +261,15 @@ function MyPageContent() {
     router.push('/login')
   }
 
-  if (!currentUser) {
-    return null
+  if (!currentUser || !mounted) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full border-b-2 border-blue-600 h-12 w-12 mx-auto mb-4"></div>
+          <div className="text-gray-600">로딩 중...</div>
+        </div>
+      </div>
+    )
   }
 
   return (

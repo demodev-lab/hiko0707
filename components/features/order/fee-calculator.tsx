@@ -9,6 +9,7 @@ import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { useLanguage } from '@/lib/i18n/context'
+import { useCurrency } from '@/hooks/use-currency'
 import { cn } from '@/lib/utils'
 
 export interface FeeCalculatorProps {
@@ -21,7 +22,7 @@ export interface FeeCalculatorProps {
 
 const SERVICE_FEE_RATE = 0.08 // 8% 서비스 수수료
 const DOMESTIC_SHIPPING_FEE = 3000 // 국내 배송비
-const MIN_SERVICE_FEE = 1000 // 최소 서비스 수수료
+const MIN_SERVICE_FEE = 3000 // 최소 서비스 수수료
 
 export function FeeCalculator({
   amount = 0,
@@ -31,6 +32,7 @@ export function FeeCalculator({
   variant = 'default'
 }: FeeCalculatorProps) {
   const { t } = useLanguage()
+  const { convert, format, selectedCurrency } = useCurrency()
   const [inputAmount, setInputAmount] = useState(amount.toString())
   const [isCalculating, setIsCalculating] = useState(false)
 
@@ -72,6 +74,19 @@ export function FeeCalculator({
       currency: 'KRW',
       minimumFractionDigits: 0
     }).format(value)
+  }
+
+  // 환율 표시 포맷팅
+  const formatWithCurrency = (value: number) => {
+    const krwFormatted = `KRW ${format(value)}`
+    if (selectedCurrency !== 'KRW') {
+      const convertedValue = convert(value, 'KRW', selectedCurrency)
+      if (convertedValue) {
+        const convertedFormatted = `${selectedCurrency} ${format(convertedValue)}`
+        return { krw: krwFormatted, converted: convertedFormatted }
+      }
+    }
+    return { krw: krwFormatted, converted: null }
   }
 
   // 금액 변경 시 입력값 동기화
@@ -195,9 +210,22 @@ export function FeeCalculator({
 
           <div className="flex items-center justify-between">
             <span className="font-semibold">총 예상 금액</span>
-            <span className="text-xl font-bold text-primary">
-              {formatCurrency(fees.totalAmount)}
-            </span>
+            <div className="text-right">
+              <div className="flex items-center gap-2 justify-end">
+                <span className="text-sm text-gray-400">KRW</span>
+                <span className="font-semibold text-gray-900 text-lg">{format(fees.totalAmount)}</span>
+              </div>
+              {selectedCurrency !== 'KRW' && (
+                <div className="flex items-center gap-2 justify-end mt-1">
+                  <span className="text-xs text-gray-400">{selectedCurrency}</span>
+                  <span className="text-sm font-medium text-green-600">
+                    {convert(fees.totalAmount, 'KRW', selectedCurrency) 
+                      ? format(convert(fees.totalAmount, 'KRW', selectedCurrency)!)
+                      : 'N/A'}
+                  </span>
+                </div>
+              )}
+            </div>
           </div>
         </div>
 

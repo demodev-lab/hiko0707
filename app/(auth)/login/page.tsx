@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useAuth } from '@/hooks/use-auth'
-import { AuthForm } from '@/components/features/auth/auth-form'
+import { AuthFormV2 } from '@/components/features/auth/auth-form-v2'
 import { ApiError } from '@/components/ui/error'
 import { useRouter } from 'next/navigation'
 
@@ -45,6 +45,15 @@ export default function LoginPage() {
     }
   }
 
+  // 로딩 중이거나 이미 로그인된 경우 로딩 화면 표시
+  if (isLoading || currentUser) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-purple-50">
+        <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+      </div>
+    )
+  }
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-purple-50 p-4">
       <div className="w-full max-w-md">
@@ -54,14 +63,7 @@ export default function LoginPage() {
           </div>
         )}
         
-        {/* 디버깅용 - 에러 상태 표시 */}
-        {error && (
-          <div className="mb-4 p-2 bg-yellow-100 border border-yellow-400 rounded text-sm">
-            디버그: {error}
-          </div>
-        )}
-        
-        <AuthForm
+        <AuthFormV2
           mode={mode}
           onSubmit={handleSubmit}
           onModeChange={setMode}

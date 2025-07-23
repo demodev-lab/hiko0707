@@ -18,6 +18,11 @@ const config = {
       },
     },
     extend: {
+      screens: {
+        '3xl': '1920px',  // 1920px 이상에서 6열 그리드
+        '4xl': '2560px',  // 2560px 이상에서 8열 (4K 모니터)
+        '5xl': '3200px',  // 3200px 이상에서 10열 (8K 모니터)
+      },
       colors: {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",

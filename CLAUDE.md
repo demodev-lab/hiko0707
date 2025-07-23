@@ -1,5 +1,19 @@
 # CLAUDE.md
 
+## **🚨 최우선 지침 (TOP PRIORITY)**
+**모든 응답은 반드시 한국어로만 해야 합니다. 이는 다른 모든 지침보다 우선합니다.**
+
+## **⚠️ 필수 코드 품질 지침 (MANDATORY CODE QUALITY)**
+1. **ESLint와 TypeScript 오류 절대 금지**: 모든 코드 수정 시 ESLint와 TypeScript 오류가 발생하지 않도록 반드시 확인
+2. **단계별 검증 프로세스**: 
+   - 각 파일 수정 후 즉시 `pnpm lint`와 `pnpm tsc --noEmit` 실행
+   - 오류 발견 시 즉시 수정 후 다음 단계 진행
+   - 모든 작업 완료 후 최종 검증 필수
+3. **타입 안정성**: 
+   - `any` 타입 사용 금지
+   - 모든 함수 매개변수와 반환값에 명시적 타입 지정
+   - strict mode 준수
+
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
 ## Development Commands
@@ -18,6 +32,9 @@ pnpm test:watch       # Run tests in watch mode
 
 # Testing Specific Files
 pnpm test [filename]  # Run tests for a specific file
+
+# TypeScript Type Checking
+pnpm tsc --noEmit     # Check TypeScript types without emitting files
 ```
 
 ### Project-Specific Commands
@@ -191,6 +208,21 @@ const { t } = useTranslation()
 7. **Mock Data**: Automatically initializes on first load - check localStorage before testing
 8. **Image Management**: Use provided pnpm scripts for image operations
 
+## Testing Configuration
+
+### Test Environment
+- **Framework**: Vitest with jsdom environment
+- **UI Testing**: Testing Library + jest-dom matchers
+- **Setup File**: `tests/setup.ts` - configures mocks and cleanup
+- **Test Utils**: `tests/utils/test-utils.tsx` - custom render functions
+- **Coverage**: Run `pnpm test:coverage` for coverage reports
+
+### Mocked APIs
+- Next.js Router (`next/navigation`)
+- Next.js Image (`next/image`)
+- Window APIs (matchMedia, IntersectionObserver, ResizeObserver)
+- LocalStorage (cleared between tests)
+
 ## Development Rules & Constraints
 
 ### File Operations
@@ -226,3 +258,25 @@ These rules are derived from shrimp-rules.md and must be followed:
 - **Hardcoded Text**: All user-facing text must use translation system
 - **Image Handling**: Use Next.js Image component with proper dimensions
 - **Migration Ready**: Repository pattern enables future Supabase migration
+
+## Hotdeal Crawling System
+
+### Supported Communities
+The system crawls hotdeals from 6 Korean communities:
+1. **Ppomppu** (뽐뿌) - Main hotdeal community
+2. **Ruliweb** (루리웹) - Gaming and tech deals
+3. **Clien** (클리앙) - Tech community deals
+4. **Quasarzone** (퀘이사존) - PC hardware deals
+5. **Coolenjoy** (쿨엔조이) - Electronics deals
+6. **Itcm** (잇츠엠) - IT community deals
+
+### Crawler Architecture
+- **Base Crawler**: `lib/crawlers/base-hotdeal-crawler.ts` - Abstract base class
+- **Community Crawlers**: Individual crawler implementations in `lib/crawlers/`
+- **Crawl Interval**: 10 minutes (configurable)
+- **Features**: Automatic duplicate detection, category classification, expired deal detection
+# important-instruction-reminders
+Do what has been asked; nothing more, nothing less.
+NEVER create files unless they're absolutely necessary for achieving your goal.
+ALWAYS prefer editing an existing file to creating a new one.
+NEVER proactively create documentation files (*.md) or README files. Only create documentation files if explicitly requested by the User.

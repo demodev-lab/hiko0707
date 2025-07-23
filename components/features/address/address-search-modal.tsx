@@ -12,9 +12,10 @@ import { Card } from '@/components/ui/card'
 
 interface AddressSearchModalProps {
   open: boolean
-  onClose: () => void
+  onOpenChange: (open: boolean) => void
   onSelect: (address: AddressData) => void
   initialSearchType?: 'korean' | 'english'
+  searchType?: 'korean' | 'english'
 }
 
 interface AddressData {
@@ -32,8 +33,8 @@ declare global {
   }
 }
 
-export function AddressSearchModal({ open, onClose, onSelect, initialSearchType = 'korean' }: AddressSearchModalProps) {
-  const [searchType, setSearchType] = useState<'korean' | 'english'>(initialSearchType)
+export function AddressSearchModal({ open, onOpenChange, onSelect, initialSearchType = 'korean', searchType: propSearchType }: AddressSearchModalProps) {
+  const [searchType, setSearchType] = useState<'korean' | 'english'>(propSearchType || initialSearchType)
   const [searchQuery, setSearchQuery] = useState('')
   const [englishResults, setEnglishResults] = useState<any[]>([])
   const [loading, setLoading] = useState(false)
@@ -48,15 +49,17 @@ export function AddressSearchModal({ open, onClose, onSelect, initialSearchType 
     if (container) {
       container.style.display = 'none'
     }
-    onClose()
-  }, [onClose])
+    if (onOpenChange && typeof onOpenChange === 'function') {
+      onOpenChange(false)
+    }
+  }, [onOpenChange])
 
   // 모달이 열릴 때 초기 검색 타입 설정
   useEffect(() => {
     if (open) {
-      setSearchType(initialSearchType)
+      setSearchType(propSearchType || initialSearchType)
     }
-  }, [open, initialSearchType])
+  }, [open, initialSearchType, propSearchType])
 
   // Daum 주소 API 스크립트 로드
   useEffect(() => {
@@ -226,7 +229,7 @@ export function AddressSearchModal({ open, onClose, onSelect, initialSearchType 
   }
 
   return (
-    <Dialog open={open} onOpenChange={handleClose}>
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl max-h-[80vh] p-0">
         <DialogHeader className="p-6 pb-0">
           <DialogTitle>

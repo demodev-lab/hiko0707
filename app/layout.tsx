@@ -4,16 +4,25 @@ import './globals.css'
 import { Providers } from '@/components/common/providers'
 import { Header } from '@/components/layout/header'
 import { Footer } from '@/components/layout/footer'
-import { MobileNav } from '@/components/layout/mobile-nav'
+import { MobileNavV2 } from '@/components/layout/mobile-nav-v2'
 import { SkipLinks } from '@/components/common/skip-links'
 import { Toaster } from 'sonner'
 import { WebsiteJsonLd, OrganizationJsonLd } from '@/components/seo/json-ld'
+import { StagewiseToolbar } from '@stagewise/toolbar-next'
+import ReactPlugin from '@stagewise-plugins/react'
 
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'HiKo - 한국 핫딜 모음',
-  description: '외국인을 위한 한국 온라인 쇼핑 도우미 - Korean Hot Deals for Foreigners',
+  title: 'HiKo - 한국 쇼핑 도우미 | Korean Shopping Assistant',
+  description: '외국인을 위한 한국 쇼핑 플랫폼. 7개 언어 지원, 대리구매, 실시간 핫딜 정보 제공. The best Korean shopping platform for foreigners.',
+  keywords: '한국 쇼핑, Korean shopping, 대리구매, proxy buying, 핫딜, hot deals, K-beauty, K-fashion',
+  openGraph: {
+    title: 'HiKo - 한국 쇼핑 도우미',
+    description: '외국인을 위한 똑똑한 한국 쇼핑 도우미',
+    type: 'website',
+    images: ['/og-image.png'],
+  },
 }
 
 export default function RootLayout({
@@ -57,16 +66,17 @@ export default function RootLayout({
       <body className={`${inter.className} bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100`} suppressHydrationWarning>
         <Providers>
           <SkipLinks />
-          <div className="min-h-screen flex flex-col pb-16 md:pb-0 bg-white dark:bg-gray-900">
+          <div className="min-h-screen flex flex-col pb-20 sm:pb-24 md:pb-0 bg-white dark:bg-gray-900">
             <Header />
-            <main id="main-content" className="flex-1" tabIndex={-1}>
+            <main id="main-content" className="flex-1" tabIndex={-1} style={{ paddingTop: 'var(--header-height, 6rem)' }}>
               {children}
             </main>
             <Footer />
-            <MobileNav />
+            <MobileNavV2 />
           </div>
           <Toaster richColors position="top-center" />
         </Providers>
+        <StagewiseToolbar config={{ plugins: [ReactPlugin] }} />
       </body>
     </html>
   )
