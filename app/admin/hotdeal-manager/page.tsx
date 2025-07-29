@@ -31,16 +31,9 @@ import {
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { useHotDeals } from '@/hooks/use-local-db'
-// import { runCrawler } from '@/actions/crawler-actions' // API Route 사용으로 변경
+import { useBackendCrawler } from '@/hooks/use-backend-crawler'
+import { CrawlerSource } from '@/lib/crawlers/new-crawler-manager'
 
-// 크롤링 스케줄 타입
-interface CrawlSchedule {
-  enabled: boolean
-  intervalType: 'minutes' | 'hours' | 'daily'
-  intervalValue: number
-  lastRun?: Date
-  nextRun?: Date
-}
 
 // 크롤링 히스토리 타입
 interface CrawlHistory {
@@ -56,25 +49,29 @@ interface CrawlHistory {
 export default function HotDealManagerPage() {
   // 상태 관리
   const [activeTab, setActiveTab] = useState('dashboard')
-  const [isCrawling, setIsCrawling] = useState(false)
-  const [crawlProgress, setCrawlProgress] = useState(0)
-  const [crawlStatus, setCrawlStatus] = useState<string>('')
-  const [selectedSource, setSelectedSource] = useState('ppomppu')
+  const [selectedSource, setSelectedSource] = useState<CrawlerSource>('ppomppu')
   const [crawlPages, setCrawlPages] = useState(5)
   const [crawlMode, setCrawlMode] = useState<'pages' | 'time'>('time')
   const [timeRange, setTimeRange] = useState<'today' | 'hours' | 'days' | 'custom'>('today')
   const [customTimeValue, setCustomTimeValue] = useState(6)
   const [customTimeUnit, setCustomTimeUnit] = useState<'hours' | 'days'>('hours')
   const [autoImport, setAutoImport] = useState(true)
-  const [schedule, setSchedule] = useState<CrawlSchedule>({
-    enabled: false,
-    intervalType: 'minutes',
-    intervalValue: 30
-  })
   const [crawlHistory, setCrawlHistory] = useState<CrawlHistory[]>([])
   const [jsonFiles, setJsonFiles] = useState<string[]>([])
   
   const { hotdeals, refetch: refetchHotDeals } = useHotDeals()
+  const { 
+    crawl, 
+    isLoading: isCrawling, 
+    error: crawlError,
+    results: crawlResults,
+    progress: crawlProgress,
+    jobs: crawlJobs,
+    addJob,
+    toggleJob,
+    removeJob,
+    fetchJobs
+  } = useBackendCrawler()
 
   // 통계 계산
   const stats = {
@@ -99,17 +96,11 @@ export default function HotDealManagerPage() {
     }
   }
 
-  // 크롤링 실행 - 완전히 새로운 구현
+  // 크롤링 실행 - 백엔드 API 사용
   const handleCrawl = async () => {
     console.log('handleCrawl 시작')
     
-    // 상태 초기화
-    setIsCrawling(true)
-    setCrawlProgress(0)
-    setCrawlStatus('크롤링 준비 중...')
-    
     const startTime = Date.now()
-    let progressInterval: NodeJS.Timeout | null = null
     
     try {
       // 시간 기준 설정
@@ -134,32 +125,9 @@ export default function HotDealManagerPage() {
         
         // 시간 기준일 때는 충분히 많은 페이지로 설정하되, 크롤러가 시간 범위를 벗어나면 자동 중단
         actualPages = 50
-        setCrawlStatus(`${timeBasedMessage} 기간 내 게시물 크롤링 중...`)
-      } else {
-        setCrawlStatus('크롤링 시작...')
       }
       
-      // UI 업데이트를 위한 짧은 대기
-      console.log('UI 대기 시작')
-      await new Promise<void>((resolve) => {
-        const timer = setTimeout(() => {
-          console.log('UI 대기 완료')
-          resolve()
-        }, 1000)
-      })
-      
-      // 진행 상황 시뮬레이션
-      console.log('진행 상황 시뮬레이션 시작')
-      progressInterval = setInterval(() => {
-        setCrawlProgress((prev) => {
-          const next = Math.min(prev + 10, 90)
-          console.log('진행률:', next)
-          return next
-        })
-      }, 1000)
-      
       const crawlerOptions = {
-        source: selectedSource,
         pages: actualPages,
         headless: true,
         saveToJson: true,
@@ -170,53 +138,23 @@ export default function HotDealManagerPage() {
       
       console.log('크롤러 시작:', crawlerOptions)
       
-      // API Route 사용
-      let response
-      let result
-      
-      try {
-        response = await fetch('/api/crawler', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(crawlerOptions)
-        })
-        
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`)
-        }
-        
-        result = await response.json()
-      } catch (fetchError) {
-        console.error('Fetch 에러:', fetchError)
-        throw new Error(`API 호출 실패: ${fetchError instanceof Error ? fetchError.message : '알 수 없는 오류'}`)
-      }
-      
-      console.log('크롤러 결과:', result)
-      
-      if (progressInterval) clearInterval(progressInterval)
-      setCrawlProgress(100)
-      
-      // 결과 처리
-      if (!result.success) {
-        throw new Error(result.error || '크롤링 실패')
-      }
+      // 백엔드 API 호출
+      const result = await crawl(selectedSource, crawlerOptions)
       
       const duration = Date.now() - startTime
       const historyItem: CrawlHistory = {
         id: Date.now().toString(),
         timestamp: new Date(),
         source: selectedSource,
-        itemsCount: result.data?.results[0]?.totalDeals || 0,
+        itemsCount: result.results[0]?.totalDeals || 0,
         status: 'success',
         duration: Math.round(duration / 1000)
       }
       
       setCrawlHistory(prev => [historyItem, ...prev.slice(0, 9)])
       
-      if (autoImport && result.data?.exportedFiles?.length > 0) {
-        const filename = result.data.exportedFiles[0].split('/').pop()
+      if (autoImport && result.exportedFiles?.length > 0) {
+        const filename = result.exportedFiles[0].split('/').pop()
         if (filename) {
           await handleImportJson(filename)
         }
@@ -228,12 +166,9 @@ export default function HotDealManagerPage() {
       
       toast.success(successMessage)
       await loadJsonFiles()
+      await refetchHotDeals()
       
     } catch (error) {
-      if (progressInterval) clearInterval(progressInterval)
-      setCrawlProgress(0)
-      setCrawlStatus('크롤링 실패')
-      
       const errorMessage = error instanceof Error ? error.message : '알 수 없는 오류'
       console.error('크롤링 오류:', error)
       toast.error(`크롤링 실패: ${errorMessage}`)
@@ -249,10 +184,6 @@ export default function HotDealManagerPage() {
       }
       
       setCrawlHistory(prev => [historyItem, ...prev.slice(0, 9)])
-    } finally {
-      setIsCrawling(false)
-      setCrawlProgress(0)
-      setCrawlStatus('')
     }
   }
 
@@ -324,27 +255,24 @@ export default function HotDealManagerPage() {
   useEffect(() => {
     loadJsonFiles()
     
-    // 로컬 스토리지에서 설정 로드
-    const savedSchedule = localStorage.getItem('hiko_crawl_schedule')
-    if (savedSchedule) {
-      setSchedule(JSON.parse(savedSchedule))
-    }
-    
     const savedHistory = localStorage.getItem('hiko_crawl_history')
     if (savedHistory) {
       setCrawlHistory(JSON.parse(savedHistory))
     }
   }, [])
 
-  // 스케줄 저장
-  useEffect(() => {
-    localStorage.setItem('hiko_crawl_schedule', JSON.stringify(schedule))
-  }, [schedule])
-
   // 히스토리 저장
   useEffect(() => {
     localStorage.setItem('hiko_crawl_history', JSON.stringify(crawlHistory))
   }, [crawlHistory])
+
+  // 실시간 진행 상황을 문자열로 변환
+  const crawlStatus = crawlProgress ? 
+    `크롤링 중... ${crawlProgress.progress}% (${crawlProgress.itemsCrawled || 0}개 수집)` : 
+    ''
+
+  // 크롤링 진행률 (0-100)
+  const crawlProgressValue = crawlProgress?.progress || 0
 
   return (
     <div className="container mx-auto py-6 space-y-6">
@@ -452,9 +380,9 @@ export default function HotDealManagerPage() {
                 <div className="space-y-2">
                   <div className="flex justify-between text-sm">
                     <span>{crawlStatus}</span>
-                    <span>{crawlProgress}%</span>
+                    <span>{crawlProgressValue}%</span>
                   </div>
-                  <Progress value={crawlProgress} />
+                  <Progress value={crawlProgressValue} />
                 </div>
               )}
             </CardContent>
@@ -748,142 +676,114 @@ export default function HotDealManagerPage() {
           <Card>
             <CardHeader>
               <CardTitle>자동 크롤링 스케줄</CardTitle>
-              <CardDescription>실시간 핫딜 수집을 위한 자동 크롤링 설정</CardDescription>
+              <CardDescription>백엔드에서 실행되는 자동 크롤링 작업 관리</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="flex items-center space-x-2">
-                <Switch 
-                  id="schedule-enabled" 
-                  checked={schedule.enabled}
-                  onCheckedChange={(checked) => setSchedule(prev => ({ ...prev, enabled: checked }))}
-                />
-                <Label htmlFor="schedule-enabled">자동 크롤링 활성화</Label>
-              </div>
-              
-              {schedule.enabled && (
-                <div className="space-y-4">
-                  <div className="space-y-4">
-                    <div className="space-y-2">
-                      <Label>크롤링 간격</Label>
-                      <div className="flex gap-2">
-                        <Input
-                          type="number"
-                          min="1"
-                          max={schedule.intervalType === 'minutes' ? 60 : schedule.intervalType === 'hours' ? 24 : 30}
-                          value={schedule.intervalValue?.toString() || '1'}
-                          onChange={(e) => setSchedule(prev => ({ 
-                            ...prev, 
-                            intervalValue: parseInt(e.target.value) || 1 
-                          }))}
-                          className="w-20"
-                        />
-                        <Select 
-                          value={schedule.intervalType} 
-                          onValueChange={(v: any) => setSchedule(prev => ({ 
-                            ...prev, 
-                            intervalType: v,
-                            intervalValue: v === 'minutes' ? 30 : v === 'hours' ? 1 : 1
-                          }))}
-                        >
-                          <SelectTrigger className="flex-1">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="minutes">분</SelectItem>
-                            <SelectItem value="hours">시간</SelectItem>
-                            <SelectItem value="daily">일</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    </div>
-                    
-                    <div className="space-y-2">
-                      <Label>빠른 설정</Label>
-                      <div className="flex flex-wrap gap-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => setSchedule(prev => ({ ...prev, intervalType: 'minutes', intervalValue: 10 }))}
-                        >
-                          10분
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => setSchedule(prev => ({ ...prev, intervalType: 'minutes', intervalValue: 30 }))}
-                        >
-                          30분
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => setSchedule(prev => ({ ...prev, intervalType: 'hours', intervalValue: 1 }))}
-                        >
-                          1시간
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => setSchedule(prev => ({ ...prev, intervalType: 'hours', intervalValue: 2 }))}
-                        >
-                          2시간
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => setSchedule(prev => ({ ...prev, intervalType: 'hours', intervalValue: 6 }))}
-                        >
-                          6시간
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => setSchedule(prev => ({ ...prev, intervalType: 'daily', intervalValue: 1 }))}
-                        >
-                          매일
-                        </Button>
-                      </div>
-                    </div>
+              {/* 현재 스케줄된 작업 목록 */}
+              <div className="space-y-2">
+                <Label>스케줄된 크롤링 작업</Label>
+                {crawlJobs.length === 0 ? (
+                  <div className="p-4 border rounded-lg text-center text-muted-foreground">
+                    <p>스케줄된 작업이 없습니다</p>
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="mt-2"
+                      onClick={() => addJob(selectedSource, '*/30 * * * *')}
+                    >
+                      30분마다 크롤링 추가
+                    </Button>
                   </div>
-                  
-                  <div className="grid gap-4 md:grid-cols-1">
-                    <div className="space-y-2">
-                      <Label>스케줄 정보</Label>
-                      <div className="p-3 bg-muted rounded-md">
-                        <p className="text-sm font-medium">
-                          {schedule.intervalValue} {schedule.intervalType === 'minutes' ? '분' : schedule.intervalType === 'hours' ? '시간' : '일'}마다 자동 크롤링
-                        </p>
-                        <p className="text-xs text-muted-foreground mt-1">
-                          실시간 핫딜 업데이트를 위한 자동 수집이 활성화됩니다
-                        </p>
-                        {schedule.lastRun && (
-                          <p className="text-xs text-muted-foreground mt-1">
-                            마지막 실행: {new Date(schedule.lastRun).toLocaleString('ko-KR')}
-                          </p>
+                ) : (
+                  <div className="space-y-2">
+                    {crawlJobs.map(job => (
+                      <div key={job.id} className="p-3 border rounded-lg">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-3">
+                            <Switch
+                              checked={job.enabled}
+                              onCheckedChange={(enabled) => toggleJob(job.id, enabled)}
+                            />
+                            <div>
+                              <p className="font-medium">{job.source}</p>
+                              <p className="text-sm text-muted-foreground">
+                                스케줄: {job.schedule}
+                              </p>
+                              {job.lastRun && (
+                                <p className="text-xs text-muted-foreground">
+                                  마지막 실행: {new Date(job.lastRun).toLocaleString('ko-KR')}
+                                </p>
+                              )}
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Badge variant={job.status === 'running' ? 'default' : job.status === 'failed' ? 'destructive' : 'secondary'}>
+                              {job.status}
+                            </Badge>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => removeJob(job.id)}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </div>
+                        {job.statistics && (
+                          <div className="mt-2 text-xs text-muted-foreground">
+                            총 {job.statistics.totalCrawled}개 수집 
+                            (신규: {job.statistics.newDeals}, 업데이트: {job.statistics.updatedDeals})
+                          </div>
                         )}
                       </div>
-                    </div>
+                    ))}
                   </div>
-                  
-                  <Alert>
-                    <AlertCircle className="h-4 w-4" />
-                    <AlertDescription>
-                      자동 크롤링은 서버 환경에서만 작동합니다. 
-                      현재는 설정값만 저장되며, 실제 자동 실행을 위해서는 서버 크론 작업이 필요합니다.
-                    </AlertDescription>
-                  </Alert>
-                  
-                  {schedule.intervalType === 'minutes' && schedule.intervalValue < 10 && (
-                    <Alert className="border-yellow-500">
-                      <AlertCircle className="h-4 w-4 text-yellow-500" />
-                      <AlertDescription className="text-yellow-700">
-                        너무 짧은 간격은 서버에 부담을 줄 수 있습니다. 
-                        최소 10분 이상을 권장합니다.
-                      </AlertDescription>
-                    </Alert>
-                  )}
+                )}
+              </div>
+
+              {/* 새 스케줄 추가 */}
+              <div className="space-y-2">
+                <Label>새 크롤링 스케줄 추가</Label>
+                <div className="flex gap-2">
+                  <Select value={selectedSource} onValueChange={(v) => setSelectedSource(v as CrawlerSource)}>
+                    <SelectTrigger className="flex-1">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="ppomppu">뽐뿌</SelectItem>
+                      <SelectItem value="ruliweb">루리웹</SelectItem>
+                      <SelectItem value="clien">클리앙</SelectItem>
+                      <SelectItem value="quasarzone">퀘이사존</SelectItem>
+                      <SelectItem value="coolenjoy">쿨엔조이</SelectItem>
+                      <SelectItem value="itcm">잇츠엠</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <Select 
+                    defaultValue="*/30 * * * *"
+                    onValueChange={(schedule) => addJob(selectedSource, schedule)}
+                  >
+                    <SelectTrigger className="w-[180px]">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="*/10 * * * *">10분마다</SelectItem>
+                      <SelectItem value="*/30 * * * *">30분마다</SelectItem>
+                      <SelectItem value="0 * * * *">매시간</SelectItem>
+                      <SelectItem value="0 */2 * * *">2시간마다</SelectItem>
+                      <SelectItem value="0 */6 * * *">6시간마다</SelectItem>
+                      <SelectItem value="0 0 * * *">매일 자정</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
-              )}
+              </div>
+              
+              <Alert>
+                <AlertCircle className="h-4 w-4" />
+                <AlertDescription>
+                  백엔드 서버에서 node-cron을 통해 자동으로 실행됩니다.
+                  실시간 진행 상황은 대시보드에서 확인할 수 있습니다.
+                </AlertDescription>
+              </Alert>
             </CardContent>
           </Card>
         </TabsContent>
