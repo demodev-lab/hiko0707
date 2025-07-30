@@ -21,7 +21,8 @@
     "reset-hotdeals": "npx tsx scripts/reset-hotdeals.ts",
     "import-hotdeals": "npx tsx scripts/import-hotdeals.ts",
     "migrate-to-supabase": "tsx scripts/migrate-to-supabase.ts",
-    "test-supabase-crawler": "tsx scripts/test-supabase-crawler.ts"
+    "test-supabase-crawler": "tsx scripts/test-supabase-crawler.ts",
+    "gen:types": "npx -y supabase gen types typescript --project-id vyvzihzjivcfhietrpnd --schema public > database.types.ts"
   },
   "dependencies": {
     "@clerk/nextjs": "^6.25.4",

@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { ProtectedRoute } from '@/components/features/auth/protected-route'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Button } from '@/components/ui/button'
@@ -275,7 +276,8 @@ export default function HotDealManagerPage() {
   const crawlProgressValue = crawlProgress?.progress || 0
 
   return (
-    <div className="container mx-auto py-6 space-y-6">
+    <ProtectedRoute requiredRole="admin">
+      <div className="container mx-auto py-6 space-y-6">
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-3xl font-bold">핫딜 통합 관리</h1>
@@ -869,5 +871,6 @@ export default function HotDealManagerPage() {
         </TabsContent>
       </Tabs>
     </div>
+    </ProtectedRoute>
   )
 }

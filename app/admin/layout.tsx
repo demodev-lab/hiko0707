@@ -1,7 +1,15 @@
 import { ReactNode } from 'react'
+import { redirect } from 'next/navigation'
 import { AdminSidebar } from '@/components/features/admin/admin-sidebar'
+import { isAdmin } from '@/utils/roles'
 
-export default function AdminLayout({ children }: { children: ReactNode }) {
+export default async function AdminLayout({ children }: { children: ReactNode }) {
+  const hasAdminRole = await isAdmin()
+  
+  if (!hasAdminRole) {
+    redirect('/')
+  }
+
   return (
     <div className="flex h-screen bg-gray-50">
       <AdminSidebar />

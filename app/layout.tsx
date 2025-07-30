@@ -11,6 +11,7 @@ import { Toaster } from 'sonner'
 import { WebsiteJsonLd, OrganizationJsonLd } from '@/components/seo/json-ld'
 import { StagewiseToolbar } from '@stagewise/toolbar-next'
 import ReactPlugin from '@stagewise-plugins/react'
+import { UserSyncProvider } from '@/components/auth/user-sync-provider'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -67,16 +68,18 @@ export default function RootLayout({
         </head>
         <body className={`${inter.className} bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100`} suppressHydrationWarning>
           <Providers>
-            <SkipLinks />
-            <div className="min-h-screen flex flex-col pb-20 sm:pb-24 md:pb-0 bg-white dark:bg-gray-900">
-              <Header />
-              <main id="main-content" className="flex-1" tabIndex={-1} style={{ paddingTop: 'var(--header-height, 6rem)' }}>
-                {children}
-              </main>
-              <Footer />
-              <MobileNavV2 />
-            </div>
-            <Toaster richColors position="top-center" />
+            <UserSyncProvider>
+              <SkipLinks />
+              <div className="min-h-screen flex flex-col pb-20 sm:pb-24 md:pb-0 bg-white dark:bg-gray-900">
+                <Header />
+                <main id="main-content" className="flex-1" tabIndex={-1} style={{ paddingTop: 'var(--header-height, 6rem)' }}>
+                  {children}
+                </main>
+                <Footer />
+                <MobileNavV2 />
+              </div>
+              <Toaster richColors position="top-center" />
+            </UserSyncProvider>
           </Providers>
           <StagewiseToolbar config={{ plugins: [ReactPlugin] }} />
         </body>

@@ -1,8 +1,10 @@
 import { Metadata } from 'next'
+import { redirect } from 'next/navigation'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { db } from '@/lib/db/database-service'
 import { BarChart, TrendingUp, Users, Package, DollarSign, Eye, Calendar } from 'lucide-react'
+import { isAdmin } from '@/utils/roles'
 
 export const metadata: Metadata = {
   title: '통계 분석 - HiKo Admin',
@@ -10,6 +12,11 @@ export const metadata: Metadata = {
 }
 
 export default async function AdminAnalyticsPage() {
+  const hasAdminRole = await isAdmin()
+  
+  if (!hasAdminRole) {
+    redirect('/')
+  }
   const [users, orders, hotdeals, payments] = await Promise.all([
     db.users.findAll(),
     db.orders.findAll(),

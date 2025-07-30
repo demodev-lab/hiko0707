@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { ProtectedRoute } from '@/components/features/auth/protected-route'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -47,7 +48,8 @@ export default function AdminSettingsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
+    <ProtectedRoute requiredRole="admin">
+      <div className="min-h-screen bg-gray-50 p-6">
       <div className="max-w-6xl mx-auto">
         <div className="mb-6 flex items-center justify-between">
           <div>
@@ -347,5 +349,6 @@ export default function AdminSettingsPage() {
         </Tabs>
       </div>
     </div>
+    </ProtectedRoute>
   )
 }
