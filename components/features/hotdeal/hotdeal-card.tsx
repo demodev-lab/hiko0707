@@ -81,7 +81,7 @@ export function HotDealCard({ deal }: HotDealCardProps) {
       <Link href={`/hotdeals/${deal.id}`} className="block">
         <div className="relative overflow-hidden bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800 w-full h-48 sm:h-52 lg:h-56 xl:h-60">
           <OptimizedImage
-            src={deal.originalImageUrl || ''}
+            src={deal.originalImageUrl || undefined}
             alt={deal.title}
             width={400}
             height={320}
