@@ -1,8 +1,8 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { HotDeal } from '@/types/hotdeal'
-import { db } from '@/lib/db/database-service'
+import { useSearchHotDeals, useHotDeals } from '@/hooks/use-supabase-hotdeals'
 import { HotDealCard } from '@/components/features/hotdeal/hotdeal-card'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -26,71 +26,69 @@ interface SearchResultsProps {
 
 export function SearchResults({ query, filters }: SearchResultsProps) {
   const { t } = useLanguage()
-  const [results, setResults] = useState<HotDeal[]>([])
-  const [loading, setLoading] = useState(true)
   const [page, setPage] = useState(1)
   const itemsPerPage = 12
 
-  useEffect(() => {
-    async function searchHotdeals() {
-      setLoading(true)
-      try {
-        let deals: HotDeal[] = []
-        
-        if (query) {
-          // Search by keyword
-          deals = await db.hotdeals.searchByKeyword(query)
-        } else {
-          // Get all active deals
-          deals = await db.hotdeals.findActive()
-        }
+  // 검색어가 있을 때와 없을 때 조건부 훅 사용
+  const searchEnabled = query && query.length > 0
+  
+  // 검색 옵션 준비
+  const searchOptions = {
+    category: filters.category && filters.category !== 'all' ? filters.category : undefined,
+    source: filters.source && filters.source !== 'all' ? filters.source : undefined,
+    minPrice: filters.minPrice,
+    maxPrice: filters.maxPrice,
+    sortBy: filters.sortBy === 'price_low' ? 'price' as const :
+            filters.sortBy === 'price_high' ? 'price' as const :
+            filters.sortBy === 'popular' ? 'view_count' as const :
+            filters.sortBy === 'discount' ? 'like_count' as const :
+            'created_at' as const,
+    sortOrder: filters.sortBy === 'price_low' ? 'asc' as const :
+               filters.sortBy === 'price_high' ? 'desc' as const :
+               'desc' as const,
+    status: 'active' as const,
+    limit: 1000 // 충분히 큰 값으로 설정
+  }
 
-        // Apply filters
-        if (filters.category && filters.category !== 'all') {
-          deals = deals.filter(d => d.category === filters.category)
-        }
-        
-        if (filters.source && filters.source !== 'all') {
-          deals = deals.filter(d => d.source === filters.source)
-        }
-        
-        if (filters.minPrice !== undefined) {
-          deals = deals.filter(d => d.price >= filters.minPrice!)
-        }
-        
-        if (filters.maxPrice !== undefined) {
-          deals = deals.filter(d => d.price <= filters.maxPrice!)
-        }
+  const { 
+    data: searchResults, 
+    isLoading: searchLoading, 
+    error: searchError 
+  } = useSearchHotDeals(query, searchOptions)
 
-        // Apply sorting
-        switch (filters.sortBy) {
-          case 'price_low':
-            deals.sort((a, b) => a.price - b.price)
-            break
-          case 'price_high':
-            deals.sort((a, b) => b.price - a.price)
-            break
-          case 'popular':
-            deals.sort((a, b) => (b.viewCount || 0) - (a.viewCount || 0))
-            break
-          case 'discount':
-            deals.sort((a, b) => (b.communityRecommendCount || 0) - (a.communityRecommendCount || 0))
-            break
-          default: // 'latest'
-            deals.sort((a, b) => new Date(b.crawledAt).getTime() - new Date(a.crawledAt).getTime())
-        }
+  const { 
+    data: allDealsData, 
+    isLoading: allDealsLoading, 
+    error: allDealsError 
+  } = useHotDeals(searchOptions)
 
-        setResults(deals)
-      } catch (error) {
-        console.error('Search error:', error)
-        setResults([])
-      } finally {
-        setLoading(false)
-      }
+  // 결과 통합 및 데이터 매핑
+  const mapSupabaseToHotDeal = (supabaseData: any): HotDeal => ({
+    id: supabaseData.id,
+    source: supabaseData.source,
+    sourcePostId: supabaseData.source_id,
+    category: supabaseData.category,
+    title: supabaseData.title,
+    productComment: supabaseData.description,
+    price: supabaseData.price || 0,
+    seller: supabaseData.seller,
+    originalUrl: supabaseData.url,
+    imageUrl: supabaseData.image_url,
+    thumbnailImageUrl: supabaseData.thumbnail_url,
+    viewCount: supabaseData.view_count,
+    likeCount: supabaseData.like_count,
+    commentCount: supabaseData.comment_count,
+    crawledAt: supabaseData.created_at,
+    status: supabaseData.status,
+    shipping: {
+      isFree: supabaseData.is_free_shipping
     }
+  })
 
-    searchHotdeals()
-  }, [query, filters])
+  const rawResults = searchEnabled ? (searchResults?.data || []) : (allDealsData?.data || [])
+  const results = rawResults.map(mapSupabaseToHotDeal)
+  const loading = searchEnabled ? searchLoading : allDealsLoading
+  const error = searchEnabled ? searchError : allDealsError
 
   // Pagination
   const totalPages = Math.ceil(results.length / itemsPerPage)
@@ -110,6 +108,18 @@ export function SearchResults({ query, filters }: SearchResultsProps) {
           ))}
         </div>
       </div>
+    )
+  }
+
+  // Error state
+  if (error) {
+    return (
+      <EmptyState
+        title="데이터를 불러오는 중 오류가 발생했습니다"
+        message="잠시 후 다시 시도해주세요"
+        actionLabel="다시 시도"
+        onAction={() => window.location.reload()}
+      />
     )
   }
 

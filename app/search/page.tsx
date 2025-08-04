@@ -42,9 +42,9 @@ export default function SearchPage() {
   const getSupabaseSortBy = (sort: SortOption) => {
     switch (sort) {
       case 'latest': return 'created_at'
-      case 'price_low': return 'sale_price'
-      case 'price_high': return 'sale_price'
-      case 'popular': return 'created_at' // Using created_at as fallback since views not available in searchHotDeals
+      case 'price_low': return 'price'
+      case 'price_high': return 'price'
+      case 'popular': return 'view_count'
       default: return 'created_at'
     }
   }

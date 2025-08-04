@@ -14,6 +14,38 @@
    - 모든 함수 매개변수와 반환값에 명시적 타입 지정
    - strict mode 준수
 
+## **⚠️ 진행 상황 실시간 업데이트 지침 (MANDATORY)**
+**각 작업 완료 시 반드시 마이그레이션 문서를 즉시 업데이트해야 합니다.**
+
+### 업데이트 대상 문서
+- 📄 **`docs/supabase-migration-optimized.md`** - 모든 작업 진행 상황 기록
+
+### 업데이트 규칙
+1. **즉시 업데이트**: 각 파일 작업 완료 즉시 문서 업데이트 (작업 후 5분 이내)
+2. **진행률 계산**: 완료된 작업 기준으로 전체 진행률 % 재계산
+3. **체크리스트 업데이트**: 완료된 항목에 [x] 표시
+4. **타임스탬프 기록**: 완료 날짜와 시간 기록 (YYYY-MM-DD HH:mm)
+5. **이슈 기록**: 발견된 문제나 추가 필요 작업 기록
+
+### 업데이트 형식
+```markdown
+## 📊 현재 상태 대시보드 (2025-08-04)
+전체 진행률: ████████████████████░ 96% 완료
+
+### ✅ Task 1: search-results.tsx 마이그레이션 (45분)
+- [x] 완료 시간: 2025-08-04 14:30
+- 이슈: useSearchHotDeals 훅에서 필터 타입 수정 필요
+- 추가 작업: 검색 결과 페이지네이션 개선 검토
+```
+
+### 업데이트 시점
+- ✅ 파일 마이그레이션 완료 시
+- ✅ 주요 버그 수정 시
+- ✅ 새로운 이슈 발견 시
+- ✅ 전체 Wave 완료 시
+
+**중요**: 이 지침을 따르지 않으면 다음 작업자가 부정확한 정보로 작업하게 됩니다!
+
 ## **⚠️ 핵심 원칙 - 절대 준수 사항**
 **절대로 새로운 테이블을 생성하지 마세요!**
 - 모든 필요한 테이블은 이미 Supabase에 생성되어 있습니다
@@ -22,6 +54,31 @@
 - 프로젝트 코드를 Supabase 테이블 구조에 맞춰 수정하세요
 - 모든 데이터는 LocalStorage를 거치지 않고 바로 Supabase와 연동
 - 충돌, 오류, 누락, 미스매치가 발생하지 않도록 100% 완벽한 데이터 매핑 필수
+
+## **📚 Supabase 마이그레이션 참조**
+**Supabase 마이그레이션 작업 시 반드시 아래 문서를 참조하세요:**
+- **마이그레이션 마스터 플랜**: `docs/supabase-migration-optimized.md`
+- **현재 진행률**: 95% 완료 (3개 파일만 남음)
+- **남은 작업**: search-results.tsx, dashboard-stats.tsx, recent-posts.tsx
+
+## **⚠️ 필수 문서 참조 지침 (MANDATORY)**
+**문서 참조 시 혼동을 방지하기 위한 필수 지침입니다.**
+
+### 유일한 기준 문서
+- ✅ **`docs/supabase-migration-optimized.md`** - 현재 상태의 유일한 정확한 문서
+  - 최종 업데이트: 2025-08-04
+  - 현재 진행률: 95% 완료
+  - 남은 작업: 3개 파일만 (search-results.tsx, dashboard-stats.tsx, recent-posts.tsx)
+
+### 참조 금지 문서들 (DEPRECATED)
+다음 문서들은 오래된 정보를 포함하고 있어 혼동을 유발합니다:
+- ❌ **`docs/DB.md`** - 오래된 정보 (테이블이 아직 생성되지 않은 것처럼 기술)
+- ❌ **`docs/TODO.md`** - 삭제됨 (시대착오적 태스크 목록)
+- ❌ **`docs/tasklist.md`** - 삭제됨 (중복된 오래된 정보)
+- ❌ **`docs/supabase-migration-master-plan.md`** - 아카이브됨 (과도하게 상세한 과거 계획)
+- ⚠️ **`docs/supabase-migration-phase1-summary.md`** - 완료된 단계 (현재 Phase 5 진행 중)
+
+**중요**: 위 문서들을 참조하면 현재 상태(95% 완료)와 맞지 않는 정보로 인해 심각한 혼동이 발생합니다!
 
 ## 🔧 프로젝트 환경 설정
 
@@ -135,16 +192,13 @@ This is a Next.js 15 application using App Router with a custom local storage da
 ```
 
 ### Database Layer
-The application is migrating from LocalStorage to Supabase:
-- **마이그레이션 진행률**: **Wave 1-4 완료** (42시간 소요) - 사용자 인증, Buy-for-me, 커뮤니티, 시스템 설정 완료
 - **BaseRepository** (`lib/db/local/repositories/base-repository.ts`): Abstract base class providing CRUD operations
 - **Entity Repositories**: Extend BaseRepository for User, Post, Comment, HotDeal, Order, Payment entities
 - **Database Service** (`lib/db/database-service.ts`): Singleton that exports repository instances
 - **Storage Layer** (`lib/db/storage.ts`): LocalStorage wrapper (임시 사용 중, 향후 제거 예정)
 - **Auto-initialization**: Mock data automatically initializes on first load via `initializeMockData()`
 - **Supabase Services**: New services in `lib/services/supabase-*.ts` for migrated features
-- **Migration Status**: Wave 1-4 완료 (Auth, Buy-for-me, Community, System) - Wave 5(Hot Deals 검증) 진행 예정
-- **실제 Supabase 테이블**: 18개 테이블 (admin_activity_logs, comment_likes, crawling_logs, hot_deal_comments, hot_deal_likes, hot_deals, hotdeal_translations, notifications, order_status_history, payments, proxy_purchase_addresses, proxy_purchase_quotes, proxy_purchases_request, system_settings, user_addresses, user_favorite_hotdeals, user_profiles, users)
+- **🔗 Supabase 마이그레이션**: 상세 정보는 `docs/supabase-migration-optimized.md` 참조
 
 ### State Management Architecture
 - **Global State**: Jotai atoms in `states/` directory (auth, UI state)
@@ -177,11 +231,11 @@ HiKo is a platform helping foreigners shop online in Korea:
 
 ### Key Technical Decisions
 - **No API Routes**: Use Server Actions in `actions/` directory instead
-- **Database Migration**: LocalStorage → Supabase 전환 진행 중 (Wave 1-4 완료, Wave 5-7 진행 예정)
+- **Database Migration**: LocalStorage → Supabase 전환 진행 중 (상세 진행 상황은 `docs/supabase-migration-optimized.md` 참조)
 - **Repository Pattern**: Enables easy database transition
 - **Server Components**: For SEO-critical pages (hot deals list, detail pages)
 - **Image Optimization**: Next.js Image with external domain support and 7-day caching
-- **USE_SUPABASE Flag**: 임시 플래그 - 마이그레이션 완료 후 제거 예정
+- **USE_SUPABASE Flag**: 임시 플래그 - 마이그레이션 완료 후 제거 예정 (`docs/supabase-migration-optimized.md` 참조)
 
 ## Development Guidelines
 
@@ -309,8 +363,7 @@ These rules are derived from shrimp-rules.md and must be followed:
 - **Client Components**: Never access Repository directly
 - **Hardcoded Text**: All user-facing text must use translation system
 - **Image Handling**: Use Next.js Image component with proper dimensions
-- **Migration Ready**: Repository pattern enables Supabase migration (Wave 1-4 완료)
-- **Critical Issues**: database.types.ts는 실제로 완전함 (1046줄, 모든 타입 정의), buy-for-me-modal Supabase 전환 완료
+- **Supabase Migration Details**: 현재 진행 상황 및 작업 내역은 `docs/supabase-migration-optimized.md` 참조
 
 ## Hotdeal Crawling System
 

@@ -1,3 +1,10 @@
+# ⚠️ ARCHIVED - Phase 1 완료 (현재 Phase 5 진행 중)
+
+**현재 진행률**: 95% 완료
+**최신 문서**: `docs/supabase-migration-optimized.md`
+
+---
+
 # Phase 1: 사용자 프로필 & 주소 시스템 구현 완료
 
 ## 구현 내용

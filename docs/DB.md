@@ -1,3 +1,10 @@
+# ⚠️ COMPLETED - 이 문서는 오래된 정보입니다
+
+**현재 상태**: 모든 18개 테이블이 Supabase에 생성 완료됨
+**참조 문서**: `docs/supabase-migration-optimized.md`
+
+---
+
 # DB 구현 가이드 - 의존성 기반 점진적 구현 순서
 
 ## 사용 가이드
