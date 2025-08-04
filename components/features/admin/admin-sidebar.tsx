@@ -12,7 +12,8 @@ import {
   Database,
   BarChart3,
   Users,
-  Settings
+  Settings,
+  Activity
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 
@@ -49,6 +50,11 @@ const navigationGroups = [
         name: '통계 분석',
         href: '/admin/analytics',
         icon: BarChart3
+      },
+      {
+        name: '핫딜 Analytics',
+        href: '/admin/hotdeal-analytics',
+        icon: Activity
       },
       {
         name: '사용자 관리',

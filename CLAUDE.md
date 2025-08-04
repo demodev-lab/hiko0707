@@ -136,7 +136,7 @@ This is a Next.js 15 application using App Router with a custom local storage da
 
 ### Database Layer
 The application is migrating from LocalStorage to Supabase:
-- **마이그레이션 진행률**: **Wave 1-4 완료** (34시간 소요) - 사용자 인증, Buy-for-me, 커뮤니티, 시스템 설정 완료
+- **마이그레이션 진행률**: **Wave 1-4 완료** (42시간 소요) - 사용자 인증, Buy-for-me, 커뮤니티, 시스템 설정 완료
 - **BaseRepository** (`lib/db/local/repositories/base-repository.ts`): Abstract base class providing CRUD operations
 - **Entity Repositories**: Extend BaseRepository for User, Post, Comment, HotDeal, Order, Payment entities
 - **Database Service** (`lib/db/database-service.ts`): Singleton that exports repository instances
@@ -310,7 +310,7 @@ These rules are derived from shrimp-rules.md and must be followed:
 - **Hardcoded Text**: All user-facing text must use translation system
 - **Image Handling**: Use Next.js Image component with proper dimensions
 - **Migration Ready**: Repository pattern enables Supabase migration (Wave 1-4 완료)
-- **Critical Issues**: database.types.ts는 실제로 완전함 (922줄, 모든 타입 정의), buy-for-me-modal Supabase 전환 완료
+- **Critical Issues**: database.types.ts는 실제로 완전함 (1046줄, 모든 타입 정의), buy-for-me-modal Supabase 전환 완료
 
 ## Hotdeal Crawling System
 
