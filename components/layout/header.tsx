@@ -12,7 +12,8 @@ import { Input } from '@/components/ui/input'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { languages } from '@/lib/i18n/config'
-import { useAuth } from '@/hooks/use-auth'
+import { useSupabaseUser } from '@/hooks/use-supabase-user'
+import { useClerkRole } from '@/hooks/use-clerk-role'
 import { useRouter, usePathname } from 'next/navigation'
 import { ShowForRole, RoleBasedContent } from '@/components/auth/role-based-content'
 import { SignInButton, SignUpButton, SignedIn, SignedOut, UserButton } from '@clerk/nextjs'
@@ -24,7 +25,8 @@ export function Header() {
   const [userMenuOpen, setUserMenuOpen] = useState(false)
   const [isHeaderVisible, setIsHeaderVisible] = useState(true)
   const [lastScrollY, setLastScrollY] = useState(0)
-  const { currentUser, logout, isAuthenticated, isLoading } = useAuth()
+  const { user: currentUser, isLoading } = useSupabaseUser()
+  const { isAuthenticated, isAdmin } = useClerkRole()
   const router = useRouter()
   const pathname = usePathname()
   const langMenuRef = useRef<HTMLDivElement>(null)
@@ -116,6 +118,7 @@ export function Header() {
       className={`fixed top-0 left-0 right-0 z-50 w-full bg-white/95 dark:bg-gray-900/95 backdrop-blur supports-[backdrop-filter]:bg-white/60 supports-[backdrop-filter]:dark:bg-gray-900/60 border-b border-gray-200 dark:border-gray-800 transition-all duration-300 ${
         isHeaderVisible ? 'translate-y-0 opacity-100' : '-translate-y-full opacity-0'
       }`}
+      style={{ WebkitTransform: isHeaderVisible ? 'translateY(0)' : 'translateY(-100%)', transform: isHeaderVisible ? 'translateY(0)' : 'translateY(-100%)' }}
     >
       <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-12">
         <div className="flex items-center h-14 md:h-16 gap-2 md:gap-4 lg:gap-8 justify-between">
@@ -179,6 +182,8 @@ export function Header() {
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="pl-10 pr-4 w-full"
+                  aria-label="핫딜 검색"
+                  role="searchbox"
                 />
               </div>
             </form>
@@ -192,17 +197,27 @@ export function Header() {
               {currentUser?.role !== 'admin' && (
                 <div className="relative" ref={langMenuRef}>
                   <Button 
+                    id="language-button"
                     variant="ghost" 
                     size="sm" 
                     className="flex items-center gap-1 px-2"
                     onClick={() => setLangMenuOpen(!langMenuOpen)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault()
+                        setLangMenuOpen(!langMenuOpen)
+                      }
+                    }}
+                    aria-label="언어 선택"
+                    aria-expanded={langMenuOpen}
+                    aria-haspopup="menu"
                   >
                     <Languages className="w-4 h-4" />
                     <span className="text-sm font-medium">{currentLang.code.toUpperCase()}</span>
                     <ChevronDown className="w-3 h-3" />
                   </Button>
                   {langMenuOpen && (
-                    <Card className="absolute right-0 top-full mt-1 w-40 py-1 shadow-lg z-50">
+                    <Card className="absolute right-0 top-full mt-1 w-40 py-1 shadow-lg z-50" role="menu" aria-labelledby="language-button">
                       {languages.map((lang) => (
                         <button
                           key={lang.code}
@@ -210,9 +225,18 @@ export function Header() {
                             console.log('Language changed to:', lang.code)
                             setLangMenuOpen(false)
                           }}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter' || e.key === ' ') {
+                              e.preventDefault()
+                              console.log('Language changed to:', lang.code)
+                              setLangMenuOpen(false)
+                            }
+                          }}
                           className={`w-full px-3 py-2 text-left text-sm hover:bg-gray-100 dark:hover:bg-gray-800 flex items-center ${
                             currentLang.code === lang.code ? 'bg-blue-50 dark:bg-blue-900/20' : ''
                           }`}
+                          role="menuitem"
+                          aria-current={currentLang.code === lang.code ? 'true' : 'false'}
                         >
                           <span className="mr-2 text-lg">{lang.flag}</span>
                           <span className="text-sm">{lang.code.toUpperCase()}</span>
@@ -247,6 +271,7 @@ export function Header() {
                       searchInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
                     }
                   }}
+                  aria-label="검색"
                 >
                   <Search className="w-5 h-5" />
                 </Button>
@@ -294,6 +319,7 @@ export function Header() {
               size="sm"
               className="md:hidden relative p-2.5"
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              aria-label={isMobileMenuOpen ? "메뉴 닫기" : "메뉴 열기"}
             >
               {isMobileMenuOpen ? (
                 <X className="w-5 h-5" />
@@ -326,6 +352,8 @@ export function Header() {
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
                       className="pl-9 pr-4 h-9 text-sm bg-white dark:bg-gray-900 border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      aria-label="핫딜 검색"
+                      role="searchbox"
                     />
                   </div>
                   
@@ -350,6 +378,7 @@ export function Header() {
                             }
                           }
                         }}
+                        aria-label="필터 설정"
                       >
                         <SlidersHorizontal className="w-4 h-4" />
                         <span className="text-xs font-medium">필터</span>

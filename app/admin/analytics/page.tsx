@@ -2,9 +2,17 @@ import { Metadata } from 'next'
 import { redirect } from 'next/navigation'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { db } from '@/lib/db/database-service'
+import { SupabaseUserService } from '@/lib/services/supabase-user-service'
+import { SupabaseOrderService } from '@/lib/services/supabase-order-service'
+import { SupabaseHotDealService } from '@/lib/services/supabase-hotdeal-service'
 import { BarChart, TrendingUp, Users, Package, DollarSign, Eye, Calendar } from 'lucide-react'
 import { isAdmin } from '@/utils/roles'
+import type { Database } from '@/database.types'
+
+type UserRow = Database['public']['Tables']['users']['Row']
+type OrderRow = Database['public']['Tables']['proxy_purchases_request']['Row']
+type HotDealRow = Database['public']['Tables']['hot_deals']['Row']
+type PaymentRow = Database['public']['Tables']['payments']['Row']
 
 export const metadata: Metadata = {
   title: '통계 분석 - HiKo Admin',
@@ -17,35 +25,40 @@ export default async function AdminAnalyticsPage() {
   if (!hasAdminRole) {
     redirect('/')
   }
+  // 통계용 데이터 최적화 - 필요한 데이터만 가져오기
   const [users, orders, hotdeals, payments] = await Promise.all([
-    db.users.findAll(),
-    db.orders.findAll(),
-    db.hotdeals.findAll(),
-    db.payments.findAll()
+    SupabaseUserService.getAllUsers({ limit: 5000 }), // 최대 5000명으로 제한
+    SupabaseOrderService.getAllOrders({ limit: 2000 }), // 최대 2000개 주문으로 제한  
+    SupabaseHotDealService.getAllHotdeals({ limit: 1000 }), // 최대 1000개 핫딜으로 제한
+    SupabaseOrderService.getAllPayments() // 결제 데이터는 상대적으로 적으므로 유지
   ])
 
   // 월별 통계 계산
   const monthlyStats = Array.from({ length: 12 }, (_, i) => {
     const month = new Date(2024, i, 1)
-    const monthOrders = orders.filter(o => 
-      new Date(o.createdAt).getMonth() === i && 
-      new Date(o.createdAt).getFullYear() === 2024
+    const monthOrders = orders.filter((o: OrderRow) => 
+      new Date(o.created_at).getMonth() === i && 
+      new Date(o.created_at).getFullYear() === 2024
     )
-    const monthUsers = users.filter(u => 
-      new Date(u.createdAt).getMonth() === i && 
-      new Date(u.createdAt).getFullYear() === 2024
+    const monthUsers = users.filter((u: UserRow) => 
+      new Date(u.created_at).getMonth() === i && 
+      new Date(u.created_at).getFullYear() === 2024
     )
     
     return {
       month: month.toLocaleDateString('ko-KR', { month: 'long' }),
       orders: monthOrders.length,
       users: monthUsers.length,
-      revenue: monthOrders.reduce((sum, o) => sum + o.totalAmount, 0)
+      revenue: monthOrders.reduce((sum: number, o: any) => {
+        const quotes = o.quotes || []
+        const totalAmount = quotes.length > 0 ? quotes[0].total_amount : 0
+        return sum + (Number(totalAmount) || 0)
+      }, 0)
     }
   })
 
   // 카테고리별 핫딜 통계
-  const categoryStats = hotdeals.reduce((acc, hotdeal) => {
+  const categoryStats = hotdeals.reduce((acc: Record<string, number>, hotdeal: HotDealRow) => {
     const category = hotdeal.category || 'other'
     acc[category] = (acc[category] || 0) + 1
     return acc
@@ -53,15 +66,23 @@ export default async function AdminAnalyticsPage() {
 
   // 인기 핫딜 TOP 5
   const topHotdeals = hotdeals
-    .sort((a, b) => (b.viewCount || 0) - (a.viewCount || 0))
+    .sort((a: HotDealRow, b: HotDealRow) => (Number(b.views) || 0) - (Number(a.views) || 0))
     .slice(0, 5)
 
   const stats = {
     totalUsers: users.length,
     totalOrders: orders.length,
-    totalRevenue: orders.reduce((sum, o) => sum + o.totalAmount, 0),
-    totalViews: hotdeals.reduce((sum, h) => sum + (h.viewCount || 0), 0),
-    avgOrderValue: orders.length > 0 ? orders.reduce((sum, o) => sum + o.totalAmount, 0) / orders.length : 0,
+    totalRevenue: orders.reduce((sum: number, o: any) => {
+      const quotes = o.quotes || []
+      const totalAmount = quotes.length > 0 ? quotes[0].total_amount : 0
+      return sum + (Number(totalAmount) || 0)
+    }, 0),
+    totalViews: hotdeals.reduce((sum: number, h: HotDealRow) => sum + (Number(h.views) || 0), 0),
+    avgOrderValue: orders.length > 0 ? orders.reduce((sum: number, o: any) => {
+      const quotes = o.quotes || []
+      const totalAmount = quotes.length > 0 ? quotes[0].total_amount : 0
+      return sum + (Number(totalAmount) || 0)
+    }, 0) / orders.length : 0,
     conversionRate: users.length > 0 ? (orders.length / users.length) * 100 : 0
   }
 
@@ -195,7 +216,7 @@ export default async function AdminAnalyticsPage() {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {Object.entries(categoryStats).map(([category, count]) => (
+                {Object.entries(categoryStats).map(([category, count]: [string, number]) => (
                   <div key={category} className="flex items-center justify-between">
                     <span className="capitalize">{category}</span>
                     <div className="flex items-center gap-3">
@@ -221,7 +242,7 @@ export default async function AdminAnalyticsPage() {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {topHotdeals.map((hotdeal, index) => (
+              {topHotdeals.map((hotdeal: HotDealRow, index: number) => (
                 <div key={hotdeal.id} className="flex items-center gap-4 p-4 bg-gray-50 rounded-lg">
                   <div className="w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center font-bold">
                     {index + 1}
@@ -233,7 +254,7 @@ export default async function AdminAnalyticsPage() {
                     </p>
                   </div>
                   <div className="text-right">
-                    <p className="font-bold text-lg">{(hotdeal.viewCount || 0).toLocaleString()}</p>
+                    <p className="font-bold text-lg">{(Number(hotdeal.views) || 0).toLocaleString()}</p>
                     <p className="text-sm text-gray-600">조회수</p>
                   </div>
                 </div>

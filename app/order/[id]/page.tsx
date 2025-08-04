@@ -1,8 +1,7 @@
 'use client'
 
-import { useEffect, useState } from 'react'
 import { useParams } from 'next/navigation'
-import { db } from '@/lib/db/database-service'
+import { useSupabaseOrderDetail } from '@/hooks/use-supabase-order'
 import { Order } from '@/types/order'
 import { OrderTracking } from '@/components/features/order/order-tracking'
 import { ProtectedRoute } from '@/components/features/auth/protected-route'
@@ -23,26 +22,12 @@ import { toast } from 'sonner'
 
 export default function OrderDetailPage() {
   const params = useParams()
-  const [order, setOrder] = useState<Order | null>(null)
-  const [loading, setLoading] = useState(true)
+  const { order, isLoading: loading, error } = useSupabaseOrderDetail(params.id as string)
 
-  useEffect(() => {
-    async function loadOrder() {
-      if (!params.id || typeof params.id !== 'string') return
-      
-      try {
-        const orderData = await db.orders.findById(params.id)
-        setOrder(orderData)
-      } catch (error) {
-        console.error('Failed to load order:', error)
-        toast.error('주문 정보를 불러올 수 없습니다')
-      } finally {
-        setLoading(false)
-      }
-    }
-    
-    loadOrder()
-  }, [params.id])
+  if (error) {
+    console.error('Failed to load order:', error)
+    toast.error('주문 정보를 불러올 수 없습니다')
+  }
 
   const copyOrderNumber = () => {
     if (order) {
@@ -81,7 +66,7 @@ export default function OrderDetailPage() {
     return <Loading message="주문 정보를 불러오는 중..." />
   }
 
-  if (!order) {
+  if (error || !order) {
     return (
       <div className="container mx-auto py-16 text-center">
         <AlertCircle className="w-16 h-16 mx-auto mb-4 text-gray-400" />

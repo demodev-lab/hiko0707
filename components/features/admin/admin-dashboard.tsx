@@ -18,7 +18,7 @@ import {
 } from 'lucide-react'
 import { Order } from '@/types/order'
 import { StatsCard } from '@/components/features/admin/stats-card'
-import { useBuyForMeAdmin } from '@/hooks/use-buy-for-me'
+import { useSupabaseBuyForMeAdmin } from '@/hooks/use-supabase-buy-for-me'
 import Link from 'next/link'
 
 interface AdminDashboardProps {
@@ -36,7 +36,7 @@ interface AdminDashboardProps {
 
 
 export function AdminDashboard({ stats, recentOrders }: AdminDashboardProps) {
-  const { allRequests } = useBuyForMeAdmin()
+  const { allRequests } = useSupabaseBuyForMeAdmin()
   const [isClient, setIsClient] = useState(false)
   
   useEffect(() => {
@@ -46,8 +46,8 @@ export function AdminDashboard({ stats, recentOrders }: AdminDashboardProps) {
   
   const buyForMeStats = {
     total: allRequests.length,
-    pending: allRequests.filter(r => r.status === 'pending_review').length,
-    active: allRequests.filter(r => ['quote_sent', 'quote_approved', 'payment_pending', 'payment_completed', 'purchasing', 'shipping'].includes(r.status)).length
+    pending: allRequests.filter((r: any) => r.status === 'pending_review').length,
+    active: allRequests.filter((r: any) => ['quote_sent', 'quote_approved', 'payment_pending', 'payment_completed', 'purchasing', 'shipping'].includes(r.status)).length
   }
 
   // 안전한 포맷팅 함수들
@@ -181,7 +181,7 @@ export function AdminDashboard({ stats, recentOrders }: AdminDashboardProps) {
                   </div>
                 </div>
                 <div className="mt-4 space-y-2">
-                  {allRequests.slice(0, 5).map((request) => (
+                  {allRequests.slice(0, 5).map((request: any) => (
                     <div key={request.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                       <div>
                         <p className="font-medium text-sm">{request.productInfo.title}</p>

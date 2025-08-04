@@ -1,7 +1,8 @@
 'use client'
 
 import { ReactNode } from 'react'
-import { useAuth } from '@/hooks/use-auth'
+import { useClerkRole } from '@/hooks/use-clerk-role'
+import { useSupabaseUser } from '@/hooks/use-supabase-user'
 import { UserRole } from '@/types/user'
 
 interface RoleBasedContentProps {
@@ -17,7 +18,8 @@ export function RoleBasedContent({
   admin,
   fallback
 }: RoleBasedContentProps) {
-  const { currentUser, isAuthenticated } = useAuth()
+  const { isAuthenticated, isAdmin } = useClerkRole()
+  const { user: currentUser } = useSupabaseUser()
   
   // 비로그인 상태 (Guest)
   if (!isAuthenticated || !currentUser) {
@@ -25,13 +27,12 @@ export function RoleBasedContent({
   }
   
   // 로그인 상태 - 역할별 콘텐츠 표시
-  switch (currentUser.role) {
-    case 'admin':
-      return <>{admin || member || fallback}</>
-    case 'member':
-      return <>{member || fallback}</>
-    default:
-      return <>{fallback}</>
+  if (isAdmin) {
+    return <>{admin || member || fallback}</>
+  } else if (currentUser.role === 'customer' || currentUser.role === 'member') {
+    return <>{member || fallback}</>
+  } else {
+    return <>{fallback}</>
   }
 }
 
@@ -47,7 +48,8 @@ export function ShowForRole({
   roles,
   includeHigherRoles = true 
 }: ShowForRoleProps) {
-  const { currentUser, isAuthenticated } = useAuth()
+  const { isAuthenticated, isAdmin } = useClerkRole()
+  const { user: currentUser } = useSupabaseUser()
   
   if (!isAuthenticated || !currentUser) {
     // guest를 허용하는 경우
@@ -58,11 +60,11 @@ export function ShowForRole({
   }
   
   // 현재 사용자의 역할이 허용된 역할에 포함되는지 확인
-  const userRole = currentUser.role || 'guest'
+  const userRole = isAdmin ? 'admin' : (currentUser.role || 'guest')
   let hasPermission = roles.includes(userRole)
   
   // includeHigherRoles가 true이고 admin인 경우 모든 권한 허용
-  if (includeHigherRoles && userRole === 'admin' && !roles.includes('admin')) {
+  if (includeHigherRoles && isAdmin && !roles.includes('admin')) {
     hasPermission = true
   }
   
@@ -76,7 +78,8 @@ interface HideForRoleProps {
 }
 
 export function HideForRole({ children, roles }: HideForRoleProps) {
-  const { currentUser, isAuthenticated } = useAuth()
+  const { isAuthenticated, isAdmin } = useClerkRole()
+  const { user: currentUser } = useSupabaseUser()
   
   // 비로그인 상태
   if (!isAuthenticated || !currentUser) {
@@ -88,7 +91,7 @@ export function HideForRole({ children, roles }: HideForRoleProps) {
   }
   
   // 현재 사용자의 역할이 숨겨야 할 역할에 포함되는지 확인
-  const userRole = currentUser.role || 'guest'
+  const userRole = isAdmin ? 'admin' : (currentUser.role || 'guest')
   const shouldHide = roles.includes(userRole)
   
   return shouldHide ? null : <>{children}</>

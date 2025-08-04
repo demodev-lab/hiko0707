@@ -31,7 +31,9 @@ import {
   TrendingUp
 } from 'lucide-react'
 import { toast } from 'sonner'
-import { useHotDeals } from '@/hooks/use-local-db'
+import { useHotDeals } from '@/hooks/use-supabase-hotdeals'
+import { transformSupabaseToLocal, transformLocalToSupabase } from '@/lib/utils/hotdeal-transformers'
+import { SupabaseHotDealService } from '@/lib/services/supabase-hotdeal-service'
 import { useBackendCrawler } from '@/hooks/use-backend-crawler'
 import { CrawlerSource } from '@/lib/crawlers/new-crawler-manager'
 
@@ -60,7 +62,16 @@ export default function HotDealManagerPage() {
   const [crawlHistory, setCrawlHistory] = useState<CrawlHistory[]>([])
   const [jsonFiles, setJsonFiles] = useState<string[]>([])
   
-  const { hotdeals, refetch: refetchHotDeals } = useHotDeals()
+  // Supabase 데이터 가져오기
+  const { data: supabaseData, isLoading: hotdealsLoading, error: hotdealsError, refetch: refetchHotDeals } = useHotDeals({
+    limit: 1000, // 충분한 양의 데이터 가져오기
+    sortBy: 'created_at',
+    sortOrder: 'desc'
+  })
+  
+  // LocalStorage 형식으로 변환
+  const hotdeals = supabaseData?.data?.map(transformSupabaseToLocal) || []
+  
   const { 
     crawl, 
     isLoading: isCrawling, 
@@ -188,7 +199,7 @@ export default function HotDealManagerPage() {
     }
   }
 
-  // JSON 파일 가져오기
+  // JSON 파일 가져오기 - Supabase로 import
   const handleImportJson = async (filename: string) => {
     try {
       // 파일 읽기
@@ -199,22 +210,47 @@ export default function HotDealManagerPage() {
         throw new Error('잘못된 JSON 형식')
       }
       
-      // localStorage에 저장 - 안전한 데이터 처리
-      const newHotdeals = data.hotdeals.map((deal: any, index: number) => ({
-        ...deal,
-        id: `hotdeals_${Date.now()}_${index}_${Math.random().toString(36).substr(2, 9)}`,
-        // 필수 필드 기본값 설정
-        communityCommentCount: deal.communityCommentCount || 0,
-        communityRecommendCount: deal.communityRecommendCount || 0,
-        viewCount: deal.viewCount || 0,
-        price: deal.price || 0,
-        crawledAt: deal.crawledAt || deal.postDate || new Date().toISOString()
-      }))
+      // Supabase로 데이터 임포트
+      let importedCount = 0
+      let skippedCount = 0
       
-      localStorage.setItem('hiko_hotdeals', JSON.stringify(newHotdeals))
+      for (const deal of data.hotdeals) {
+        // 소스와 소스ID로 중복 체크
+        const isDuplicate = await SupabaseHotDealService.checkDuplicate(
+          deal.source || 'unknown',
+          deal.sourceId || deal.id
+        )
+        
+        if (isDuplicate) {
+          skippedCount++
+          continue
+        }
+        
+        // 데이터 변환 및 저장
+        const transformedDeal = transformLocalToSupabase({
+          ...deal,
+          id: deal.id || `hotdeals_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+          communityCommentCount: deal.communityCommentCount || 0,
+          communityRecommendCount: deal.communityRecommendCount || 0,
+          viewCount: deal.viewCount || 0,
+          price: deal.price || 0,
+          crawledAt: deal.crawledAt || deal.postDate || new Date().toISOString(),
+          source: deal.source || 'imported',
+          sourceId: deal.sourceId || deal.id
+        })
+        
+        const result = await SupabaseHotDealService.createHotDeal(transformedDeal)
+        if (result) {
+          importedCount++
+        }
+      }
+      
       await refetchHotDeals()
       
-      toast.success(`${newHotdeals.length}개의 핫딜을 가져왔습니다`)
+      toast.success(
+        `${importedCount}개의 핫딜을 가져왔습니다` + 
+        (skippedCount > 0 ? ` (${skippedCount}개 중복 제외)` : '')
+      )
     } catch (error) {
       toast.error('JSON 가져오기 실패')
       console.error(error)
@@ -243,13 +279,28 @@ export default function HotDealManagerPage() {
     }
   }
 
-  // 모든 데이터 삭제
+  // 모든 데이터 삭제 - Supabase에서 soft delete
   const handleClearAll = async () => {
     if (!confirm('정말로 모든 핫딜 데이터를 삭제하시겠습니까?')) return
     
-    localStorage.setItem('hiko_hotdeals', JSON.stringify([]))
-    await refetchHotDeals()
-    toast.success('모든 데이터가 삭제되었습니다')
+    try {
+      // 현재 활성 핫딜들을 가져와서 삭제
+      let deletedCount = 0
+      const activeDeals = hotdeals.filter(h => h.status === 'active')
+      
+      for (const deal of activeDeals) {
+        const success = await SupabaseHotDealService.deleteHotDeal(deal.id)
+        if (success) {
+          deletedCount++
+        }
+      }
+      
+      await refetchHotDeals()
+      toast.success(`${deletedCount}개의 핫딜이 삭제되었습니다`)
+    } catch (error) {
+      toast.error('데이터 삭제 중 오류가 발생했습니다')
+      console.error(error)
+    }
   }
 
   // 초기 로드
@@ -274,6 +325,20 @@ export default function HotDealManagerPage() {
 
   // 크롤링 진행률 (0-100)
   const crawlProgressValue = crawlProgress?.progress || 0
+
+  // 로딩 상태 처리
+  if (hotdealsLoading) {
+    return (
+      <ProtectedRoute requiredRole="admin">
+        <div className="container mx-auto py-6 space-y-6">
+          <div className="flex justify-center items-center h-64">
+            <RefreshCw className="h-8 w-8 animate-spin text-gray-500" />
+            <span className="ml-2 text-gray-500">핫딜 데이터 로딩 중...</span>
+          </div>
+        </div>
+      </ProtectedRoute>
+    )
+  }
 
   return (
     <ProtectedRoute requiredRole="admin">
@@ -440,7 +505,7 @@ export default function HotDealManagerPage() {
                 {/* 크롤링 소스 */}
                 <div className="space-y-2">
                   <Label>크롤링 소스</Label>
-                  <Select value={selectedSource} onValueChange={setSelectedSource}>
+                  <Select value={selectedSource} onValueChange={(v) => setSelectedSource(v as CrawlerSource)}>
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>

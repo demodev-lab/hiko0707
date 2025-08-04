@@ -1,5 +1,23 @@
 'use client'
 
+/**
+ * @deprecated 이 훅은 더 이상 사용하지 마세요!
+ * 
+ * ⚠️ DEPRECATED: use-hotdeal-comments.ts는 LocalStorage 기반 시스템을 사용합니다.
+ * 
+ * 🔄 대신 사용할 훅:
+ * - useSupabaseHotdealComments() - 완전한 Supabase 기반 댓글 시스템 (hot_deal_comments 테이블)
+ * 
+ * 📋 마이그레이션 가이드:
+ * 기존: const { data: comments } = useHotDealComments(hotdealId)
+ * 신규: const { comments } = useSupabaseHotdealComments(hotdealId)
+ * 
+ * 기존: const { mutate: createComment } = useCreateComment()
+ * 신규: const { createCommentAsync } = useSupabaseHotdealComments(hotdealId)
+ * 
+ * 이 파일은 Phase 4에서 완전히 제거될 예정입니다.
+ */
+
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { db } from '@/lib/db/database-service'
 import { useAuth } from './use-auth'

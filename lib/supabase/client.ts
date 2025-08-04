@@ -43,35 +43,35 @@ export const supabaseAdmin = () => {
 export type Database = {
   public: {
     Tables: {
-      hotdeals: {
+      hot_deals: {
         Row: {
           id: string
           source: string
-          source_post_id: string
+          source_id: string  // source_post_id → source_id로 수정
           category: string
           title: string
           description: string | null
-          original_price: number | null
-          sale_price: number | null
-          discount_rate: number | null
-          delivery_fee: number | null
-          shop_name: string | null
-          url: string
+          original_price: number
+          sale_price: number
+          discount_rate: number
+          thumbnail_url: string | null  // 추가된 필드
           image_url: string | null
-          post_date: string
-          is_hot: boolean
-          is_expired: boolean
-          is_nsfw: boolean
-          view_count: number
-          community_recommend_count: number
-          community_comment_count: number
+          original_url: string
+          seller: string | null
+          is_free_shipping: boolean
           status: string
-          crawled_at: string
+          end_date: string | null
+          views: number
+          comment_count: number
+          like_count: number
+          author_name: string | null
+          shopping_comment: string | null
           created_at: string
           updated_at: string
+          deleted_at: string | null
         }
-        Insert: Omit<Database['public']['Tables']['hotdeals']['Row'], 'id' | 'created_at' | 'updated_at'>
-        Update: Partial<Database['public']['Tables']['hotdeals']['Insert']>
+        Insert: Omit<Database['public']['Tables']['hot_deals']['Row'], 'id'>
+        Update: Partial<Database['public']['Tables']['hot_deals']['Insert']>
       }
       crawler_jobs: {
         Row: {

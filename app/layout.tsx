@@ -9,8 +9,8 @@ import { MobileNavV2 } from '@/components/layout/mobile-nav-v2'
 import { SkipLinks } from '@/components/common/skip-links'
 import { Toaster } from 'sonner'
 import { WebsiteJsonLd, OrganizationJsonLd } from '@/components/seo/json-ld'
-import { StagewiseToolbar } from '@stagewise/toolbar-next'
-import ReactPlugin from '@stagewise-plugins/react'
+// import { StagewiseToolbar } from '@stagewise/toolbar-next'
+// import ReactPlugin from '@stagewise-plugins/react'
 import { UserSyncProvider } from '@/components/auth/user-sync-provider'
 
 const inter = Inter({ subsets: ['latin'] })
@@ -81,7 +81,7 @@ export default function RootLayout({
               <Toaster richColors position="top-center" />
             </UserSyncProvider>
           </Providers>
-          <StagewiseToolbar config={{ plugins: [ReactPlugin] }} />
+          {/* <StagewiseToolbar config={{ plugins: [ReactPlugin] }} /> */}
         </body>
       </html>
     </ClerkProvider>

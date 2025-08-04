@@ -1,5 +1,20 @@
 'use client'
 
+/**
+ * @deprecated 이 훅은 더 이상 사용하지 마세요!
+ * 
+ * ⚠️ DEPRECATED: use-buy-for-me.ts는 LocalStorage 기반 시스템을 사용합니다.
+ * 
+ * 🔄 대신 사용할 훅:
+ * - useSupabaseBuyForMe() - 완전한 Supabase 기반 대리구매 시스템
+ * 
+ * 📋 마이그레이션 가이드:
+ * 기존: const { requests, createRequest, cancelRequest } = useBuyForMe()
+ * 신규: const { requests, createRequest, cancelRequest } = useSupabaseBuyForMe()
+ * 
+ * 이 파일은 Phase 4에서 완전히 제거될 예정입니다.
+ */
+
 import { useState, useCallback, useEffect } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { db } from '@/lib/db/database-service'

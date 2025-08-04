@@ -13,16 +13,26 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { formatDistanceToNow } from 'date-fns'
 import { ko } from 'date-fns/locale'
-import { HotDealComment } from '@/lib/db/local/repositories/hotdeal-comment-repository'
+import type { Database } from '@/database.types'
+
+type CommentRow = Database['public']['Tables']['hot_deal_comments']['Row']
+interface NestedComment extends CommentRow {
+  replies?: NestedComment[]
+  user?: {
+    name: string
+    email: string
+    avatar_url?: string
+  }
+}
 import { useAuth } from '@/hooks/use-auth'
-import { useUpdateComment, useDeleteComment, useLikeComment } from '@/hooks/use-hotdeal-comments'
+import { useUpdateComment, useDeleteComment, useLikeComment } from '@/hooks/use-supabase-hotdeal-comments'
 import { CommentForm } from './comment-form'
 import { cn } from '@/lib/utils'
 import { toast } from 'sonner'
 import { Animated, AnimatedButton } from '@/components/ui/animated'
 
 interface CommentItemProps {
-  comment: HotDealComment & { replies?: HotDealComment[] }
+  comment: NestedComment
   hotdealId: string
   level?: number
 }
@@ -32,15 +42,17 @@ export function CommentItem({ comment, hotdealId, level = 0 }: CommentItemProps)
   const [isEditing, setIsEditing] = useState(false)
   const [isReplying, setIsReplying] = useState(false)
   const [editContent, setEditContent] = useState(comment.content)
-  const isLiked = currentUser && comment.likedByUsers?.includes(currentUser.id) || false
+  // TODO: Supabase에서는 좋아요 상태를 별도로 관리하므로 추후 구현 필요
+  const isLiked = false // 임시로 false 설정
   
   const updateComment = useUpdateComment()
   const deleteComment = useDeleteComment()
   const likeComment = useLikeComment()
   
-  const isOwner = currentUser?.id === comment.userId
+  const isOwner = currentUser?.id === comment.user_id
   const userName = comment.user?.name || 'Anonymous'
   const userInitial = userName.charAt(0).toUpperCase()
+  const userAvatar = comment.user?.avatar_url
   
   const handleUpdate = async () => {
     if (!editContent.trim()) return
@@ -90,7 +102,7 @@ export function CommentItem({ comment, hotdealId, level = 0 }: CommentItemProps)
     >
       <div className="flex gap-3">
         <Avatar className="w-8 h-8 flex-shrink-0">
-          <AvatarImage src={comment.user?.image} />
+          <AvatarImage src={userAvatar} />
           <AvatarFallback>{userInitial}</AvatarFallback>
         </Avatar>
         
@@ -99,17 +111,17 @@ export function CommentItem({ comment, hotdealId, level = 0 }: CommentItemProps)
             <div className="flex items-center gap-2">
               <span className="font-medium text-sm">{userName}</span>
               <span className="text-xs text-gray-500">
-                {formatDistanceToNow(new Date(comment.createdAt), { 
+                {formatDistanceToNow(new Date(comment.created_at), { 
                   locale: ko, 
                   addSuffix: true 
                 })}
               </span>
-              {comment.updatedAt > comment.createdAt && (
+              {comment.updated_at && new Date(comment.updated_at) > new Date(comment.created_at) && (
                 <span className="text-xs text-gray-400">(수정됨)</span>
               )}
             </div>
             
-            {isOwner && !comment.isDeleted && (
+            {isOwner && !comment.is_deleted && (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" size="icon" className="h-6 w-6">
@@ -167,7 +179,7 @@ export function CommentItem({ comment, hotdealId, level = 0 }: CommentItemProps)
                 {comment.content}
               </p>
               
-              {!comment.isDeleted && (
+              {!comment.is_deleted && (
                 <div className="flex items-center gap-4 pt-1">
                   <AnimatedButton
                     variant="ghost"
@@ -189,9 +201,9 @@ export function CommentItem({ comment, hotdealId, level = 0 }: CommentItemProps)
                     />
                     <span className={cn(
                       "transition-all",
-                      comment.likeCount > 0 ? "opacity-100" : "opacity-0"
+                      comment.like_count > 0 ? "opacity-100" : "opacity-0"
                     )}>
-                      {comment.likeCount > 0 && comment.likeCount}
+                      {comment.like_count > 0 && comment.like_count}
                     </span>
                   </AnimatedButton>
                   

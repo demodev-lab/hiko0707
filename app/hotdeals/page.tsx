@@ -6,7 +6,8 @@ import { TrendingUp, Zap } from 'lucide-react'
 import { Card } from '@/components/ui/card'
 import { HotDealsClient } from './hotdeals-client'
 import { HotDeal } from '@/types/hotdeal'
-import { useHotDeals } from '@/hooks/use-local-db'
+import { useHotDeals } from '@/hooks/use-supabase-hotdeals'
+import { transformSupabaseToLocal } from '@/lib/utils/hotdeal-transformers'
 
 function HotDealsStats({ deals }: { deals: HotDeal[] }) {
   // 3일 이내 핫딜만 활성으로 간주
@@ -59,7 +60,14 @@ function HotDealsStats({ deals }: { deals: HotDeal[] }) {
 }
 
 export default function HotDealsPage() {
-  const { hotdeals, loading, refetch } = useHotDeals()
+  const { data: supabaseHotdeals, isLoading: loading, refetch } = useHotDeals({
+    limit: 100,
+    sortBy: 'created_at',
+    sortOrder: 'desc'
+  })
+
+  // LocalStorage 형식으로 변환
+  const hotdeals = supabaseHotdeals?.data?.map(transformSupabaseToLocal) || []
 
   // 페이지 로드시 데이터 새로고침
   useEffect(() => {

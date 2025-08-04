@@ -1,7 +1,8 @@
 'use client'
 
 import { ReactNode } from 'react'
-import { useAuth } from '@/hooks/use-auth'
+import { useClerkRole } from '@/hooks/use-clerk-role'
+import { useSupabaseUser } from '@/hooks/use-supabase-user'
 import { UserRole } from '@/types/user'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Lock } from 'lucide-react'
@@ -23,7 +24,8 @@ export function RoleGuard({
   showMessage = true,
   redirectTo = '/login'
 }: RoleGuardProps) {
-  const { currentUser, isAuthenticated } = useAuth()
+  const { isAuthenticated, isAdmin } = useClerkRole()
+  const { user: currentUser } = useSupabaseUser()
   
   // 비로그인 상태
   if (!isAuthenticated || !currentUser) {
@@ -47,7 +49,7 @@ export function RoleGuard({
   }
   
   // 권한 확인
-  const userRole = currentUser.role || 'guest'
+  const userRole = isAdmin ? 'admin' : (currentUser.role || 'guest')
   const hasPermission = allowedRoles.includes(userRole)
   
   if (!hasPermission) {

@@ -1,7 +1,26 @@
 'use server'
 
+/**
+ * @deprecated 이 인증 액션들은 마이그레이션 예정입니다!
+ * 
+ * ⚠️ DEPRECATED: auth-actions.ts는 쿠키 기반 인증 시스템을 사용합니다.
+ * 
+ * 🔄 Clerk 기반 인증으로 완전 전환 예정:
+ * - Clerk가 인증과 세션 관리를 처리
+ * - Server Actions 대신 Clerk 훅 사용
+ * 
+ * 📋 현재 상태:
+ * ✅ Database service → SupabaseUserService 마이그레이션 완료
+ * ⏳ Clerk 기반 인증으로 전환 예정 (Phase 4 후반)
+ * 
+ * 새로운 인증 시스템:
+ * - useClerkRole() - 인증 상태
+ * - useSupabaseUser() - 사용자 데이터
+ * - Clerk SignIn/SignUp 컴포넌트
+ */
+
 import { cookies } from 'next/headers'
-import { db } from '@/lib/db/database-service'
+import { SupabaseUserService } from '@/lib/services/supabase-user-service'
 
 export async function loginAction(email: string, password: string) {
   try {
@@ -30,7 +49,7 @@ export async function loginAction(email: string, password: string) {
     }
     
     // Regular user login
-    const user = await db.users.findByEmail(email)
+    const user = await SupabaseUserService.getUserByEmail(email)
     if (!user) {
       return { success: false, error: '등록되지 않은 이메일입니다' }
     }
@@ -74,7 +93,7 @@ export async function checkAuthAction() {
   
   try {
     const userData = JSON.parse(userCookie.value)
-    const user = await db.users.findOne(u => u.id === userData.id)
+    const user = await SupabaseUserService.getUser(userData.id)
     return { authenticated: !!user, user }
   } catch {
     return { authenticated: false, user: null }

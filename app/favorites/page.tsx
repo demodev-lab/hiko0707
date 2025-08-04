@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Heart, Package, Trash2, Eye, MessageCircle, Clock } from 'lucide-react'
 import { useFavorites, useDeleteFavorite } from '@/hooks/use-favorites'
-import { useAuth } from '@/hooks/use-auth'
+import { useClerkRole } from '@/hooks/use-clerk-role'
 import Link from 'next/link'
 import Image from 'next/image'
 import { formatDistanceToNow } from 'date-fns'
@@ -15,7 +15,7 @@ import { ko } from 'date-fns/locale'
 import { Loading } from '@/components/ui/loading'
 
 export default function FavoritesPage() {
-  const { isAuthenticated, currentUser } = useAuth()
+  const { isAuthenticated } = useClerkRole()
   const [activeTab, setActiveTab] = useState<'all' | 'hotdeal' | 'product'>('all')
   
   const { data: favorites = [], isLoading } = useFavorites(

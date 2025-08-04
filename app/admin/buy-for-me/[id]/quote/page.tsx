@@ -22,9 +22,8 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form'
-import { db } from '@/lib/db/database-service'
 import { BuyForMeRequest } from '@/types/buy-for-me'
-import { useBuyForMeAdmin } from '@/hooks/use-buy-for-me'
+import { useSupabaseBuyForMeAdmin, useSupabaseBuyForMe } from '@/hooks/use-supabase-buy-for-me'
 import { toast } from 'sonner'
 import {
   ArrowLeft,
@@ -57,7 +56,8 @@ type QuoteFormData = z.infer<typeof quoteSchema>
 export default function QuoteCreatePage() {
   const params = useParams()
   const router = useRouter()
-    const { updateRequest } = useBuyForMeAdmin()
+  const { createQuote } = useSupabaseBuyForMeAdmin()
+  const { getRequest } = useSupabaseBuyForMe()
   const [request, setRequest] = useState<BuyForMeRequest | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -77,7 +77,7 @@ export default function QuoteCreatePage() {
   useEffect(() => {
     const loadRequest = async () => {
       if (params.id) {
-        const data = await db.buyForMeRequests.findById(params.id as string)
+        const data = await getRequest(params.id as string)
         if (data) {
           setRequest(data)
           // 기본값은 비워두고 관리자가 직접 입력하도록 함
@@ -90,7 +90,7 @@ export default function QuoteCreatePage() {
       }
     }
     loadRequest()
-  }, [params.id, form])
+  }, [params.id, form, getRequest])
 
   const onSubmit = async (data: QuoteFormData) => {
     if (!request) return
@@ -112,22 +112,21 @@ export default function QuoteCreatePage() {
         paymentLink = `https://pay.hiko.kr/checkout/${paymentId}`
       }
 
-      const updatedRequest: BuyForMeRequest = {
-        ...request,
-        status: 'quote_sent',
-        quote: {
-          finalProductPrice: data.finalProductPrice,
-          serviceFee: data.serviceFee,
-          domesticShippingFee: shippingFee,
-          totalAmount,
-          paymentMethod: data.paymentMethod,
-          quoteSentDate: new Date(),
-          paymentLink,
-          notes: data.notes,
-        },
+      const quote = {
+        finalProductPrice: data.finalProductPrice,
+        serviceFee: data.serviceFee,
+        domesticShippingFee: shippingFee,
+        totalAmount,
+        paymentMethod: data.paymentMethod,
+        quoteSentDate: new Date(),
+        paymentLink,
+        notes: data.notes,
       }
 
-      await updateRequest(updatedRequest)
+      await createQuote({
+        requestId: request.id,
+        quote
+      })
       
       toast.success('견적서가 성공적으로 발송되었습니다.')
       

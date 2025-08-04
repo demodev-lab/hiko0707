@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { paymentService } from '@/lib/services/payment-service'
+import { SupabasePaymentService } from '@/lib/services/supabase-payment-service'
 
 // 사용 가능한 결제 방법 조회 API
 export async function GET(request: NextRequest) {
@@ -9,8 +9,8 @@ export async function GET(request: NextRequest) {
     const currency = searchParams.get('currency') || 'KRW'
     const amount = searchParams.get('amount')
 
-    // 결제 방법 목록 조회
-    const paymentMethods = await paymentService.getAvailablePaymentMethods()
+    // Supabase에서 결제 방법 목록 조회
+    const paymentMethods = await SupabasePaymentService.getAvailablePaymentMethods()
 
     // 통화에 따른 필터링
     const filteredMethods = paymentMethods.filter(method => 
@@ -69,7 +69,7 @@ export async function POST(request: NextRequest) {
     const { currency = 'KRW', amount, userLocation, preferredProviders } = body
 
     // 모든 결제 방법 조회
-    const allMethods = await paymentService.getAvailablePaymentMethods()
+    const allMethods = await SupabasePaymentService.getAvailablePaymentMethods()
 
     // 필터링 로직
     let filteredMethods = allMethods.filter(method => method.isActive)

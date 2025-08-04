@@ -1,5 +1,6 @@
-import { auth, clerkClient } from '@clerk/nextjs/server'
+import { auth } from '@clerk/nextjs/server'
 import { NextResponse } from 'next/server'
+import { createServerClient } from '@/lib/supabase/server'
 
 export async function GET() {
   const { userId } = await auth()
@@ -9,11 +10,21 @@ export async function GET() {
   }
   
   try {
-    const client = await clerkClient()
-    const user = await client.users.getUser(userId)
+    const supabase = createServerClient()
     
-    // Private Metadata에서 role 확인
-    const isAdmin = user.privateMetadata?.role === 'admin'
+    // Supabase users 테이블에서 role 확인
+    const { data: user, error } = await supabase
+      .from('users')
+      .select('role')
+      .eq('clerk_user_id', userId)
+      .single()
+    
+    if (error) {
+      console.error('Error checking admin role:', error)
+      return NextResponse.json({ isAdmin: false })
+    }
+    
+    const isAdmin = user?.role === 'admin'
     
     return NextResponse.json({ isAdmin })
   } catch (error) {

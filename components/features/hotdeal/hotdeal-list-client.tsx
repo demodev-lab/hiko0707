@@ -1,12 +1,13 @@
 'use client'
 
-import { useHotDeals } from '@/hooks/use-hotdeals'
+import { useHotDeals } from '@/hooks/use-supabase-hotdeals'
 import { HotDealCard } from './hotdeal-card'
 import { Button } from '@/components/ui/button'
 import { Loader2 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { HotDeal, HotDealCategory } from '@/types/hotdeal'
 import { useLanguage } from '@/lib/i18n/context'
+import { transformSupabaseToLocal } from '@/lib/utils/hotdeal-transformers'
 
 interface HotDealListClientProps {
   initialData: {
@@ -30,11 +31,20 @@ export function HotDealListClient({
   const { t } = useLanguage()
   
   // 클라이언트 사이드에서 데이터 페칭 (초기 데이터 사용)
-  const { hotdeals, total, totalPages, currentPage, isLoading } = useHotDeals(
-    category as HotDealCategory | undefined,
-    page,
-    20
-  )
+  const { data, isLoading } = useHotDeals({
+    category: category as HotDealCategory | undefined,
+    limit: 20,
+    offset: (page - 1) * 20,
+    sortBy: sort === 'price' ? 'price' : sort === 'popular' ? 'like_count' : 'created_at',
+    sortOrder: 'desc',
+    status: 'active'
+  })
+
+  // Supabase 데이터를 LocalStorage 형식으로 변환
+  const hotdeals = data?.data?.map(transformSupabaseToLocal) || []
+  const total = data?.count || 0
+  const totalPages = Math.ceil(total / 20)
+  const currentPage = page
 
   // 서버에서 가져온 초기 데이터를 우선 사용
   const displayHotdeals = hotdeals.length > 0 ? hotdeals : initialData.items

@@ -1,8 +1,11 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useAuth } from '@/hooks/use-auth'
-import { useOrders } from '@/hooks/use-orders'
+import { useSupabaseUser } from '@/hooks/use-supabase-user'
+import { useSupabaseProfile } from '@/hooks/use-supabase-profile'
+import { useClerkRole } from '@/hooks/use-clerk-role'
+import { useClerk } from '@clerk/nextjs'
+import { useSupabaseBuyForMe } from '@/hooks/use-supabase-buy-for-me'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -23,11 +26,13 @@ import { toast } from 'sonner'
 import { format } from 'date-fns'
 import { ko } from 'date-fns/locale'
 import Link from 'next/link'
-import { db } from '@/lib/db/database-service'
 import { HotDeal } from '@/types/hotdeal'
 
 export default function ProfilePage() {
-  const { currentUser: user, updateProfile } = useAuth()
+  const { user, isLoading: userLoading } = useSupabaseUser()
+  const { updateProfile } = useSupabaseProfile()
+  const { isAuthenticated } = useClerkRole()
+  const { signOut } = useClerk()
   const { language, setLanguage } = useLanguage()
   const [isEditing, setIsEditing] = useState(false)
   const [likedHotdeals, setLikedHotdeals] = useState<HotDeal[]>([])
@@ -39,7 +44,7 @@ export default function ProfilePage() {
   })
 
   // Get user's orders
-  const { data: ordersData } = useOrders(user?.id)
+  const { requests: ordersData } = useSupabaseBuyForMe()
 
   // Form data
   const [formData, setFormData] = useState({
@@ -57,17 +62,19 @@ export default function ProfilePage() {
         email: user.email,
         phone: user.phone || '',
         address: user.address || '',
-        preferredLanguage: user.preferredLanguage || language
+        preferredLanguage: user.preferred_language || language
       })
     }
   }, [user, language])
 
   useEffect(() => {
     // Calculate user stats
-    if (ordersData?.items) {
-      const total = ordersData.items.length
-      const completed = ordersData.items.filter(o => o.status === 'delivered').length
-      const spent = ordersData.items.reduce((sum, order) => sum + order.totalAmount, 0)
+    if (ordersData && Array.isArray(ordersData)) {
+      const total = ordersData.length
+      const completed = ordersData.filter(o => o.status === 'delivered').length
+      const spent = ordersData.reduce((sum, order) => {
+        return sum + (order.quotes?.[0]?.total_amount || order.estimated_total_amount || 0)
+      }, 0)
       
       setStats({
         totalOrders: total,
@@ -79,25 +86,26 @@ export default function ProfilePage() {
   }, [ordersData])
 
   useEffect(() => {
-    // Load liked hotdeals
-    async function loadLikedHotdeals() {
-      if (user?.likedHotdeals) {
-        const deals = await Promise.all(
-          user.likedHotdeals.map(id => db.hotdeals.findById(id))
-        )
-        setLikedHotdeals(deals.filter(Boolean) as HotDeal[])
-      }
-    }
-    loadLikedHotdeals()
+    // TODO: Load liked hotdeals from Supabase using useSupabaseCommunity hook
+    // async function loadLikedHotdeals() {
+    //   if (user?.favorite_hotdeals) {
+    //     const deals = await Promise.all(
+    //       user.favorite_hotdeals.map(id => getFavoriteHotdeals(id))
+    //     )
+    //     setLikedHotdeals(deals.filter(Boolean) as HotDeal[])
+    //   }
+    // }
+    // loadLikedHotdeals()
   }, [user])
 
   const handleSave = async () => {
+    if (!user) return
+    
     try {
-      await updateProfile({
+      await updateProfile.mutateAsync({
         name: formData.name,
         phone: formData.phone,
-        address: formData.address,
-        preferredLanguage: formData.preferredLanguage
+        preferred_language: formData.preferredLanguage
       })
       
       // Update global language if changed
@@ -108,11 +116,12 @@ export default function ProfilePage() {
       toast.success('프로필이 업데이트되었습니다')
       setIsEditing(false)
     } catch (error) {
+      console.error('프로필 업데이트 오류:', error)
       toast.error('프로필 업데이트 중 오류가 발생했습니다')
     }
   }
 
-  if (!user) {
+  if (!isAuthenticated || !user || userLoading) {
     return (
       <div className="container mx-auto py-16 text-center">
         <h1 className="text-2xl font-bold mb-4">로그인이 필요합니다</h1>

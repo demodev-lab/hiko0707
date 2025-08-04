@@ -298,6 +298,40 @@ export const COMMUNITY_CONFIGS: Record<HotDealSource, CommunityConfig> = {
         '.detail-content'
       ]
     }
+  },
+  
+  itcm: {
+    name: 'itcm',
+    displayName: 'ITCM',
+    baseUrl: 'https://www.itcm.co.kr',
+    boardUrl: 'https://www.itcm.co.kr/board/sale',
+    selectors: {
+      // 목록 페이지 - ITCM 특화
+      listRows: '.board-list tbody tr',
+      nextPageButton: '.pagination .next',
+      
+      // 목록 항목
+      titleLink: '.subject a',
+      titleText: '.subject a',
+      imageThumb: '.subject img.thumb',
+      category: '.category',
+      author: '.writer',
+      date: '.date',
+      views: '.hit',
+      recommend: '.recommend',
+      commentCount: '.comment',
+      endedMark: '.end-icon',
+      
+      // 상세 페이지
+      detailImage: [
+        '.board-view img',
+        '.content-view img'
+      ],
+      detailContent: [
+        '.board-view',
+        '.content-view'
+      ]
+    }
   }
 }
 

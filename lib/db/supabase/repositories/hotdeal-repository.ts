@@ -2,8 +2,8 @@ import { supabaseAdmin } from '@/lib/supabase/client'
 import { HotDeal } from '@/types/hotdeal'
 import { Database } from '@/lib/supabase/client'
 
-type HotDealRow = Database['public']['Tables']['hotdeals']['Row']
-type HotDealInsert = Database['public']['Tables']['hotdeals']['Insert']
+type HotDealRow = Database['public']['Tables']['hot_deals']['Row']
+type HotDealInsert = Database['public']['Tables']['hot_deals']['Insert']
 
 export class SupabaseHotDealRepository {
   private get client() {
@@ -11,47 +11,71 @@ export class SupabaseHotDealRepository {
   }
 
   async create(hotdeal: Omit<HotDeal, 'id'>): Promise<HotDeal | null> {
+    console.log('🟦 SupabaseHotDealRepository.create() 호출됨')
+    
     if (!this.client) {
-      console.error('Supabase admin client not initialized')
+      console.error('❌ Supabase admin client not initialized')
       return null
     }
+
+    console.log('🟩 Supabase client 초기화됨')
 
     const insertData: HotDealInsert = {
       source: hotdeal.source,
-      source_post_id: hotdeal.sourcePostId,
+      source_id: hotdeal.sourcePostId,
       category: hotdeal.category || '기타',
       title: hotdeal.title,
       description: hotdeal.productComment || null,
-      original_price: null,
-      sale_price: typeof hotdeal.price === 'number' ? hotdeal.price : null,
-      discount_rate: null,
-      delivery_fee: null,
-      shop_name: hotdeal.seller || null,
-      url: hotdeal.originalUrl,
+      original_price: typeof hotdeal.price === 'number' ? hotdeal.price : 0, // NOT NULL 제약조건 해결
+      sale_price: typeof hotdeal.price === 'number' ? hotdeal.price : 0, // NOT NULL 제약조건 해결
+      discount_rate: 0, // NOT NULL 제약조건 해결
+      seller: hotdeal.seller || null,
+      original_url: hotdeal.originalUrl,
+      thumbnail_url: hotdeal.imageUrl || null, // 썸네일 URL 매핑 추가
       image_url: hotdeal.imageUrl || null,
-      post_date: hotdeal.crawledAt.toISOString(),
-      is_hot: hotdeal.isHot || false,
-      is_expired: hotdeal.status === 'ended',
-      is_nsfw: false,
-      view_count: hotdeal.viewCount || 0,
-      community_recommend_count: hotdeal.communityRecommendCount || 0,
-      community_comment_count: hotdeal.communityCommentCount || 0,
+      is_free_shipping: hotdeal.shipping?.isFree || false,
       status: hotdeal.status,
-      crawled_at: new Date().toISOString()
+      end_date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(), // 30일 후 만료
+      views: hotdeal.viewCount || 0,
+      comment_count: hotdeal.communityCommentCount || 0,
+      like_count: hotdeal.communityRecommendCount || 0,
+      author_name: hotdeal.userId || 'Unknown',
+      shopping_comment: hotdeal.productComment || null,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+      deleted_at: null
     }
 
-    const { data, error } = await this.client
-      .from('hotdeals')
-      .insert(insertData)
-      .select()
-      .single()
+    console.log('📤 Supabase에 삽입할 데이터:', {
+      source: insertData.source,
+      source_id: insertData.source_id,
+      title: insertData.title?.substring(0, 50) + '...',
+      thumbnail_url: insertData.thumbnail_url ? '✅' : '❌',
+      image_url: insertData.image_url ? '✅' : '❌'
+    })
 
-    if (error) {
-      console.error('Error creating hotdeal:', error)
+    try {
+      const { data, error } = await this.client
+        .from('hot_deals')
+        .insert(insertData)
+        .select()
+        .single()
+
+      console.log('🔍 Supabase 응답:', { data: !!data, error: !!error })
+
+      if (error) {
+        console.error('❌ Supabase 삽입 오류:', JSON.stringify(error, null, 2))
+        return null
+      }
+
+      console.log('✅ Supabase 삽입 성공!')
+      console.log('✅ 삽입된 데이터 ID:', data?.id)
+      console.log('✅ 삽입된 데이터 제목:', data?.title)
+      return this.mapToHotDeal(data)
+    } catch (err) {
+      console.error('❌ 예외 발생:', err)
       return null
     }
-
-    return this.mapToHotDeal(data)
   }
 
   async update(id: string, hotdeal: Partial<HotDeal>): Promise<HotDeal | null> {
@@ -62,17 +86,13 @@ export class SupabaseHotDealRepository {
     if (hotdeal.title !== undefined) updateData.title = hotdeal.title
     if (hotdeal.productComment !== undefined) updateData.description = hotdeal.productComment
     if (hotdeal.price !== undefined) updateData.sale_price = hotdeal.price
-    if (hotdeal.isHot !== undefined) updateData.is_hot = hotdeal.isHot
-    if (hotdeal.status !== undefined) {
-      updateData.status = hotdeal.status
-      updateData.is_expired = hotdeal.status === 'ended'
-    }
-    if (hotdeal.viewCount !== undefined) updateData.view_count = hotdeal.viewCount
-    if (hotdeal.communityRecommendCount !== undefined) updateData.community_recommend_count = hotdeal.communityRecommendCount
-    if (hotdeal.communityCommentCount !== undefined) updateData.community_comment_count = hotdeal.communityCommentCount
+    if (hotdeal.status !== undefined) updateData.status = hotdeal.status
+    if (hotdeal.viewCount !== undefined) updateData.views = hotdeal.viewCount
+    if (hotdeal.communityRecommendCount !== undefined) updateData.like_count = hotdeal.communityRecommendCount
+    if (hotdeal.communityCommentCount !== undefined) updateData.comment_count = hotdeal.communityCommentCount
 
     const { data, error } = await this.client
-      .from('hotdeals')
+      .from('hot_deals')
       .update(updateData)
       .eq('id', id)
       .select()
@@ -90,10 +110,10 @@ export class SupabaseHotDealRepository {
     if (!this.client) return null
 
     const { data, error } = await this.client
-      .from('hotdeals')
+      .from('hot_deals')
       .select('*')
       .eq('source', source)
-      .eq('source_post_id', sourcePostId)
+      .eq('source_id', sourcePostId)
       .single()
 
     if (error) {
@@ -116,7 +136,7 @@ export class SupabaseHotDealRepository {
   }): Promise<HotDeal[]> {
     if (!this.client) return []
 
-    let query = this.client.from('hotdeals').select('*')
+    let query = this.client.from('hot_deals').select('*')
 
     if (options?.source) {
       query = query.eq('source', options.source)
@@ -128,7 +148,7 @@ export class SupabaseHotDealRepository {
       query = query.eq('is_hot', options.isHot)
     }
 
-    query = query.order('post_date', { ascending: false })
+    query = query.order('created_at', { ascending: false })
 
     if (options?.limit) {
       query = query.limit(options.limit)
@@ -154,9 +174,9 @@ export class SupabaseHotDealRepository {
     cutoffDate.setDate(cutoffDate.getDate() - days)
 
     const { error, count } = await this.client
-      .from('hotdeals')
+      .from('hot_deals')
       .delete()
-      .lt('post_date', cutoffDate.toISOString())
+      .lt('created_at', cutoffDate.toISOString())
 
     if (error) {
       console.error('Error deleting expired hotdeals:', error)
@@ -170,23 +190,28 @@ export class SupabaseHotDealRepository {
     return {
       id: row.id,
       source: row.source as HotDeal['source'],
-      sourcePostId: row.source_post_id,
+      sourcePostId: row.source_id,
       category: row.category,
       title: row.title,
       price: row.sale_price || 0,
-      seller: row.shop_name || '알 수 없음',
+      seller: row.seller || '알 수 없음',
       imageUrl: row.image_url || undefined,
-      originalUrl: row.url,
+      originalUrl: row.original_url,
       productComment: row.description || '',
-      crawledAt: new Date(row.post_date),
-      isHot: row.is_hot,
-      isPopular: row.is_hot,
-      viewCount: row.view_count,
-      communityRecommendCount: row.community_recommend_count,
-      communityCommentCount: row.community_comment_count,
+      crawledAt: new Date(row.created_at),
+      isHot: false, // hot_deals 테이블에 is_hot 필드가 없음
+      isPopular: false,
+      viewCount: row.views || 0,
+      communityRecommendCount: row.like_count || 0,
+      communityCommentCount: row.comment_count || 0,
       status: row.status as HotDeal['status'],
-      likeCount: 0,
-      commentCount: 0
+      likeCount: row.like_count || 0,
+      commentCount: row.comment_count || 0,
+      shipping: {
+        isFree: row.is_free_shipping || false,
+        fee: row.is_free_shipping ? 0 : null
+      },
+      userId: row.author_name || 'Unknown'
     }
   }
 }

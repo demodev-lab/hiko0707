@@ -6,7 +6,7 @@ import { Search, Filter, X, TrendingUp, Clock } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent } from '@/components/ui/card'
-import { useHotDeals } from '@/hooks/use-hotdeals'
+import { useSupabaseHotDeals } from '@/hooks/use-supabase-hotdeals'
 import { HotDealCard } from '@/components/features/hotdeal/hotdeal-card'
 import { HotDeal } from '@/types/hotdeal'
 import { useLanguage } from '@/lib/i18n/context'
@@ -21,7 +21,7 @@ export default function SearchPage() {
   const { t } = useLanguage()
   const router = useRouter()
   const searchParams = useSearchParams()
-  const { hotdeals } = useHotDeals()
+  const { hotdeals } = useSupabaseHotDeals()
   
   const [searchQuery, setSearchQuery] = useState(searchParams.get('q') || '')
   const [filteredDeals, setFilteredDeals] = useState<HotDeal[]>([])

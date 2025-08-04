@@ -47,6 +47,16 @@ export interface CrawlerResult {
   };
 }
 
+// 크롤링 결과 (Supabase 저장 포함)
+export interface CrawlResult {
+  totalCrawled: number;  // 크롤링된 총 개수
+  newDeals: number;      // 새로 추가된 개수
+  updatedDeals: number;  // 업데이트된 개수
+  errors: number;        // 오류 발생 개수
+  duration: number;      // 소요 시간 (ms)
+  hotdeals: any[];       // 크롤링된 핫딜 데이터
+}
+
 export abstract class BaseCrawler {
   protected config: CrawlerConfig;
   

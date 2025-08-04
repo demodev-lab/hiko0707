@@ -39,8 +39,8 @@ import {
   Globe,
   Trash2
 } from 'lucide-react'
+import Image from 'next/image'
 import { useLanguage } from '@/lib/i18n/context'
-import { useCreateOrder } from '@/hooks/use-orders'
 import { OrderFormData, calculateServiceFee } from '@/types/order'
 import { toast } from 'sonner'
 import { useAuth } from '@/hooks/use-auth'
@@ -50,13 +50,12 @@ import { UrlParser, ParsedProduct } from './url-parser'
 import { FeeCalculator } from './fee-calculator'
 import { AddressSearchModal } from '@/components/features/address/address-search-modal'
 import { useCurrency } from '@/hooks/use-currency'
-import { useAddresses } from '@/hooks/use-addresses'
+import { useSupabaseOrders, useSupabaseUserAddresses } from '@/hooks/use-supabase-order'
 import { motion, AnimatePresence } from 'framer-motion'
 import { ShoppingUrlParser } from '@/lib/url-parser/shopping-url-parser'
 import { cn } from '@/lib/utils'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { BookmarkCheck } from 'lucide-react'
-import { db } from '@/lib/db/database-service'
 
 const orderFormSchema = z.object({
   items: z.array(z.object({
@@ -70,11 +69,11 @@ const orderFormSchema = z.object({
   })).min(1, '최소 1개의 상품을 추가해주세요'),
   shippingAddress: z.object({
     fullName: z.string().min(1, '이름을 입력해주세요'),
-    phoneNumber: z.string().min(1, '전화번호를 입력해주세요'),
+    phone: z.string().min(1, '전화번호를 입력해주세요'),
     email: z.string().email('올바른 이메일을 입력해주세요'),
-    postalCode: z.string().min(1, '우편번호를 입력해주세요'),
-    addressLine1: z.string().min(1, '주소를 입력해주세요'),
-    addressLine2: z.string().optional()
+    post_code: z.string().min(1, '우편번호를 입력해주세요'),
+    address: z.string().min(1, '주소를 입력해주세요'),
+    address_detail: z.string().optional()
   }),
   paymentMethod: z.enum(['card', 'bank_transfer']),
   customerNotes: z.string().optional()
@@ -96,9 +95,9 @@ export function OrderFormV2({ initialData, hotdealId, onSuccess }: OrderFormProp
   const { t } = useLanguage()
   const router = useRouter()
   const { currentUser } = useAuth()
-  const createOrder = useCreateOrder()
+  const { createOrderAsync, isCreatingOrder } = useSupabaseOrders(currentUser?.id || '')
   const { convert, format } = useCurrency()
-  const { addresses, defaultAddress, createAddress } = useAddresses()
+  const { addresses, defaultAddress, createAddressAsync, isCreatingAddress } = useSupabaseUserAddresses(currentUser?.id || '')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [currentStep, setCurrentStep] = useState(1)
   const [showUrlParser, setShowUrlParser] = useState(false)
@@ -123,11 +122,11 @@ export function OrderFormV2({ initialData, hotdealId, onSuccess }: OrderFormProp
       }],
       shippingAddress: initialData?.shippingAddress || {
         fullName: currentUser?.name || '',
-        phoneNumber: currentUser?.phone || '',
+        phone: currentUser?.phone || '',
         email: currentUser?.email || '',
-        postalCode: '',
-        addressLine1: '',
-        addressLine2: ''
+        post_code: '',
+        address: '',
+        address_detail: ''
       },
       paymentMethod: initialData?.paymentMethod || 'card',
       customerNotes: initialData?.customerNotes || ''
@@ -145,19 +144,19 @@ export function OrderFormV2({ initialData, hotdealId, onSuccess }: OrderFormProp
   useEffect(() => {
     if (defaultAddress) {
       setSelectedAddressId(defaultAddress.id)
-      form.setValue('shippingAddress.fullName', defaultAddress.recipientName)
-      form.setValue('shippingAddress.phoneNumber', defaultAddress.phoneNumber)
-      form.setValue('shippingAddress.email', defaultAddress.email)
-      form.setValue('shippingAddress.addressLine1', defaultAddress.address)
-      form.setValue('shippingAddress.postalCode', defaultAddress.postalCode)
-      form.setValue('shippingAddress.addressLine2', defaultAddress.detailAddress || '')
+      form.setValue('shippingAddress.fullName', defaultAddress.name)
+      form.setValue('shippingAddress.phone', defaultAddress.phone)
+      form.setValue('shippingAddress.email', currentUser?.email || '')
+      form.setValue('shippingAddress.address', defaultAddress.address)
+      form.setValue('shippingAddress.post_code', defaultAddress.post_code)
+      form.setValue('shippingAddress.address_detail', defaultAddress.address_detail || '')
     } else {
       // 저장된 배송지가 없으면 새 배송지 폼으로 설정
       setSelectedAddressId('new')
       setShowNewAddressForm(true)
       setSaveAddress(true)
     }
-  }, [defaultAddress, form])
+  }, [defaultAddress, form, currentUser?.email])
 
   // 배송지 선택 핸들러
   const handleAddressSelect = (addressId: string) => {
@@ -168,22 +167,22 @@ export function OrderFormV2({ initialData, hotdealId, onSuccess }: OrderFormProp
       setShowNewAddressForm(true)
       // 폼 초기화
       form.setValue('shippingAddress.fullName', currentUser?.name || '')
-      form.setValue('shippingAddress.phoneNumber', currentUser?.phone || '')
+      form.setValue('shippingAddress.phone', currentUser?.phone || '')
       form.setValue('shippingAddress.email', currentUser?.email || '')
-      form.setValue('shippingAddress.addressLine1', '')
-      form.setValue('shippingAddress.postalCode', '')
-      form.setValue('shippingAddress.addressLine2', '')
+      form.setValue('shippingAddress.address', '')
+      form.setValue('shippingAddress.post_code', '')
+      form.setValue('shippingAddress.address_detail', '')
       return
     }
 
     const selectedAddress = addresses.find(addr => addr.id === addressId)
     if (selectedAddress) {
-      form.setValue('shippingAddress.fullName', selectedAddress.recipientName)
-      form.setValue('shippingAddress.phoneNumber', selectedAddress.phoneNumber)
-      form.setValue('shippingAddress.email', selectedAddress.email)
-      form.setValue('shippingAddress.addressLine1', selectedAddress.address)
-      form.setValue('shippingAddress.postalCode', selectedAddress.postalCode)
-      form.setValue('shippingAddress.addressLine2', selectedAddress.detailAddress || '')
+      form.setValue('shippingAddress.fullName', selectedAddress.name)
+      form.setValue('shippingAddress.phone', selectedAddress.phone)
+      form.setValue('shippingAddress.email', currentUser?.email || '')
+      form.setValue('shippingAddress.address', selectedAddress.address)
+      form.setValue('shippingAddress.post_code', selectedAddress.post_code)
+      form.setValue('shippingAddress.address_detail', selectedAddress.address_detail || '')
     }
   }
 
@@ -248,10 +247,10 @@ export function OrderFormV2({ initialData, hotdealId, onSuccess }: OrderFormProp
     country: string
     detailAddress?: string
   }) => {
-    form.setValue('shippingAddress.addressLine1', addressData.fullAddress)
-    form.setValue('shippingAddress.postalCode', addressData.postalCode)
+    form.setValue('shippingAddress.address', addressData.fullAddress)
+    form.setValue('shippingAddress.post_code', addressData.postalCode)
     if (addressData.detailAddress) {
-      form.setValue('shippingAddress.addressLine2', addressData.detailAddress)
+      form.setValue('shippingAddress.address_detail', addressData.detailAddress)
     }
     setShowAddressSearch(false)
   }
@@ -274,19 +273,19 @@ export function OrderFormV2({ initialData, hotdealId, onSuccess }: OrderFormProp
       if (saveAddress && (selectedAddressId === 'new' || showNewAddressForm)) {
         try {
           const addressData = {
-            name: addresses.length === 0 ? '기본 배송지' : `배송지 ${addresses.length + 1}`,
-            recipientName: data.shippingAddress.fullName,
-            phoneNumber: data.shippingAddress.phoneNumber,
-            email: data.shippingAddress.email,
-            postalCode: data.shippingAddress.postalCode,
-            address: data.shippingAddress.addressLine1,
-            detailAddress: data.shippingAddress.addressLine2 || '',
-            isDefault: addresses.length === 0, // 첫 번째 배송지면 기본으로 설정
+            user_id: currentUser.id,
+            label: addresses.length === 0 ? '기본 배송지' : `배송지 ${addresses.length + 1}`,
+            name: data.shippingAddress.fullName,
+            phone: data.shippingAddress.phone,
+            post_code: data.shippingAddress.post_code,
+            address: data.shippingAddress.address,
+            address_detail: data.shippingAddress.address_detail || '',
+            is_default: addresses.length === 0, // 첫 번째 배송지면 기본으로 설정
           }
           
           console.log('배송지 저장 시도:', addressData)
           
-          const savedAddress = await createAddress(addressData)
+          const savedAddress = await createAddressAsync(addressData)
           
           if (savedAddress) {
             console.log('배송지 저장 완료:', savedAddress)
@@ -307,7 +306,7 @@ export function OrderFormV2({ initialData, hotdealId, onSuccess }: OrderFormProp
       console.log('주문 데이터:', orderData)
       
       // Order 테이블에 저장
-      const result = await createOrder.mutateAsync(orderData)
+      const result = await createOrderAsync(orderData)
       
       console.log('주문 생성 결과:', result)
 
@@ -338,11 +337,11 @@ export function OrderFormV2({ initialData, hotdealId, onSuccess }: OrderFormProp
             ).filter(Boolean).join(' | '),
             shippingInfo: {
               name: data.shippingAddress.fullName, // fullName → name
-              phone: data.shippingAddress.phoneNumber, // phoneNumber → phone
+              phone: data.shippingAddress.phone, // phone field
               email: data.shippingAddress.email,
-              address: data.shippingAddress.addressLine1,
-              postalCode: data.shippingAddress.postalCode,
-              detailAddress: data.shippingAddress.addressLine2 || ''
+              address: data.shippingAddress.address, // address field
+              postalCode: data.shippingAddress.post_code, // post_code field
+              detailAddress: data.shippingAddress.address_detail || '' // address_detail field
             },
             specialRequests: data.customerNotes || '',
             estimatedServiceFee: serviceFee, // 서비스 수수료
@@ -351,19 +350,10 @@ export function OrderFormV2({ initialData, hotdealId, onSuccess }: OrderFormProp
           
           console.log('BuyForMeRequest 데이터:', buyForMeData)
           
-          const buyForMeRequest = await db.buyForMeRequests.create({
-            ...buyForMeData,
-            status: 'pending_review',
-            requestDate: new Date(),
-            createdAt: new Date(),
-            updatedAt: new Date()
-          })
-          
-          console.log('BuyForMeRequest 생성 결과:', buyForMeRequest)
-          // toast.success('주문이 마이페이지에 저장되었습니다') // 중복 알림 제거
+          // Buy-for-me 요청은 Supabase proxy_purchases_request 테이블에 이미 저장됨
+          console.log('BuyForMeRequest는 proxy_purchases_request 테이블에 저장됨')
         } catch (error) {
-          console.error('BuyForMeRequest 저장 오류:', error)
-          toast.error('주문 내역 저장 중 오류가 발생했습니다')
+          console.error('주문 처리 중 오류:', error)
           // Order는 이미 성공적으로 생성되었으므로 사용자는 계속 진행 가능
         }
       }
@@ -571,11 +561,16 @@ export function OrderFormV2({ initialData, hotdealId, onSuccess }: OrderFormProp
                     {/* 상품 이미지 미리보기 */}
                     {watchedItems[index]?.imageUrl && (
                       <div className="mb-4">
-                        <img
-                          src={watchedItems[index].imageUrl}
-                          alt={watchedItems[index].productName}
-                          className="w-24 h-24 object-cover rounded-lg"
-                        />
+                        <div className="w-24 h-24 relative bg-gray-100 rounded-lg overflow-hidden">
+                          <Image
+                            src={watchedItems[index].imageUrl}
+                            alt={watchedItems[index].productName}
+                            fill
+                            className="object-cover"
+                            sizes="(max-width: 768px) 96px, 96px"
+                            priority={index < 2}
+                          />
+                        </div>
                       </div>
                     )}
 
@@ -914,17 +909,17 @@ export function OrderFormV2({ initialData, hotdealId, onSuccess }: OrderFormProp
                   </div>
 
                   <div>
-                    <Label htmlFor="shippingAddress.phoneNumber" className="flex items-center gap-2">
+                    <Label htmlFor="shippingAddress.phone" className="flex items-center gap-2">
                       <Phone className="w-4 h-4" />
                       전화번호 *
                     </Label>
                     <Input
-                      {...form.register('shippingAddress.phoneNumber')}
+                      {...form.register('shippingAddress.phone')}
                       placeholder="010-1234-5678"
                     />
-                    {form.formState.errors.shippingAddress?.phoneNumber && (
+                    {form.formState.errors.shippingAddress?.phone && (
                       <p className="text-sm text-red-500 mt-1">
-                        {form.formState.errors.shippingAddress.phoneNumber.message}
+                        {form.formState.errors.shippingAddress.phone.message}
                       </p>
                     )}
                   </div>
@@ -980,42 +975,42 @@ export function OrderFormV2({ initialData, hotdealId, onSuccess }: OrderFormProp
                   </div>
 
                   <div>
-                    <Label htmlFor="shippingAddress.postalCode" className="flex items-center gap-2">
+                    <Label htmlFor="shippingAddress.post_code" className="flex items-center gap-2">
                       <MapPin className="w-4 h-4" />
                       우편번호 *
                     </Label>
                     <Input
-                      {...form.register('shippingAddress.postalCode')}
+                      {...form.register('shippingAddress.post_code')}
                       placeholder="12345"
                     />
-                    {form.formState.errors.shippingAddress?.postalCode && (
+                    {form.formState.errors.shippingAddress?.post_code && (
                       <p className="text-sm text-red-500 mt-1">
-                        {form.formState.errors.shippingAddress.postalCode.message}
+                        {form.formState.errors.shippingAddress.post_code.message}
                       </p>
                     )}
                   </div>
 
                   <div>
-                    <Label htmlFor="shippingAddress.addressLine1">
+                    <Label htmlFor="shippingAddress.address">
                       주소 *
                     </Label>
                     <Input
-                      {...form.register('shippingAddress.addressLine1')}
+                      {...form.register('shippingAddress.address')}
                       placeholder="서울시 강남구 테헤란로 123"
                     />
-                    {form.formState.errors.shippingAddress?.addressLine1 && (
+                    {form.formState.errors.shippingAddress?.address && (
                       <p className="text-sm text-red-500 mt-1">
-                        {form.formState.errors.shippingAddress.addressLine1.message}
+                        {form.formState.errors.shippingAddress.address.message}
                       </p>
                     )}
                   </div>
 
                   <div>
-                    <Label htmlFor="shippingAddress.addressLine2">
+                    <Label htmlFor="shippingAddress.address_detail">
                       상세 주소
                     </Label>
                     <Input
-                      {...form.register('shippingAddress.addressLine2')}
+                      {...form.register('shippingAddress.address_detail')}
                       placeholder="101동 202호"
                     />
                   </div>
@@ -1064,11 +1059,15 @@ export function OrderFormV2({ initialData, hotdealId, onSuccess }: OrderFormProp
                 {watchedItems.map((item, index) => (
                   <div key={index} className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg">
                     {item.imageUrl && (
-                      <img
-                        src={item.imageUrl}
-                        alt={item.productName}
-                        className="w-16 h-16 object-cover rounded"
-                      />
+                      <div className="w-16 h-16 relative bg-gray-100 rounded overflow-hidden">
+                        <Image
+                          src={item.imageUrl}
+                          alt={item.productName}
+                          fill
+                          className="object-cover"
+                          sizes="(max-width: 768px) 64px, 64px"
+                        />
+                      </div>
                     )}
                     <div className="flex-1">
                       <h4 className="font-medium">{item.productName}</h4>
@@ -1103,7 +1102,7 @@ export function OrderFormV2({ initialData, hotdealId, onSuccess }: OrderFormProp
                   </div>
                   <div className="flex items-center gap-2">
                     <Phone className="w-4 h-4 text-gray-500" />
-                    <span>{form.watch('shippingAddress.phoneNumber')}</span>
+                    <span>{form.watch('shippingAddress.phone')}</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <Mail className="w-4 h-4 text-gray-500" />
@@ -1112,11 +1111,11 @@ export function OrderFormV2({ initialData, hotdealId, onSuccess }: OrderFormProp
                   <div className="flex items-start gap-2">
                     <MapPin className="w-4 h-4 text-gray-500 mt-0.5" />
                     <div>
-                      <p>{form.watch('shippingAddress.addressLine1')}</p>
-                      {form.watch('shippingAddress.addressLine2') && (
-                        <p>{form.watch('shippingAddress.addressLine2')}</p>
+                      <p>{form.watch('shippingAddress.address')}</p>
+                      {form.watch('shippingAddress.address_detail') && (
+                        <p>{form.watch('shippingAddress.address_detail')}</p>
                       )}
-                      <p>우편번호: {form.watch('shippingAddress.postalCode')}</p>
+                      <p>우편번호: {form.watch('shippingAddress.post_code')}</p>
                     </div>
                   </div>
                 </div>

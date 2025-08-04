@@ -29,7 +29,7 @@ export function ThemeToggle() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon" className="h-9 w-9">
+        <Button variant="ghost" size="icon" className="h-9 w-9" aria-label="테마 변경">
           {getThemeIcon()}
           <span className="sr-only">테마 변경</span>
         </Button>
@@ -66,6 +66,7 @@ export function SimpleThemeToggle() {
       size="icon"
       onClick={toggleTheme}
       className="h-9 w-9"
+      aria-label="테마 토글"
     >
       {actualTheme === 'light' ? (
         <Moon className="h-4 w-4" />

@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Card, CardContent } from '@/components/ui/card'
 import { Loader2, Link2, CheckCircle, AlertCircle, Info, Plus } from 'lucide-react'
+import Image from 'next/image'
 import { ShoppingUrlParser, ParsedProductInfo } from '@/lib/url-parser/shopping-url-parser'
 import { useLanguage } from '@/lib/i18n/context'
 
@@ -157,11 +158,16 @@ export function UrlParser({ onProductParsed }: UrlParserProps) {
             </div>
             <div className="flex gap-4">
               {parsedInfo.imageUrl && (
-                <img 
-                  src={parsedInfo.imageUrl} 
-                  alt={parsedInfo.productName}
-                  className="w-28 h-28 object-cover rounded-lg border-2 border-white shadow-md"
-                />
+                <div className="w-28 h-28 relative bg-gray-100 rounded-lg border-2 border-white shadow-md overflow-hidden">
+                  <Image 
+                    src={parsedInfo.imageUrl} 
+                    alt={parsedInfo.productName}
+                    fill
+                    className="object-cover"
+                    sizes="(max-width: 768px) 112px, 112px"
+                    priority
+                  />
+                </div>
               )}
               <div className="flex-1 space-y-2">
                 <h4 className="font-semibold text-lg text-gray-900">{parsedInfo.productName}</h4>

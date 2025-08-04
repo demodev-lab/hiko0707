@@ -18,7 +18,8 @@ import { CommentSection } from '@/components/features/comments/comment-section'
 import { ProductComment } from '@/components/features/comments/product-comment'
 import { ProductJsonLd, BreadcrumbJsonLd } from '@/components/seo/json-ld'
 import { HotDeal } from '@/types/hotdeal'
-import { useHotDeals } from '@/hooks/use-local-db'
+import { useHotDeal, useHotDeals } from '@/hooks/use-supabase-hotdeals'
+import { transformSupabaseToLocal } from '@/lib/utils/hotdeal-transformers'
 import { OptimizedImage } from '@/components/ui/optimized-image'
 import { Loading } from '@/components/ui/loading'
 import { PriceDisplay } from '@/components/features/price-display'
@@ -37,7 +38,8 @@ const sourceLabels: Record<string, string> = {
 export default function HotDealDetailPage() {
   const params = useParams()
   const id = params.id as string
-  const { hotdeals, loading } = useHotDeals()
+  const { data: supabaseDeal, isLoading: loading } = useHotDeal(id)
+  const { data: allHotDeals, isLoading: allLoading } = useHotDeals({ limit: 5, sortBy: 'created_at', sortOrder: 'desc' })
   const [deal, setDeal] = useState<HotDeal | null>(null)
   const [similarDeals, setSimilarDeals] = useState<HotDeal[]>([])
   
@@ -45,23 +47,23 @@ export default function HotDealDetailPage() {
   const isToday = (date: Date) => new Date(date).toDateString() === new Date().toDateString()
 
   useEffect(() => {
-    if (!loading && hotdeals.length > 0) {
-      const foundDeal = hotdeals.find(d => d.id === id)
-      if (foundDeal) {
-        setDeal(foundDeal)
-        
-        // 최신 핫딜 4개 찾기 (현재 상품 제외)
-        const similar = hotdeals
-          .filter(d => d.id !== id)
-          .sort((a, b) => {
-            // 최신순으로 정렬 (crawledAt 기준)
-            return new Date(b.crawledAt).getTime() - new Date(a.crawledAt).getTime()
-          })
-          .slice(0, 4)
-        setSimilarDeals(similar)
-      }
+    if (!loading && supabaseDeal) {
+      // Supabase 데이터를 LocalStorage 형식으로 변환
+      const transformedDeal = transformSupabaseToLocal(supabaseDeal)
+      setDeal(transformedDeal)
     }
-  }, [id, hotdeals, loading])
+  }, [loading, supabaseDeal])
+
+  useEffect(() => {
+    if (!allLoading && allHotDeals && allHotDeals.data && allHotDeals.data.length > 0 && id) {
+      // 최신 핫딜 4개 찾기 (현재 상품 제외)
+      const similar = allHotDeals.data
+        .filter(d => d.id !== id)
+        .map(transformSupabaseToLocal)
+        .slice(0, 4)
+      setSimilarDeals(similar)
+    }
+  }, [id, allHotDeals, allLoading])
 
   if (loading) {
     return (

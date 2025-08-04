@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { MessageCircle, Loader2 } from 'lucide-react'
-import { useHotDealComments } from '@/hooks/use-hotdeal-comments'
+import { useHotDealComments } from '@/hooks/use-supabase-hotdeal-comments'
 import { CommentForm } from './comment-form'
 import { CommentItem } from './comment-item'
 import { CommentNotification } from './comment-notification'
@@ -11,7 +11,17 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
-import { HotDealComment } from '@/lib/db/local/repositories/hotdeal-comment-repository'
+import type { Database } from '@/database.types'
+
+type CommentRow = Database['public']['Tables']['hot_deal_comments']['Row']
+interface NestedComment extends CommentRow {
+  replies?: NestedComment[]
+  user?: {
+    name: string
+    email: string
+    avatar_url?: string
+  }
+}
 
 interface CommentSectionProps {
   hotdealId: string
@@ -24,7 +34,7 @@ export function CommentSection({ hotdealId, commentCount = 0 }: CommentSectionPr
   const sectionRef = useRef<HTMLDivElement>(null)
   
   // 총 댓글 수 계산 (중첩 댓글 포함)
-  const getTotalCommentCount = (commentList: (HotDealComment & { replies?: HotDealComment[] })[]): number => {
+  const getTotalCommentCount = (commentList: NestedComment[]): number => {
     return commentList.reduce((total, comment) => {
       return total + 1 + (comment.replies ? getTotalCommentCount(comment.replies) : 0)
     }, 0)
@@ -40,12 +50,12 @@ export function CommentSection({ hotdealId, commentCount = 0 }: CommentSectionPr
   }, [totalComments])
   
   // 댓글 정렬 (최신순으로만)
-  const processComments = (commentList: (HotDealComment & { replies?: HotDealComment[] })[]): (HotDealComment & { replies?: HotDealComment[] })[] => {
+  const processComments = (commentList: NestedComment[]): NestedComment[] => {
     let sorted = [...commentList]
     
     // 최신순 정렬
     sorted.sort((a, b) => {
-      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+      return new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
     })
     
     // 중첩 댓글도 정렬

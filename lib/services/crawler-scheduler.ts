@@ -1,7 +1,5 @@
 import * as cron from 'node-cron'
-import { HotdealCrawlerManager, CrawlerSource } from '@/lib/crawlers/new-crawler-manager'
-import { db } from '@/lib/db/database-service'
-import { SupabaseHotDealRepository } from '@/lib/db/supabase/repositories/hotdeal-repository'
+import { CrawlerManager, CrawlerSource } from '@/lib/crawlers/crawler-manager'
 import { EventEmitter } from 'events'
 
 export interface CrawlJob {
@@ -33,26 +31,11 @@ export interface CrawlProgress {
 class CrawlerScheduler extends EventEmitter {
   private jobs: Map<string, cron.ScheduledTask> = new Map()
   private jobConfigs: Map<string, CrawlJob> = new Map()
-  private crawlerManager: HotdealCrawlerManager
-  private supabaseRepository: SupabaseHotDealRepository
-  private useSupabase: boolean = false
-
   constructor() {
     super()
-    this.crawlerManager = new HotdealCrawlerManager({
-      headless: true,
-      maxPages: 10,
-      delay: 4000,
-      timeout: 60000,
-      timeFilterHours: 24 // 최근 24시간 핫딜만
-    })
-    this.supabaseRepository = new SupabaseHotDealRepository()
-    
-    // 환경변수로 Supabase 사용 여부 결정
-    this.useSupabase = process.env.USE_SUPABASE === 'true' && 
-                       !!process.env.NEXT_PUBLIC_SUPABASE_URL && 
-                       !!process.env.SUPABASE_SERVICE_ROLE_KEY
+    console.log('🟦 CrawlerScheduler 초기화됨')
   }
+
 
   // 크롤링 작업 추가
   addJob(job: CrawlJob): void {
@@ -121,68 +104,31 @@ class CrawlerScheduler extends EventEmitter {
         startTime: new Date()
       })
 
-      // 크롤링 실행
-      const startTime = Date.now()
-      const results = await this.crawlerManager.crawl(job.source)
+      // 크롤링 실행 (이제 크롤러가 직접 Supabase에 저장)
+      const crawlerManager = new CrawlerManager({
+        headless: true,
+        maxPages: 10,
+        delay: 4000,
+        timeout: 60000,
+        timeFilterHours: 24 // 최근 24시간 핫딜만
+      })
       
-      let totalCrawled = 0
-      let newDeals = 0
-      let updatedDeals = 0
+      const results = await crawlerManager.crawl(job.source)
+      const result = results[0] // 단일 소스 크롤링이므로 첫 번째 결과 사용
+      
+      const totalCrawled = result.totalCrawled
+      const newDeals = result.newDeals
+      const updatedDeals = result.updatedDeals
+      const duration = result.duration
 
-      // 결과 처리 및 저장
-      for (const result of results) {
-        totalCrawled += result.hotdeals.length
-
-        for (const hotdeal of result.hotdeals) {
-          try {
-            if (this.useSupabase) {
-              // Supabase에 저장
-              const existing = await this.supabaseRepository.findBySourceAndPostId(
-                hotdeal.source,
-                hotdeal.sourcePostId
-              )
-              
-              if (existing) {
-                await this.supabaseRepository.update(existing.id, hotdeal)
-                updatedDeals++
-              } else {
-                await this.supabaseRepository.create(hotdeal)
-                newDeals++
-              }
-            } else {
-              // 기존 LocalStorage 방식
-              const existing = await db.hotdeals.findOne(hd => 
-                hd.source === hotdeal.source && 
-                hd.sourcePostId === hotdeal.sourcePostId
-              )
-              
-              if (existing) {
-                await db.hotdeals.update(existing.id, {
-                  ...hotdeal,
-                  id: existing.id
-                })
-                updatedDeals++
-              } else {
-                await db.hotdeals.create(hotdeal)
-                newDeals++
-              }
-            }
-          } catch (error) {
-            console.error('Failed to save hotdeal:', error)
-          }
-        }
-
-        // 진행 상황 업데이트
-        this.emit('crawl:progress', {
-          jobId,
-          source: job.source,
-          status: 'processing',
-          progress: 80,
-          itemsCrawled: totalCrawled
-        } as CrawlProgress)
-      }
-
-      const duration = Date.now() - startTime
+      // 진행 상황 업데이트
+      this.emit('crawl:progress', {
+        jobId,
+        source: job.source,
+        status: 'processing',
+        progress: 100,
+        itemsCrawled: totalCrawled
+      } as CrawlProgress)
 
       // 통계 업데이트
       job.statistics = {
@@ -223,7 +169,7 @@ class CrawlerScheduler extends EventEmitter {
     maxPages?: number
     timeFilterHours?: number
   }): Promise<any> {
-    const manager = new HotdealCrawlerManager({
+    const manager = new CrawlerManager({
       headless: true,
       maxPages: options?.maxPages || 10,
       delay: 4000,
@@ -232,59 +178,16 @@ class CrawlerScheduler extends EventEmitter {
     })
 
     const results = await manager.crawl(source)
+    const result = results[0] // 단일 소스 크롤링이므로 첫 번째 결과 사용
     
-    let totalCrawled = 0
-    let newDeals = 0
-    let updatedDeals = 0
-
-    for (const result of results) {
-      totalCrawled += result.hotdeals.length
-
-      for (const hotdeal of result.hotdeals) {
-        try {
-          if (this.useSupabase) {
-            // Supabase에 저장
-            const existing = await this.supabaseRepository.findBySourceAndPostId(
-              hotdeal.source,
-              hotdeal.sourcePostId
-            )
-            
-            if (existing) {
-              await this.supabaseRepository.update(existing.id, hotdeal)
-              updatedDeals++
-            } else {
-              await this.supabaseRepository.create(hotdeal)
-              newDeals++
-            }
-          } else {
-            // 기존 LocalStorage 방식
-            const existing = await db.hotdeals.findOne(hd => 
-              hd.source === hotdeal.source && 
-              hd.sourcePostId === hotdeal.sourcePostId
-            )
-            
-            if (existing) {
-              await db.hotdeals.update(existing.id, {
-                ...hotdeal,
-                id: existing.id
-              })
-              updatedDeals++
-            } else {
-              await db.hotdeals.create(hotdeal)
-              newDeals++
-            }
-          }
-        } catch (error) {
-          console.error('Failed to save hotdeal:', error)
-        }
-      }
-    }
-
     return {
-      totalCrawled,
-      newDeals,
-      updatedDeals,
-      results
+      totalCrawled: result.totalCrawled,
+      newDeals: result.newDeals,
+      updatedDeals: result.updatedDeals,
+      results: [{
+        source,
+        hotdeals: result.hotdeals
+      }]
     }
   }
 

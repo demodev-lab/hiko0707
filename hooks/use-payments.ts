@@ -1,5 +1,27 @@
 'use client'
 
+/**
+ * @deprecated 이 훅은 더 이상 사용하지 마세요!
+ * 
+ * ⚠️ DEPRECATED: use-payments.ts는 LocalStorage 기반 시스템을 사용합니다.
+ * 
+ * 🔄 대신 사용할 훅:
+ * - useSupabaseOrder() - Supabase 기반 결제 시스템 (payments 테이블 포함)
+ * - useSupabaseBuyForMe() - 대리구매 결제 처리
+ * 
+ * 📋 마이그레이션 가이드:
+ * 기존: const { data: payments } = usePayments(userId)
+ * 신규: const { payments } = useSupabaseOrder()
+ * 
+ * 기존: const { mutate: createPayment } = useCreatePayment()
+ * 신규: 주문 시스템과 통합된 결제 처리 사용
+ * 
+ * 기존: const { mutate: updateStatus } = useUpdatePaymentStatus()
+ * 신규: const { updatePaymentStatusAsync } = useSupabaseOrder()
+ * 
+ * 이 파일은 Phase 4에서 완전히 제거될 예정입니다.
+ */
+
 import { useState, useEffect, useCallback } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { db } from '@/lib/db/database-service'

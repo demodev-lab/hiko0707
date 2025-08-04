@@ -206,24 +206,37 @@ export abstract class BaseHotdealCrawler {
   protected parseDate(dateStr: string): Date {
     const now = new Date()
     
-    // "11:23:45" 형식
-    if (/^\d{2}:\d{2}:\d{2}$/.test(dateStr)) {
+    // "11:23:45" 형식 - 오늘 게시물
+    if (/^\d{1,2}:\d{2}:\d{2}$/.test(dateStr)) {
       const [hours, minutes, seconds] = dateStr.split(':').map(Number)
       const date = new Date(now)
       date.setHours(hours, minutes, seconds, 0)
       return date
     }
     
-    // "19/11/16" 형식
+    // "11:23" 형식 - 오늘 게시물
+    if (/^\d{1,2}:\d{2}$/.test(dateStr)) {
+      const [hours, minutes] = dateStr.split(':').map(Number)
+      const date = new Date(now)
+      date.setHours(hours, minutes, 0, 0)
+      return date
+    }
+    
+    // "25/08/02" 또는 "19/11/16" 형식 - 이전 날짜 게시물
     if (/^\d{2}\/\d{2}\/\d{2}$/.test(dateStr)) {
       const [year, month, day] = dateStr.split('/').map(Number)
-      return new Date(2000 + year, month - 1, day)
+      const date = new Date(2000 + year, month - 1, day)
+      // 날짜만 있는 경우 23:59:59로 설정하여 이전 날짜임을 명확히 함
+      date.setHours(23, 59, 59, 999)
+      return date
     }
     
     // "12-25" 형식
     if (/^\d{2}-\d{2}$/.test(dateStr)) {
       const [month, day] = dateStr.split('-').map(Number)
-      return new Date(now.getFullYear(), month - 1, day)
+      const date = new Date(now.getFullYear(), month - 1, day)
+      date.setHours(23, 59, 59, 999)
+      return date
     }
     
     return now

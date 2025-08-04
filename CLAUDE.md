@@ -14,6 +14,45 @@
    - 모든 함수 매개변수와 반환값에 명시적 타입 지정
    - strict mode 준수
 
+## **⚠️ 핵심 원칙 - 절대 준수 사항**
+**절대로 새로운 테이블을 생성하지 마세요!**
+- 모든 필요한 테이블은 이미 Supabase에 생성되어 있습니다
+- **Supabase MCP는 읽기 전용**으로 설정되어 있어 테이블 생성/수정 불가
+- 반드시 Supabase MCP를 통해 기존 테이블 구조를 확인하고 사용하세요
+- 프로젝트 코드를 Supabase 테이블 구조에 맞춰 수정하세요
+- 모든 데이터는 LocalStorage를 거치지 않고 바로 Supabase와 연동
+- 충돌, 오류, 누락, 미스매치가 발생하지 않도록 100% 완벽한 데이터 매핑 필수
+
+## 🔧 프로젝트 환경 설정
+
+### 필수 환경 변수 (.env)
+```bash
+# Supabase 설정
+NEXT_PUBLIC_SUPABASE_URL=https://vyvzihzjivcfhietrpnd.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ5dnppaHpqaXZjZmhpZXRycG5kIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTMyNDk0NTYsImV4cCI6MjA2ODgyNTQ1Nn0.vHCZ_N-vwzJTCMd377j0EiOdL1QlT9FznQALIIQDGd4
+SUPABASE_SERVICE_ROLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ5dnppaHpqaXZjZmhpZXRycG5kIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1MzI0OTQ1NiwiZXhwIjoyMDY4ODI1NDU2fQ.F4klI_xu5CO5Yw4GPSFKQ6prJwUTcC0hgNJH-txU06k
+SUPABASE_ACCESS_TOKEN=sbp_91779e7795e849124b32f8be6bd01c7eb5057b9b
+SUPABASE_DATABASE_PASSWORD="rKo5F0RLJpAhrwSy"
+
+# Clerk 설정
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_dG9nZXRoZXItdmlwZXItNTkuY2xlcmsuYWNjb3VudHMuZGV2JA
+CLERK_SECRET_KEY=sk_test_m9vBfuG3DKCxC8VxBR4Fyr3Wx3vEasaLNMX0S7DPDv
+
+# 기타 설정
+USE_SUPABASE=true
+NEXT_PUBLIC_KAKAO_API_KEY=your_kakao_api_key_here
+```
+
+### MCP 서버 설정 (Claude Code 전용)
+```bash
+# Supabase MCP 인증
+export SUPABASE_ACCESS_TOKEN=sbp_91779e7795e849124b32f8be6bd01c7eb5057b9b
+
+# SuperClaude 명령어 예시
+/analyze --c7 --seq --think-hard  # 시스템 분석
+/test --playwright --wave-mode     # E2E 테스트
+```
+
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
 ## Development Commands
@@ -35,6 +74,9 @@ pnpm test [filename]  # Run tests for a specific file
 
 # TypeScript Type Checking
 pnpm tsc --noEmit     # Check TypeScript types without emitting files
+
+# TypeScript 타입 생성 (Supabase 스키마 동기화)
+pnpm gen:types
 ```
 
 ### Project-Specific Commands
@@ -53,6 +95,11 @@ pnpm crawl:ppomppu           # Crawl only Ppomppu
 pnpm crawl:all               # Crawl all sources
 pnpm reset-hotdeals          # Reset hotdeal data
 pnpm import-hotdeals         # Import crawled hotdeal data
+
+# Supabase 관련 명령어
+pnpm gen:types               # TypeScript 타입 생성 (Supabase 스키마 동기화)
+pnpm migrate-to-supabase     # LocalStorage 데이터를 Supabase로 마이그레이션
+pnpm test-supabase-crawler   # Supabase 크롤러 테스트
 
 # Browser Management Tools
 # Visit /admin/hotdeal-manager for integrated hotdeal management
@@ -88,12 +135,16 @@ This is a Next.js 15 application using App Router with a custom local storage da
 ```
 
 ### Database Layer
-The application uses a custom local storage database with a Repository pattern:
+The application is migrating from LocalStorage to Supabase:
+- **마이그레이션 진행률**: **Wave 1-4 완료** (34시간 소요) - 사용자 인증, Buy-for-me, 커뮤니티, 시스템 설정 완료
 - **BaseRepository** (`lib/db/local/repositories/base-repository.ts`): Abstract base class providing CRUD operations
 - **Entity Repositories**: Extend BaseRepository for User, Post, Comment, HotDeal, Order, Payment entities
 - **Database Service** (`lib/db/database-service.ts`): Singleton that exports repository instances
-- **Storage Layer** (`lib/db/storage.ts`): LocalStorage wrapper with JSON serialization
+- **Storage Layer** (`lib/db/storage.ts`): LocalStorage wrapper (임시 사용 중, 향후 제거 예정)
 - **Auto-initialization**: Mock data automatically initializes on first load via `initializeMockData()`
+- **Supabase Services**: New services in `lib/services/supabase-*.ts` for migrated features
+- **Migration Status**: Wave 1-4 완료 (Auth, Buy-for-me, Community, System) - Wave 5(Hot Deals 검증) 진행 예정
+- **실제 Supabase 테이블**: 18개 테이블 (admin_activity_logs, comment_likes, crawling_logs, hot_deal_comments, hot_deal_likes, hot_deals, hotdeal_translations, notifications, order_status_history, payments, proxy_purchase_addresses, proxy_purchase_quotes, proxy_purchases_request, system_settings, user_addresses, user_favorite_hotdeals, user_profiles, users)
 
 ### State Management Architecture
 - **Global State**: Jotai atoms in `states/` directory (auth, UI state)
@@ -126,10 +177,11 @@ HiKo is a platform helping foreigners shop online in Korea:
 
 ### Key Technical Decisions
 - **No API Routes**: Use Server Actions in `actions/` directory instead
-- **Local Storage DB**: With prepared migration path to Supabase
+- **Database Migration**: LocalStorage → Supabase 전환 진행 중 (Wave 1-4 완료, Wave 5-7 진행 예정)
 - **Repository Pattern**: Enables easy database transition
 - **Server Components**: For SEO-critical pages (hot deals list, detail pages)
 - **Image Optimization**: Next.js Image with external domain support and 7-day caching
+- **USE_SUPABASE Flag**: 임시 플래그 - 마이그레이션 완료 후 제거 예정
 
 ## Development Guidelines
 
@@ -257,7 +309,8 @@ These rules are derived from shrimp-rules.md and must be followed:
 - **Client Components**: Never access Repository directly
 - **Hardcoded Text**: All user-facing text must use translation system
 - **Image Handling**: Use Next.js Image component with proper dimensions
-- **Migration Ready**: Repository pattern enables future Supabase migration
+- **Migration Ready**: Repository pattern enables Supabase migration (Wave 1-4 완료)
+- **Critical Issues**: database.types.ts는 실제로 완전함 (922줄, 모든 타입 정의), buy-for-me-modal Supabase 전환 완료
 
 ## Hotdeal Crawling System
 
@@ -275,8 +328,18 @@ The system crawls hotdeals from 6 Korean communities:
 - **Community Crawlers**: Individual crawler implementations in `lib/crawlers/`
 - **Crawl Interval**: 10 minutes (configurable)
 - **Features**: Automatic duplicate detection, category classification, expired deal detection
+- **중요**: 크롤링 데이터는 LocalStorage를 거치지 않고 바로 Supabase에 저장
+- **현재 상태**: Ppomppu 크롤러만 구현 완료 (246개 항목, 2025-08-04)
+- **크롤러 파일**: ppomppu-crawler.ts가 직접 Supabase에 저장 (올바른 구현)
 # important-instruction-reminders
 Do what has been asked; nothing more, nothing less.
 NEVER create files unless they're absolutely necessary for achieving your goal.
 ALWAYS prefer editing an existing file to creating a new one.
 NEVER proactively create documentation files (*.md) or README files. Only create documentation files if explicitly requested by the User.
+# important-instruction-reminders
+Do what has been asked; nothing more, nothing less.
+NEVER create files unless they're absolutely necessary for achieving your goal.
+ALWAYS prefer editing an existing file to creating a new one.
+NEVER proactively create documentation files (*.md) or README files. Only create documentation files if explicitly requested by the User.
+
+      

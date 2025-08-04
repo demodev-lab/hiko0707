@@ -35,8 +35,8 @@ import {
   Home
 } from 'lucide-react'
 import { useAuth } from '@/hooks/use-auth'
-import { useBuyForMe } from '@/hooks/use-buy-for-me'
-import { useAddresses } from '@/hooks/use-addresses'
+import { useSupabaseBuyForMe } from '@/hooks/use-supabase-buy-for-me'
+import { useSupabaseUserAddresses } from '@/hooks/use-supabase-order'
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
@@ -56,11 +56,11 @@ const buyForMeSchema = z.object({
   quantity: z.number().min(1, '수량은 1 이상이어야 합니다'),
   shippingInfo: z.object({
     fullName: z.string().min(1, '이름을 입력해주세요'),
-    phoneNumber: z.string().min(1, '전화번호를 입력해주세요'),
+    phone: z.string().min(1, '전화번호를 입력해주세요'),
     email: z.string().email('올바른 이메일을 입력해주세요'),
     address: z.string().min(1, '배송 주소를 입력해주세요'),
-    postalCode: z.string().min(1, '우편번호를 입력해주세요'),
-    detailAddress: z.string().optional(),
+    post_code: z.string().min(1, '우편번호를 입력해주세요'),
+    address_detail: z.string().optional(),
   }),
   specialRequests: z.string().optional()
 })
@@ -88,8 +88,8 @@ interface BuyForMeModalProps {
 
 export function BuyForMeModal({ open, onOpenChange, hotdeal }: BuyForMeModalProps) {
   const { currentUser } = useAuth()
-  const { createRequest, isCreating } = useBuyForMe()
-  const { addresses, defaultAddress, createAddress } = useAddresses()
+  const { createRequest, isCreating } = useSupabaseBuyForMe()
+  const { addresses, defaultAddress, createAddressAsync, isCreatingAddress } = useSupabaseUserAddresses(currentUser?.id || '')
   const router = useRouter()
   const [selectedCurrency, setSelectedCurrency] = useState('USD')
   const [selectedAddressId, setSelectedAddressId] = useState<string>('')
@@ -106,11 +106,11 @@ export function BuyForMeModal({ open, onOpenChange, hotdeal }: BuyForMeModalProp
       quantity: 1,
       shippingInfo: {
         fullName: currentUser?.name || '',
-        phoneNumber: currentUser?.phone || '',
+        phone: currentUser?.phone || '',
         email: currentUser?.email || '',
         address: '',
-        postalCode: '',
-        detailAddress: ''
+        post_code: '',
+        address_detail: ''
       }
     }
   })
@@ -120,12 +120,12 @@ export function BuyForMeModal({ open, onOpenChange, hotdeal }: BuyForMeModalProp
     if (open) {
       if (defaultAddress) {
         setSelectedAddressId(defaultAddress.id)
-        form.setValue('shippingInfo.fullName', defaultAddress.recipientName)
-        form.setValue('shippingInfo.phoneNumber', defaultAddress.phoneNumber)
-        form.setValue('shippingInfo.email', defaultAddress.email)
+        form.setValue('shippingInfo.fullName', defaultAddress.name)
+        form.setValue('shippingInfo.phone', defaultAddress.phone)
+        form.setValue('shippingInfo.email', currentUser?.email || '')
         form.setValue('shippingInfo.address', defaultAddress.address)
-        form.setValue('shippingInfo.postalCode', defaultAddress.postalCode)
-        form.setValue('shippingInfo.detailAddress', defaultAddress.detailAddress || '')
+        form.setValue('shippingInfo.post_code', defaultAddress.post_code)
+        form.setValue('shippingInfo.address_detail', defaultAddress.address_detail || '')
       } else {
         // 저장된 배송지가 없으면 새 배송지 폼으로 설정하고 저장 체크박스 기본 선택
         setSelectedAddressId('new')
@@ -144,22 +144,22 @@ export function BuyForMeModal({ open, onOpenChange, hotdeal }: BuyForMeModalProp
       setShowNewAddressForm(true)
       // 폼 초기화
       form.setValue('shippingInfo.fullName', currentUser?.name || '')
-      form.setValue('shippingInfo.phoneNumber', currentUser?.phone || '')
+      form.setValue('shippingInfo.phone', currentUser?.phone || '')
       form.setValue('shippingInfo.email', currentUser?.email || '')
       form.setValue('shippingInfo.address', '')
-      form.setValue('shippingInfo.postalCode', '')
-      form.setValue('shippingInfo.detailAddress', '')
+      form.setValue('shippingInfo.post_code', '')
+      form.setValue('shippingInfo.address_detail', '')
       return
     }
 
     const selectedAddress = addresses.find(addr => addr.id === addressId)
     if (selectedAddress) {
-      form.setValue('shippingInfo.fullName', selectedAddress.recipientName)
-      form.setValue('shippingInfo.phoneNumber', selectedAddress.phoneNumber)
-      form.setValue('shippingInfo.email', selectedAddress.email)
+      form.setValue('shippingInfo.fullName', selectedAddress.name)
+      form.setValue('shippingInfo.phone', selectedAddress.phone)
+      form.setValue('shippingInfo.email', currentUser?.email || '')
       form.setValue('shippingInfo.address', selectedAddress.address)
-      form.setValue('shippingInfo.postalCode', selectedAddress.postalCode)
-      form.setValue('shippingInfo.detailAddress', selectedAddress.detailAddress || '')
+      form.setValue('shippingInfo.post_code', selectedAddress.post_code)
+      form.setValue('shippingInfo.address_detail', selectedAddress.address_detail || '')
     }
   }
 
@@ -174,9 +174,9 @@ export function BuyForMeModal({ open, onOpenChange, hotdeal }: BuyForMeModalProp
   }) => {
     // 주소 정보를 폼에 입력
     form.setValue('shippingInfo.address', addressData.fullAddress)
-    form.setValue('shippingInfo.postalCode', addressData.postalCode)
+    form.setValue('shippingInfo.post_code', addressData.postalCode)
     if (addressData.detailAddress) {
-      form.setValue('shippingInfo.detailAddress', addressData.detailAddress)
+      form.setValue('shippingInfo.address_detail', addressData.detailAddress)
     }
     setShowAddressSearch(false)
   }
@@ -217,27 +217,19 @@ export function BuyForMeModal({ open, onOpenChange, hotdeal }: BuyForMeModalProp
       console.log('✅ 배송지 저장 조건 만족 - 저장 시작')
       try {
         const addressData = {
-          name: addresses.length === 0 ? '기본 배송지' : `배송지 ${addresses.length + 1}`,
-          recipientName: data.shippingInfo.fullName,
-          phoneNumber: data.shippingInfo.phoneNumber,
-          email: data.shippingInfo.email,
-          postalCode: data.shippingInfo.postalCode,
+          label: addresses.length === 0 ? '기본 배송지' : `배송지 ${addresses.length + 1}`,
+          name: data.shippingInfo.fullName,
+          phone: data.shippingInfo.phone,
+          post_code: data.shippingInfo.post_code,
           address: data.shippingInfo.address,
-          detailAddress: data.shippingInfo.detailAddress || '',
-          isDefault: addresses.length === 0, // 첫 번째 배송지면 기본으로 설정
+          address_detail: data.shippingInfo.address_detail || null,
+          is_default: addresses.length === 0, // 첫 번째 배송지면 기본으로 설정
+          user_id: currentUser.id
         }
         
         console.log('💾 저장할 배송지 데이터:', addressData)
         
-        // 저장 전 LocalStorage 상태 확인
-        const beforeSave = localStorage.getItem('addresses')
-        console.log('💿 저장 전 LocalStorage addresses:', beforeSave)
-        
-        const savedAddress = await createAddress(addressData)
-        
-        // 저장 후 LocalStorage 상태 확인
-        const afterSave = localStorage.getItem('addresses')
-        console.log('💿 저장 후 LocalStorage addresses:', afterSave)
+        const savedAddress = await createAddressAsync(addressData)
         
         if (!savedAddress) {
           console.error('❌ 배송지 저장 실패: createAddress returned null')
@@ -281,11 +273,11 @@ export function BuyForMeModal({ open, onOpenChange, hotdeal }: BuyForMeModalProp
       productOptions: data.productOptions,
       shippingInfo: {
         name: data.shippingInfo.fullName,
-        phone: data.shippingInfo.phoneNumber,
+        phone: data.shippingInfo.phone,
         email: data.shippingInfo.email,
-        postalCode: data.shippingInfo.postalCode,
+        postalCode: data.shippingInfo.post_code,
         address: data.shippingInfo.address,
-        detailAddress: data.shippingInfo.detailAddress || ''
+        detailAddress: data.shippingInfo.address_detail || ''
       },
       specialRequests: data.specialRequests,
       estimatedServiceFee: serviceFee,
@@ -326,9 +318,9 @@ export function BuyForMeModal({ open, onOpenChange, hotdeal }: BuyForMeModalProp
       }
     } else if (currentStep === 2) {
       // 2단계: 주소 정보 확인
-      const { address, postalCode } = form.getValues('shippingInfo')
-      console.log('주소 정보:', { address, postalCode })
-      if (!address || !postalCode) {
+      const { address, post_code } = form.getValues('shippingInfo')
+      console.log('주소 정보:', { address, postalCode: post_code })
+      if (!address || !post_code) {
         toast.error('배송 주소를 입력해주세요')
         return
       }
@@ -729,17 +721,17 @@ export function BuyForMeModal({ open, onOpenChange, hotdeal }: BuyForMeModalProp
             <div className="space-y-3">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                 <div>
-                  <Label htmlFor="shippingInfo.postalCode" className="text-sm font-medium">
+                  <Label htmlFor="shippingInfo.post_code" className="text-sm font-medium">
                     우편번호 <span className="text-red-500">*</span>
                   </Label>
                   <Input
-                    {...form.register('shippingInfo.postalCode')}
+                    {...form.register('shippingInfo.post_code')}
                     placeholder="12345"
                     className="text-sm"
                   />
-                  {form.formState.errors.shippingInfo?.postalCode && (
+                  {form.formState.errors.shippingInfo?.post_code && (
                     <p className="text-xs sm:text-sm text-red-500 mt-1">
-                      {form.formState.errors.shippingInfo.postalCode.message}
+                      {form.formState.errors.shippingInfo.post_code.message}
                     </p>
                   )}
                 </div>
@@ -791,11 +783,11 @@ export function BuyForMeModal({ open, onOpenChange, hotdeal }: BuyForMeModalProp
               </div>
 
               <div>
-                <Label htmlFor="shippingInfo.detailAddress" className="text-sm font-medium">
+                <Label htmlFor="shippingInfo.address_detail" className="text-sm font-medium">
                   상세 주소 <span className="text-xs text-gray-500">(선택사항)</span>
                 </Label>
                 <Input
-                  {...form.register('shippingInfo.detailAddress')}
+                  {...form.register('shippingInfo.address_detail')}
                   placeholder="동/호수, 층 등"
                   className="text-sm"
                 />
@@ -840,17 +832,17 @@ export function BuyForMeModal({ open, onOpenChange, hotdeal }: BuyForMeModalProp
                   </div>
 
                   <div>
-                    <Label htmlFor="shippingInfo.phoneNumber" className="text-sm font-medium">
+                    <Label htmlFor="shippingInfo.phone" className="text-sm font-medium">
                       전화번호 <span className="text-red-500">*</span>
                     </Label>
                     <Input
-                      {...form.register('shippingInfo.phoneNumber')}
+                      {...form.register('shippingInfo.phone')}
                       placeholder="010-1234-5678"
                       className="text-sm"
                     />
-                    {form.formState.errors.shippingInfo?.phoneNumber && (
+                    {form.formState.errors.shippingInfo?.phone && (
                       <p className="text-xs sm:text-sm text-red-500 mt-1">
-                        {form.formState.errors.shippingInfo.phoneNumber.message}
+                        {form.formState.errors.shippingInfo.phone.message}
                       </p>
                     )}
                   </div>

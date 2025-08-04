@@ -19,9 +19,8 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form'
-import { db } from '@/lib/db/database-service'
 import { BuyForMeRequest } from '@/types/buy-for-me'
-import { useBuyForMeAdmin } from '@/hooks/use-buy-for-me'
+import { useSupabaseBuyForMeAdmin, useSupabaseBuyForMe } from '@/hooks/use-supabase-buy-for-me'
 import { toast } from 'sonner'
 import {
   ArrowLeft,
@@ -48,7 +47,8 @@ type TrackingFormData = z.infer<typeof trackingSchema>
 export default function TrackingInputPage() {
   const params = useParams()
   const router = useRouter()
-    const { updateRequest } = useBuyForMeAdmin()
+  const { updateStatus } = useSupabaseBuyForMeAdmin()
+  const { getRequest } = useSupabaseBuyForMe()
   const [request, setRequest] = useState<BuyForMeRequest | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -67,7 +67,7 @@ export default function TrackingInputPage() {
   useEffect(() => {
     const loadRequest = async () => {
       if (params.id) {
-        const data = await db.buyForMeRequests.findById(params.id as string)
+        const data = await getRequest(params.id as string)
         if (data && data.orderInfo) {
           setRequest(data)
           // 기존 주문 정보가 있으면 채우기
@@ -85,37 +85,30 @@ export default function TrackingInputPage() {
       }
     }
     loadRequest()
-  }, [params.id, form])
+  }, [params.id, form, getRequest])
 
   const onSubmit = async (data: TrackingFormData) => {
     if (!request) return
 
     setIsSubmitting(true)
     try {
-      const orderInfo: BuyForMeRequest['orderInfo'] = {
-        actualOrderId: data.actualOrderId,
-        orderDate: new Date(data.orderDate),
-        trackingNumber: data.trackingNumber,
-        trackingUrl: data.trackingUrl,
-      }
-
-      const updatedRequest: BuyForMeRequest = {
-        ...request,
-        orderInfo,
-        status: data.trackingNumber ? 'shipping' : 'purchasing',
-        updatedAt: new Date(),
-      }
-
-      await updateRequest(updatedRequest)
+      // TODO: Supabase에서 주문 정보(orderInfo) 업데이트 기능 구현 필요
+      // 현재는 상태 업데이트만 처리
+      const newStatus = data.trackingNumber ? 'shipping' : 'purchasing'
+      
+      await updateStatus({
+        requestId: request.id,
+        status: newStatus
+      })
       
       toast.success(data.trackingNumber ? 
-        '트래킹 정보가 성공적으로 업데이트되었습니다.' :
-        '주문 정보가 저장되었습니다.'
+        '배송 상태가 업데이트되었습니다.' :
+        '구매 진행 상태로 변경되었습니다.'
       )
       
       router.push(`/admin/buy-for-me/${request.id}`)
     } catch (error) {
-      toast.error('주문 정보 업데이트 중 오류가 발생했습니다.')
+      toast.error('상태 업데이트 중 오류가 발생했습니다.')
     } finally {
       setIsSubmitting(false)
     }

@@ -20,7 +20,8 @@ import {
   ChevronRight
 } from 'lucide-react'
 import { HotDealsSection } from '@/components/features/home/hotdeals-section'
-import { useHotDeals } from '@/hooks/use-local-db'
+import { useHotDeals } from '@/hooks/use-supabase-hotdeals'
+import { transformSupabaseToLocal } from '@/lib/utils/hotdeal-transformers'
 import { useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { SignedIn, SignedOut } from '@clerk/nextjs'
@@ -31,18 +32,26 @@ export default function Home() {
   const [searchKeyword, setSearchKeyword] = useState('')
   
   // 실시간 핫딜 데이터 가져오기
-  const { hotdeals } = useHotDeals()
+  const { data: supabaseHotdeals } = useHotDeals({
+    limit: 100,
+    sortBy: 'created_at',
+    sortOrder: 'desc'
+  })
   
-  // 3일 이내 핫딜만 필터링
+  // LocalStorage 형식으로 변환하고 3일 이내 핫딜만 필터링
   const activeHotDeals = useMemo(() => {
+    if (!supabaseHotdeals?.data) return []
+    
     const threeDaysAgo = new Date()
     threeDaysAgo.setDate(threeDaysAgo.getDate() - 3)
     
-    return hotdeals.filter(deal => {
-      const crawledDate = new Date(deal.crawledAt)
-      return crawledDate >= threeDaysAgo
-    })
-  }, [hotdeals])
+    return supabaseHotdeals.data
+      .map(transformSupabaseToLocal)
+      .filter(deal => {
+        const crawledDate = new Date(deal.crawledAt)
+        return crawledDate >= threeDaysAgo
+      })
+  }, [supabaseHotdeals])
   
   // 검색 처리
   const handleSearch = (e: React.FormEvent) => {

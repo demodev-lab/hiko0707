@@ -7,9 +7,10 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
-import { db } from '@/lib/db/database-service'
+import { SupabaseOrderService } from '@/lib/services/supabase-order-service'
 import { BuyForMeRequest } from '@/types/buy-for-me'
-import { useAuth } from '@/hooks/use-auth'
+import { useClerkRole } from '@/hooks/use-clerk-role'
+import { useSupabaseUser } from '@/hooks/use-supabase-user'
 import { format } from 'date-fns'
 import { ko } from 'date-fns/locale'
 import {
@@ -29,7 +30,8 @@ import { toast } from 'sonner'
 export default function PaymentPage() {
   const params = useParams()
   const router = useRouter()
-  const { currentUser } = useAuth()
+  const { isAuthenticated } = useClerkRole()
+  const { user: currentUser } = useSupabaseUser()
   const [request, setRequest] = useState<BuyForMeRequest | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [copied, setCopied] = useState(false)
@@ -37,11 +39,24 @@ export default function PaymentPage() {
   useEffect(() => {
     const loadRequest = async () => {
       if (params.id && currentUser) {
-        const data = await db.buyForMeRequests.findById(params.id as string)
+        const data = await SupabaseOrderService.getOrderById(params.id as string) as any
         // 사용자 본인의 주문이고 결제 대기 상태인지 확인
-        if (data && data.userId === currentUser.id && data.quote && 
+        if (data && data.user_id === currentUser.id && data.quotes && data.quotes.length > 0 && 
             ['quote_approved', 'payment_pending'].includes(data.status)) {
-          setRequest(data)
+          // Supabase 데이터를 BuyForMeRequest 형태로 변환
+          const transformedData = {
+            ...data,
+            userId: data.user_id,
+            quote: {
+              finalProductPrice: data.quotes[0].product_cost,
+              serviceFee: data.quotes[0].fee,
+              domesticShippingFee: data.quotes[0].domestic_shipping,
+              totalAmount: data.quotes[0].total_amount,
+              paymentMethod: data.quotes[0].payment_method,
+              paymentLink: null // Supabase에는 이 필드가 없음
+            }
+          }
+          setRequest(transformedData as any)
         }
         setIsLoading(false)
       }

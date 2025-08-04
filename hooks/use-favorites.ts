@@ -1,5 +1,23 @@
 'use client'
 
+/**
+ * @deprecated 이 훅은 더 이상 사용하지 마세요!
+ * 
+ * ⚠️ DEPRECATED: use-favorites.ts는 LocalStorage 기반 시스템을 사용합니다.
+ * 
+ * 🔄 대신 사용할 훅:
+ * - useSupabaseFavorites() - 완전한 Supabase 기반 찜하기 시스템 (user_favorite_hotdeals 테이블)
+ * 
+ * 📋 마이그레이션 가이드:
+ * 기존: const { data: favorites } = useFavorites('hotdeal')
+ * 신규: const { favorites } = useSupabaseFavorites()
+ * 
+ * 기존: const { mutate: toggleFavorite } = useToggleFavorite()
+ * 신규: const { toggleFavoriteAsync } = useSupabaseFavorites()
+ * 
+ * 이 파일은 Phase 4에서 완전히 제거될 예정입니다.
+ */
+
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { db } from '@/lib/db/database-service'
 import { Favorite } from '@/lib/db/local/repositories/favorite-repository'

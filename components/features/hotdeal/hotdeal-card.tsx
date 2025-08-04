@@ -15,7 +15,7 @@ import { formatCurrency, formatRelativeTime } from '@/lib/i18n/format'
 import { getRelativeTimeKorean } from '@/lib/utils/date-utils'
 import { TranslatedContent } from '@/components/features/translation/translated-content'
 import { TranslationIndicator } from '@/components/features/translation/translation-indicator'
-import { useHotDealTranslation } from '@/hooks/use-translations'
+import { useHotDealTranslation } from '@/hooks/use-supabase-translations'
 import { AnimatedCard } from '@/components/ui/animated'
 import { PriceDisplay } from '@/components/features/price-display'
 
@@ -143,9 +143,9 @@ export function HotDealCard({ deal }: HotDealCardProps) {
               </Badge>
             )}
             {/* 번역 상태 표시 */}
-            {language !== 'ko' && translation && translation.status !== 'completed' && (
+            {language !== 'ko' && translation && !translation.is_auto_translated && (
               <TranslationIndicator 
-                status={translation.status} 
+                status={'pending'} 
                 language={language}
                 showLabel={false}
               />

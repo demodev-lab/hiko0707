@@ -2,7 +2,8 @@
 
 import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { useAuth } from '@/hooks/use-auth'
+import { useClerkRole } from '@/hooks/use-clerk-role'
+import { useSupabaseUser } from '@/hooks/use-supabase-user'
 import { PageLoading } from '@/components/ui/loading'
 import { ROUTES } from '@/lib/constants'
 
@@ -17,8 +18,11 @@ export function ProtectedRoute({
   requiredRole = 'user', 
   fallbackPath = ROUTES.LOGIN 
 }: ProtectedRouteProps) {
-  const { currentUser, isAuthenticated, isLoading } = useAuth()
+  const { isAuthenticated, isAdmin, isLoading: clerkLoading } = useClerkRole()
+  const { user: currentUser, isLoading: userLoading } = useSupabaseUser()
   const router = useRouter()
+
+  const isLoading = clerkLoading || userLoading
 
   useEffect(() => {
     if (!isLoading) {
@@ -28,12 +32,12 @@ export function ProtectedRoute({
       }
 
       // 관리자 권한이 필요한 경우 체크
-      if (requiredRole === 'admin' && currentUser?.role !== 'admin') {
+      if (requiredRole === 'admin' && !isAdmin) {
         router.push(ROUTES.HOTDEALS)
         return
       }
     }
-  }, [isAuthenticated, currentUser, isLoading, requiredRole, fallbackPath, router])
+  }, [isAuthenticated, isAdmin, isLoading, requiredRole, fallbackPath, router])
 
   // Loading 상태
   if (isLoading) {
@@ -46,7 +50,7 @@ export function ProtectedRoute({
   }
 
   // 관리자 권한이 필요한데 관리자가 아닌 경우
-  if (requiredRole === 'admin' && currentUser?.role !== 'admin') {
+  if (requiredRole === 'admin' && !isAdmin) {
     return <PageLoading />
   }
 
@@ -62,7 +66,7 @@ export function PublicOnlyRoute({
   children, 
   redirectPath = ROUTES.HOTDEALS 
 }: PublicOnlyRouteProps) {
-  const { isAuthenticated, isLoading } = useAuth()
+  const { isAuthenticated, isLoading } = useClerkRole()
   const router = useRouter()
 
   useEffect(() => {

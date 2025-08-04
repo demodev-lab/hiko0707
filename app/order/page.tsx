@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import { OrderFormV2 } from '@/components/features/order/order-form-v2'
 import { ShoppingBag, Shield, Zap, Calculator, Globe, Package, CheckCircle } from 'lucide-react'
 import { useSearchParams } from 'next/navigation'
-import { db } from '@/lib/db/database-service'
+import { SupabaseHotDealService } from '@/lib/services/supabase-hotdeal-service'
 import { HotDeal } from '@/types/hotdeal'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
@@ -19,7 +19,7 @@ export default function OrderPage() {
     async function fetchHotdeal() {
       if (hotdealId) {
         try {
-          const deal = await db.hotdeals.findById(hotdealId)
+          const deal = await SupabaseHotDealService.getHotDealById(hotdealId)
           setHotdealData(deal)
         } catch (error) {
           console.error('Failed to fetch hotdeal data:', error)
@@ -34,8 +34,8 @@ export default function OrderPage() {
   const initialData = hotdealData ? {
     items: [{
       productName: hotdealData.title,
-      productUrl: hotdealData.originalUrl,
-      price: hotdealData.price,
+      productUrl: hotdealData.original_url,
+      price: hotdealData.sale_price,
       quantity: 1,
       options: {},
       notes: ''

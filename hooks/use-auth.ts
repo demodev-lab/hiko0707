@@ -1,5 +1,25 @@
 'use client'
 
+/**
+ * @deprecated 이 훅은 더 이상 사용하지 마세요!
+ * 
+ * ⚠️ DEPRECATED: use-auth.ts는 LocalStorage 기반 인증 시스템을 사용합니다.
+ * 
+ * 🔄 대신 사용할 훅들:
+ * - useClerkRole() - 인증 상태 및 역할 확인
+ * - useSupabaseUser() - 사용자 정보 및 프로필 관리
+ * - useClerk().signOut() - 로그아웃
+ * 
+ * 📋 마이그레이션 가이드:
+ * 기존: const { currentUser, isAuthenticated, login, logout } = useAuth()
+ * 신규: 
+ *   const { isAuthenticated, isAdmin } = useClerkRole()
+ *   const { user: currentUser } = useSupabaseUser()
+ *   const { signOut } = useClerk()
+ * 
+ * 이 파일은 Phase 4에서 완전히 제거될 예정입니다.
+ */
+
 import { useAtom } from 'jotai'
 import { useCallback, useEffect } from 'react'
 import { useRouter } from 'next/navigation'

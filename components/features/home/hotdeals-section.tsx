@@ -5,13 +5,17 @@ import Link from 'next/link'
 import { HotDealCard } from '@/components/features/hotdeal/hotdeal-card'
 import { SectionTransition } from '@/components/common/page-transition'
 import { StaggerContainer, StaggerItem } from '@/components/ui/animated'
-import { useHotDeals } from '@/hooks/use-local-db'
+import { usePopularHotDeals } from '@/hooks/use-supabase-hotdeals'
 import { LoadingSpinner } from '@/components/ui/loading-spinner'
 import { calculateTodayRankings } from '@/lib/utils/ranking-utils'
+import { transformSupabaseToLocal } from '@/lib/utils/hotdeal-transformers'
 
 export function HotDealsSection() {
-  // 클라이언트에서 데이터 가져오기
-  const { hotdeals, loading, error } = useHotDeals()
+  // 인기 핫딜 6개 가져오기
+  const { data: popularDeals, isLoading: loading, error } = usePopularHotDeals(6)
+  
+  // Supabase 데이터를 LocalStorage 형식으로 변환
+  const hotdeals = popularDeals?.map(transformSupabaseToLocal) || []
   
   // 순위 계산된 핫딜 목록
   const rankedHotdeals = calculateTodayRankings(hotdeals)

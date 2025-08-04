@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { useBuyForMeAdmin } from '@/hooks/use-buy-for-me'
+import { useSupabaseBuyForMeAdmin } from '@/hooks/use-supabase-buy-for-me'
 import { BuyForMeRequest } from '@/types/buy-for-me'
 import { formatDistanceToNow, format } from 'date-fns'
 import { ko } from 'date-fns/locale'
@@ -123,18 +123,18 @@ function RequestCard({ request }: { request: BuyForMeRequest }) {
 }
 
 export default function BuyForMeAdminPage() {
-  const { allRequests, isLoading } = useBuyForMeAdmin()
+  const { allRequests, isLoading } = useSupabaseBuyForMeAdmin()
   const [activeTab, setActiveTab] = useState('pending')
 
-  const pendingRequests = allRequests.filter(r => 
+  const pendingRequests = allRequests.filter((r: BuyForMeRequest) => 
     ['pending_review', 'quote_sent', 'quote_approved', 'payment_pending'].includes(r.status)
   )
   
-  const activeRequests = allRequests.filter(r => 
+  const activeRequests = allRequests.filter((r: BuyForMeRequest) => 
     ['payment_completed', 'purchasing', 'shipping'].includes(r.status)
   )
   
-  const completedRequests = allRequests.filter(r => 
+  const completedRequests = allRequests.filter((r: BuyForMeRequest) => 
     ['delivered', 'cancelled'].includes(r.status)
   )
 
@@ -214,7 +214,7 @@ export default function BuyForMeAdminPage() {
               </Card>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {pendingRequests.map(request => (
+                {pendingRequests.map((request: BuyForMeRequest) => (
                   <RequestCard key={request.id} request={request} />
                 ))}
               </div>
@@ -230,7 +230,7 @@ export default function BuyForMeAdminPage() {
               </Card>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {activeRequests.map(request => (
+                {activeRequests.map((request: BuyForMeRequest) => (
                   <RequestCard key={request.id} request={request} />
                 ))}
               </div>
@@ -246,7 +246,7 @@ export default function BuyForMeAdminPage() {
               </Card>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {completedRequests.map(request => (
+                {completedRequests.map((request: BuyForMeRequest) => (
                   <RequestCard key={request.id} request={request} />
                 ))}
               </div>

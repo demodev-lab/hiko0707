@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
-import { db } from '@/lib/db/database-service'
+// Removed LocalStorage import - using Supabase hook instead
 import { BuyForMeRequest } from '@/types/buy-for-me'
 import { format } from 'date-fns'
 import { ko } from 'date-fns/locale'
@@ -31,7 +31,7 @@ import {
 } from 'lucide-react'
 import Link from 'next/link'
 import Image from 'next/image'
-import { useBuyForMeAdmin } from '@/hooks/use-buy-for-me'
+import { useSupabaseBuyForMeAdmin, useSupabaseBuyForMe } from '@/hooks/use-supabase-buy-for-me'
 import { toast } from 'sonner'
 
 const statusLabels: Record<BuyForMeRequest['status'], string> = {
@@ -61,20 +61,21 @@ const statusColors: Record<BuyForMeRequest['status'], string> = {
 export default function BuyForMeDetailPage() {
   const params = useParams()
   const router = useRouter()
-  const { updateStatus } = useBuyForMeAdmin()
+  const { updateStatus } = useSupabaseBuyForMeAdmin()
+  const { getRequest } = useSupabaseBuyForMe()
   const [request, setRequest] = useState<BuyForMeRequest | null>(null)
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
     const loadRequest = async () => {
       if (params.id) {
-        const data = await db.buyForMeRequests.findById(params.id as string)
+        const data = await getRequest(params.id as string)
         setRequest(data)
         setIsLoading(false)
       }
     }
     loadRequest()
-  }, [params.id])
+  }, [params.id, getRequest])
 
   const handleStatusUpdate = (newStatus: BuyForMeRequest['status']) => {
     if (!request) return

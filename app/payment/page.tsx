@@ -4,7 +4,8 @@ import { Suspense, useEffect, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Card, CardContent } from '@/components/ui/card'
 import { PaymentForm } from '@/components/features/payment/payment-form'
-import { db } from '@/lib/db/database-service'
+import { SupabaseOrderService } from '@/lib/services/supabase-order-service'
+import { SupabaseUserService } from '@/lib/services/supabase-user-service'
 
 export default function PaymentPage() {
   const router = useRouter()
@@ -40,7 +41,7 @@ export default function PaymentPage() {
       
       try {
         // 주문 정보 조회
-        const orderData = await db.orders.findById(orderId)
+        const orderData = await SupabaseOrderService.getRequestById(orderId)
         if (!orderData) {
           router.push('/404')
           return
@@ -48,18 +49,18 @@ export default function PaymentPage() {
         setOrder(orderData)
         
         // 사용자 정보 조회
-        const userData = await db.users.findById(orderData.userId)
+        const userData = await SupabaseUserService.getUserById(orderData.user_id)
         if (userData) {
           setCustomerInfo({
-            name: userData.name || orderData.shippingAddress.fullName,
-            email: userData.email || orderData.shippingAddress.email,
-            phone: userData.phone || orderData.shippingAddress.phoneNumber
+            name: userData.name || orderData.shipping_info?.name,
+            email: userData.email || orderData.shipping_info?.email,
+            phone: userData.phone || orderData.shipping_info?.phone
           })
         } else {
           setCustomerInfo({
-            name: orderData.shippingAddress.fullName,
-            email: orderData.shippingAddress.email,
-            phone: orderData.shippingAddress.phoneNumber
+            name: orderData.shipping_info?.name,
+            email: orderData.shipping_info?.email,
+            phone: orderData.shipping_info?.phone
           })
         }
       } catch (error) {

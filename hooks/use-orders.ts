@@ -1,5 +1,26 @@
 'use client'
 
+/**
+ * @deprecated 이 훅은 더 이상 사용하지 마세요!
+ * 
+ * ⚠️ DEPRECATED: use-orders.ts는 LocalStorage 기반 시스템을 사용합니다.
+ * 
+ * 🔄 대신 사용할 훅:
+ * - useSupabaseOrder() - 완전한 Supabase 기반 주문 시스템 (proxy_purchases_request, payments, order_status_history 테이블)
+ * 
+ * 📋 마이그레이션 가이드:
+ * 기존: const { data: orders } = useOrders(userId, status)
+ * 신규: const { orders } = useSupabaseOrder()
+ * 
+ * 기존: const { mutate: createOrder } = useCreateOrder()
+ * 신규: const { createRequestAsync } = useSupabaseBuyForMe()
+ * 
+ * 기존: const { mutate: updateStatus } = useUpdateOrderStatus()
+ * 신규: const { updateStatusAsync } = useSupabaseOrder()
+ * 
+ * 이 파일은 Phase 4에서 완전히 제거될 예정입니다.
+ */
+
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { db } from '@/lib/db/database-service'
 import { Order, OrderStatus, OrderFormData } from '@/types/order'

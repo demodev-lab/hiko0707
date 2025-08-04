@@ -56,3 +56,6 @@ next-env.d.ts
 
 # other
 .cursor/mcp.json
+
+# YoYo AI version control directory
+.yoyo/

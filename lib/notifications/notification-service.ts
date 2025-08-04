@@ -47,7 +47,8 @@ class NotificationService {
     message: string,
     actionUrl?: string,
     target: 'admin' | 'user' | 'all' = 'all',
-    userId?: string
+    userId?: string,
+    currentUser?: { id: string; role: string } | null
   ): Notification {
     const notification: Notification = {
       id: `notif-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
@@ -64,44 +65,44 @@ class NotificationService {
     this.notifications.unshift(notification)
     this.saveNotifications()
     
-    // 현재 사용자 정보 확인 (localStorage에서)
-    const currentUserStr = localStorage.getItem('currentUser')
-    const currentUser = currentUserStr ? JSON.parse(currentUserStr) : null
-    
-    // 알림 대상이 맞는 경우에만 토스트 표시
-    const shouldShowToast = 
-      target === 'all' || 
-      (target === 'admin' && currentUser?.role === 'admin') ||
-      (target === 'user' && userId === currentUser?.id)
-    
-    // 토스트 표시 제거 - order-form-v2에서 직접 처리
-    // if (shouldShowToast) {
-    //   const toastType = type === 'error' ? 'error' : type === 'warning' ? 'warning' : type === 'success' ? 'success' : 'message'
-    //   toast[toastType](title, {
-    //     description: message,
-    //     action: actionUrl ? {
-    //       label: '확인하기',
-    //       onClick: () => window.location.href = actionUrl
-    //     } : undefined
-    //   })
-    // }
+    // 알림 대상이 맞는 경우에만 토스트 표시 (currentUser가 제공된 경우만)
+    if (currentUser) {
+      const shouldShowToast = 
+        target === 'all' || 
+        (target === 'admin' && currentUser.role === 'admin') ||
+        (target === 'user' && userId === currentUser.id)
+      
+      // 토스트 표시 제거 - order-form-v2에서 직접 처리
+      // if (shouldShowToast) {
+      //   const toastType = type === 'error' ? 'error' : type === 'warning' ? 'warning' : type === 'success' ? 'success' : 'message'
+      //   toast[toastType](title, {
+      //     description: message,
+      //     action: actionUrl ? {
+      //       label: '확인하기',
+      //       onClick: () => window.location.href = actionUrl
+      //     } : undefined
+      //   })
+      // }
+    }
 
     return notification
   }
 
   // Buy for Me 요청 관련 알림
-  notifyNewRequest(request: BuyForMeRequest) {
+  notifyNewRequest(request: BuyForMeRequest, currentUser?: { id: string; role: string } | null) {
     // 관리자에게만 표시되는 알림
     return this.createNotification(
       'info',
       '새로운 대리 구매 요청',
       `${request.shippingInfo.name}님이 새로운 요청을 보냈습니다.`,
       `/admin/buy-for-me/${request.id}`,
-      'admin'  // 관리자만
+      'admin',  // 관리자만
+      undefined,
+      currentUser
     )
   }
 
-  notifyQuoteSent(request: BuyForMeRequest) {
+  notifyQuoteSent(request: BuyForMeRequest, currentUser?: { id: string; role: string } | null) {
     // 해당 사용자에게만 표시되는 알림
     return this.createNotification(
       'success',
@@ -109,22 +110,25 @@ class NotificationService {
       `주문번호 ${request.id.slice(0, 8)}의 견적서를 확인해주세요.`,
       `/mypage/orders/${request.id}/quote`,
       'user',  // 특정 사용자만
-      request.userId
+      request.userId,
+      currentUser
     )
   }
 
-  notifyQuoteApproved(request: BuyForMeRequest) {
+  notifyQuoteApproved(request: BuyForMeRequest, currentUser?: { id: string; role: string } | null) {
     // 관리자에게만 표시되는 알림
     return this.createNotification(
       'success',
       '견적이 승인되었습니다',
       `${request.shippingInfo.name}님이 견적을 승인했습니다. 결제를 진행해주세요.`,
       `/admin/buy-for-me/${request.id}`,
-      'admin'  // 관리자만
+      'admin',  // 관리자만
+      undefined,
+      currentUser
     )
   }
 
-  notifyPaymentConfirmed(request: BuyForMeRequest) {
+  notifyPaymentConfirmed(request: BuyForMeRequest, currentUser?: { id: string; role: string } | null) {
     // 해당 사용자에게만 표시되는 알림
     return this.createNotification(
       'success',
@@ -132,11 +136,12 @@ class NotificationService {
       `주문번호 ${request.id.slice(0, 8)}의 결제가 확인되었습니다.`,
       `/mypage/orders/${request.id}`,
       'user',  // 특정 사용자만
-      request.userId
+      request.userId,
+      currentUser
     )
   }
 
-  notifyOrderShipped(request: BuyForMeRequest) {
+  notifyOrderShipped(request: BuyForMeRequest, currentUser?: { id: string; role: string } | null) {
     // 해당 사용자에게만 표시되는 알림
     return this.createNotification(
       'info',
@@ -144,11 +149,12 @@ class NotificationService {
       `트래킹 번호: ${request.orderInfo?.trackingNumber || '확인 중'}`,
       `/mypage/orders/${request.id}`,
       'user',  // 특정 사용자만
-      request.userId
+      request.userId,
+      currentUser
     )
   }
 
-  notifyOrderDelivered(request: BuyForMeRequest) {
+  notifyOrderDelivered(request: BuyForMeRequest, currentUser?: { id: string; role: string } | null) {
     // 해당 사용자에게만 표시되는 알림
     return this.createNotification(
       'success',
@@ -156,38 +162,40 @@ class NotificationService {
       '상품이 안전하게 도착했습니다. 이용해 주셔서 감사합니다.',
       `/mypage/orders/${request.id}`,
       'user',  // 특정 사용자만
-      request.userId
+      request.userId,
+      currentUser
     )
   }
 
   // 일반 알림
-  success(title: string, message: string, actionUrl?: string) {
-    return this.createNotification('success', title, message, actionUrl, 'all')
+  success(title: string, message: string, actionUrl?: string, currentUser?: { id: string; role: string } | null) {
+    return this.createNotification('success', title, message, actionUrl, 'all', undefined, currentUser)
   }
 
-  error(title: string, message: string, actionUrl?: string) {
-    return this.createNotification('error', title, message, actionUrl, 'all')
+  error(title: string, message: string, actionUrl?: string, currentUser?: { id: string; role: string } | null) {
+    return this.createNotification('error', title, message, actionUrl, 'all', undefined, currentUser)
   }
 
-  info(title: string, message: string, actionUrl?: string) {
-    return this.createNotification('info', title, message, actionUrl, 'all')
+  info(title: string, message: string, actionUrl?: string, currentUser?: { id: string; role: string } | null) {
+    return this.createNotification('info', title, message, actionUrl, 'all', undefined, currentUser)
   }
 
-  warning(title: string, message: string, actionUrl?: string) {
-    return this.createNotification('warning', title, message, actionUrl, 'all')
+  warning(title: string, message: string, actionUrl?: string, currentUser?: { id: string; role: string } | null) {
+    return this.createNotification('warning', title, message, actionUrl, 'all', undefined, currentUser)
   }
 
   // 알림 관리
-  getNotifications(onlyUnread = false): Notification[] {
-    // 현재 사용자 정보 확인
-    const currentUserStr = localStorage.getItem('currentUser')
-    const currentUser = currentUserStr ? JSON.parse(currentUserStr) : null
+  getNotifications(onlyUnread = false, currentUser?: { id: string; role: string } | null): Notification[] {
+    // currentUser가 없으면 빈 배열 반환
+    if (!currentUser) {
+      return []
+    }
     
     // 사용자에 맞는 알림만 필터링
     const filtered = this.notifications.filter(n => {
       if (n.target === 'all') return true
-      if (n.target === 'admin' && currentUser?.role === 'admin') return true
-      if (n.target === 'user' && n.userId === currentUser?.id) return true
+      if (n.target === 'admin' && currentUser.role === 'admin') return true
+      if (n.target === 'user' && n.userId === currentUser.id) return true
       return false
     })
     
@@ -214,10 +222,11 @@ class NotificationService {
     this.saveNotifications()
   }
 
-  getUnreadCount(): number {
-    // 현재 사용자 정보 확인
-    const currentUserStr = localStorage.getItem('currentUser')
-    const currentUser = currentUserStr ? JSON.parse(currentUserStr) : null
+  getUnreadCount(currentUser?: { id: string; role: string } | null): number {
+    // currentUser가 없으면 0 반환
+    if (!currentUser) {
+      return 0
+    }
     
     // 사용자에 맞는 알림만 카운트
     return this.notifications.filter(n => {
@@ -226,8 +235,8 @@ class NotificationService {
       
       // 대상 확인
       if (n.target === 'all') return true
-      if (n.target === 'admin' && currentUser?.role === 'admin') return true
-      if (n.target === 'user' && n.userId === currentUser?.id) return true
+      if (n.target === 'admin' && currentUser.role === 'admin') return true
+      if (n.target === 'user' && n.userId === currentUser.id) return true
       return false
     }).length
   }

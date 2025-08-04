@@ -1,0 +1,10 @@
+#!/bin/bash
+# Supabase 환경 변수 설정 스크립트
+
+export NEXT_PUBLIC_SUPABASE_URL="https://vyvzihzjivcfhietrpnd.supabase.co"
+export NEXT_PUBLIC_SUPABASE_ANON_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ5dnppaHpqaXZjZmhpZXRycG5kIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTMyNDk0NTYsImV4cCI6MjA2ODgyNTQ1Nn0.vHCZ_N-vwzJTCMd377j0EiOdL1QlT9FznQALIIQDGd4"
+export SUPABASE_SERVICE_ROLE_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ5dnppaHpqaXZjZmhpZXRycG5kIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1MzI0OTQ1NiwiZXhwIjoyMDY4ODI1NDU2fQ.F4klI_xu5CO5Yw4GPSFKQ6prJwUTcC0hgNJH-txU06k"
+export SUPABASE_ACCESS_TOKEN="sbp_321682372c34fab09fda5b04eb7e101b19be430a"
+export SUPABASE_DATABASE_PASSWORD="ECtXjjghTVgRoYlR"
+
+echo "✅ Supabase 환경 변수가 설정되었습니다."

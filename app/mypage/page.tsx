@@ -2,8 +2,10 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { useAuth } from '@/hooks/use-auth'
-import { useBuyForMe } from '@/hooks/use-buy-for-me'
+import { useClerkRole } from '@/hooks/use-clerk-role'
+import { useSupabaseUser } from '@/hooks/use-supabase-user'
+import { useSupabaseBuyForMe } from '@/hooks/use-supabase-buy-for-me'
+import { useClerk } from '@clerk/nextjs'
 import { ProtectedRoute } from '@/components/features/auth/protected-route'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -58,7 +60,7 @@ const statusColors: Record<BuyForMeRequest['status'], string> = {
 }
 
 function RequestCard({ request }: { request: BuyForMeRequest }) {
-  const { cancelRequest, isCancelling } = useBuyForMe()
+  const { cancelRequest, isCancelling } = useSupabaseBuyForMe()
   const [showCancelDialog, setShowCancelDialog] = useState(false)
   
   // 취소 가능한 상태 정의
@@ -233,9 +235,11 @@ export default function MyPage() {
 }
 
 function MyPageContent() {
-  const { currentUser, logout } = useAuth()
+  const { isAuthenticated, isAdmin } = useClerkRole()
+  const { user: currentUser, isLoading: userLoading } = useSupabaseUser()
+  const { signOut } = useClerk()
   const router = useRouter()
-  const { requests, isLoading } = useBuyForMe()
+  const { requests, isLoading } = useSupabaseBuyForMe()
   const [activeTab, setActiveTab] = useState('orders')
   const [orderTab, setOrderTab] = useState('active')
   const [mounted, setMounted] = useState(false)
@@ -244,24 +248,28 @@ function MyPageContent() {
     setMounted(true)
   }, [])
   
-  const activeRequests = requests.filter(r => 
+  const activeRequests = requests.filter((r: BuyForMeRequest) => 
     !['delivered', 'cancelled'].includes(r.status)
   )
   
-  const completedRequests = requests.filter(r => 
+  const completedRequests = requests.filter((r: BuyForMeRequest) => 
     r.status === 'delivered'
   )
   
-  const cancelledRequests = requests.filter(r => 
+  const cancelledRequests = requests.filter((r: BuyForMeRequest) => 
     r.status === 'cancelled'
   )
 
-  const handleLogout = () => {
-    logout()
-    router.push('/login')
+  const handleLogout = async () => {
+    try {
+      await signOut()
+      router.push('/login')
+    } catch (error) {
+      console.error('로그아웃 중 오류 발생:', error)
+    }
   }
 
-  if (!currentUser || !mounted) {
+  if (!isAuthenticated || !currentUser || !mounted || userLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
@@ -413,7 +421,7 @@ function MyPageContent() {
                           </div>
                         ) : (
                           <div className="grid gap-4">
-                            {activeRequests.map(request => (
+                            {activeRequests.map((request: BuyForMeRequest) => (
                               <RequestCard key={request.id} request={request} />
                             ))}
                           </div>
@@ -431,7 +439,7 @@ function MyPageContent() {
                           </div>
                         ) : (
                           <div className="grid gap-4">
-                            {completedRequests.map(request => (
+                            {completedRequests.map((request: BuyForMeRequest) => (
                               <RequestCard key={request.id} request={request} />
                             ))}
                           </div>
@@ -449,7 +457,7 @@ function MyPageContent() {
                           </div>
                         ) : (
                           <div className="grid gap-4">
-                            {cancelledRequests.map(request => (
+                            {cancelledRequests.map((request: BuyForMeRequest) => (
                               <RequestCard key={request.id} request={request} />
                             ))}
                           </div>
@@ -490,9 +498,9 @@ function MyPageContent() {
                         <label className="text-sm font-medium text-purple-600 mb-2 block">회원 등급</label>
                         <div className="flex items-center gap-2">
                           <p className="text-lg font-semibold text-purple-900">
-                            {currentUser.role === 'admin' ? '관리자' : '일반 회원'}
+                            {isAdmin ? '관리자' : '일반 회원'}
                           </p>
-                          {currentUser.role === 'admin' && (
+                          {isAdmin && (
                             <Badge className="bg-purple-200 text-purple-800">Admin</Badge>
                           )}
                         </div>

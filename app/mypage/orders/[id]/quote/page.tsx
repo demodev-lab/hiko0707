@@ -8,10 +8,9 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
-import { db } from '@/lib/db/database-service'
+import { useSupabaseBuyForMe } from '@/hooks/use-supabase-buy-for-me'
+import { useSupabaseUser } from '@/hooks/use-supabase-user'
 import { BuyForMeRequest } from '@/types/buy-for-me'
-import { useBuyForMe } from '@/hooks/use-buy-for-me'
-import { useAuth } from '@/hooks/use-auth'
 import { toast } from 'sonner'
 import { format } from 'date-fns'
 import { ko } from 'date-fns/locale'
@@ -26,19 +25,20 @@ import {
 } from 'lucide-react'
 import Link from 'next/link'
 
+
 export default function QuoteConfirmPage() {
   const params = useParams()
   const router = useRouter()
-  const { currentUser } = useAuth()
-  const { approveQuote } = useBuyForMe()
-    const [request, setRequest] = useState<BuyForMeRequest | null>(null)
+  const { user: currentUser } = useSupabaseUser()
+  const { approveQuote, getRequest } = useSupabaseBuyForMe()
+  const [request, setRequest] = useState<BuyForMeRequest | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [isApproving, setIsApproving] = useState(false)
 
   useEffect(() => {
     const loadRequest = async () => {
       if (params.id && currentUser) {
-        const data = await db.buyForMeRequests.findById(params.id as string)
+        const data = await getRequest(params.id as string)
         // 사용자 본인의 주문이고 견적서가 있는지 확인
         if (data && data.userId === currentUser.id && data.quote && data.status === 'quote_sent') {
           setRequest(data)
@@ -47,7 +47,7 @@ export default function QuoteConfirmPage() {
       }
     }
     loadRequest()
-  }, [params.id, currentUser])
+  }, [params.id, currentUser, getRequest])
 
   const handleApproveQuote = async () => {
     if (!request) return

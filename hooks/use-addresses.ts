@@ -1,5 +1,21 @@
 'use client'
 
+/**
+ * @deprecated 이 훅은 더 이상 사용하지 마세요!
+ * 
+ * ⚠️ DEPRECATED: use-addresses.ts는 LocalStorage 기반 시스템을 사용합니다.
+ * 
+ * 🔄 대신 사용할 훅:
+ * - useSupabaseProfile() - 사용자 주소 관리
+ * - useSupabaseUserAddresses() - 배송지 전용 관리
+ * 
+ * 📋 마이그레이션 가이드:
+ * 기존: const { addresses, defaultAddress, createAddress } = useAddresses()
+ * 신규: const { addresses, createAddressAsync } = useSupabaseProfile()
+ * 
+ * 이 파일은 Phase 4에서 완전히 제거될 예정입니다.
+ */
+
 import { useState, useEffect } from 'react'
 import { db } from '@/lib/db/database-service'
 import { Address } from '@/lib/db/local/models'
