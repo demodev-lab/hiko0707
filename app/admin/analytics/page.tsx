@@ -2,17 +2,9 @@ import { Metadata } from 'next'
 import { redirect } from 'next/navigation'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { SupabaseUserService } from '@/lib/services/supabase-user-service'
-import { SupabaseOrderService } from '@/lib/services/supabase-order-service'
-import { SupabaseHotDealService } from '@/lib/services/supabase-hotdeal-service'
-import { BarChart, TrendingUp, Users, Package, DollarSign, Eye, Calendar } from 'lucide-react'
+import { SupabaseAdminService } from '@/lib/services/supabase-admin-service'
+import { BarChart, TrendingUp, Users, Package, DollarSign, Eye, Calendar, ArrowUpIcon, ArrowDownIcon } from 'lucide-react'
 import { isAdmin } from '@/utils/roles'
-import type { Database } from '@/database.types'
-
-type UserRow = Database['public']['Tables']['users']['Row']
-type OrderRow = Database['public']['Tables']['proxy_purchases_request']['Row']
-type HotDealRow = Database['public']['Tables']['hot_deals']['Row']
-type PaymentRow = Database['public']['Tables']['payments']['Row']
 
 export const metadata: Metadata = {
   title: '통계 분석 - HiKo Admin',
@@ -25,66 +17,14 @@ export default async function AdminAnalyticsPage() {
   if (!hasAdminRole) {
     redirect('/')
   }
-  // 통계용 데이터 최적화 - 필요한 데이터만 가져오기
-  const [users, orders, hotdeals, payments] = await Promise.all([
-    SupabaseUserService.getAllUsers({ limit: 5000 }), // 최대 5000명으로 제한
-    SupabaseOrderService.getAllOrders({ limit: 2000 }), // 최대 2000개 주문으로 제한  
-    SupabaseHotDealService.getAllHotdeals({ limit: 1000 }), // 최대 1000개 핫딜으로 제한
-    SupabaseOrderService.getAllPayments() // 결제 데이터는 상대적으로 적으므로 유지
+
+  // 최적화된 서버사이드 집계 쿼리 사용
+  const [stats, monthlyStats, categoryStats, topHotdeals] = await Promise.all([
+    SupabaseAdminService.getDashboardStatistics(),
+    SupabaseAdminService.getMonthlyStatistics(),
+    SupabaseAdminService.getCategoryStatistics(), 
+    SupabaseAdminService.getTopHotDeals(5)
   ])
-
-  // 월별 통계 계산
-  const monthlyStats = Array.from({ length: 12 }, (_, i) => {
-    const month = new Date(2024, i, 1)
-    const monthOrders = orders.filter((o: OrderRow) => 
-      new Date(o.created_at).getMonth() === i && 
-      new Date(o.created_at).getFullYear() === 2024
-    )
-    const monthUsers = users.filter((u: UserRow) => 
-      new Date(u.created_at).getMonth() === i && 
-      new Date(u.created_at).getFullYear() === 2024
-    )
-    
-    return {
-      month: month.toLocaleDateString('ko-KR', { month: 'long' }),
-      orders: monthOrders.length,
-      users: monthUsers.length,
-      revenue: monthOrders.reduce((sum: number, o: any) => {
-        const quotes = o.quotes || []
-        const totalAmount = quotes.length > 0 ? quotes[0].total_amount : 0
-        return sum + (Number(totalAmount) || 0)
-      }, 0)
-    }
-  })
-
-  // 카테고리별 핫딜 통계
-  const categoryStats = hotdeals.reduce((acc: Record<string, number>, hotdeal: HotDealRow) => {
-    const category = hotdeal.category || 'other'
-    acc[category] = (acc[category] || 0) + 1
-    return acc
-  }, {} as Record<string, number>)
-
-  // 인기 핫딜 TOP 5
-  const topHotdeals = hotdeals
-    .sort((a: HotDealRow, b: HotDealRow) => (Number(b.views) || 0) - (Number(a.views) || 0))
-    .slice(0, 5)
-
-  const stats = {
-    totalUsers: users.length,
-    totalOrders: orders.length,
-    totalRevenue: orders.reduce((sum: number, o: any) => {
-      const quotes = o.quotes || []
-      const totalAmount = quotes.length > 0 ? quotes[0].total_amount : 0
-      return sum + (Number(totalAmount) || 0)
-    }, 0),
-    totalViews: hotdeals.reduce((sum: number, h: HotDealRow) => sum + (Number(h.views) || 0), 0),
-    avgOrderValue: orders.length > 0 ? orders.reduce((sum: number, o: any) => {
-      const quotes = o.quotes || []
-      const totalAmount = quotes.length > 0 ? quotes[0].total_amount : 0
-      return sum + (Number(totalAmount) || 0)
-    }, 0) / orders.length : 0,
-    conversionRate: users.length > 0 ? (orders.length / users.length) * 100 : 0
-  }
 
   return (
     <div className="min-h-screen bg-gray-50 p-6">
@@ -113,8 +53,11 @@ export default async function AdminAnalyticsPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-gray-600">전체 사용자</p>
-                  <p className="text-3xl font-bold">{stats.totalUsers}</p>
-                  <p className="text-sm text-green-600">↑ 12% 전월 대비</p>
+                  <p className="text-3xl font-bold">{stats.totalUsers.toLocaleString()}</p>
+                  <p className={`text-sm flex items-center gap-1 ${stats.monthlyGrowth.users >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                    {stats.monthlyGrowth.users >= 0 ? <ArrowUpIcon className="w-3 h-3" /> : <ArrowDownIcon className="w-3 h-3" />}
+                    {Math.abs(stats.monthlyGrowth.users)}% 전월 대비
+                  </p>
                 </div>
                 <Users className="w-12 h-12 text-blue-600" />
               </div>
@@ -125,8 +68,11 @@ export default async function AdminAnalyticsPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-gray-600">총 주문 수</p>
-                  <p className="text-3xl font-bold">{stats.totalOrders}</p>
-                  <p className="text-sm text-green-600">↑ 8% 전월 대비</p>
+                  <p className="text-3xl font-bold">{stats.totalOrders.toLocaleString()}</p>
+                  <p className={`text-sm flex items-center gap-1 ${stats.monthlyGrowth.orders >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                    {stats.monthlyGrowth.orders >= 0 ? <ArrowUpIcon className="w-3 h-3" /> : <ArrowDownIcon className="w-3 h-3" />}
+                    {Math.abs(stats.monthlyGrowth.orders)}% 전월 대비
+                  </p>
                 </div>
                 <Package className="w-12 h-12 text-green-600" />
               </div>
@@ -138,7 +84,10 @@ export default async function AdminAnalyticsPage() {
                 <div>
                   <p className="text-sm text-gray-600">총 매출</p>
                   <p className="text-3xl font-bold">₩{stats.totalRevenue.toLocaleString()}</p>
-                  <p className="text-sm text-green-600">↑ 15% 전월 대비</p>
+                  <p className={`text-sm flex items-center gap-1 ${stats.monthlyGrowth.revenue >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                    {stats.monthlyGrowth.revenue >= 0 ? <ArrowUpIcon className="w-3 h-3" /> : <ArrowDownIcon className="w-3 h-3" />}
+                    {Math.abs(stats.monthlyGrowth.revenue)}% 전월 대비
+                  </p>
                 </div>
                 <DollarSign className="w-12 h-12 text-purple-600" />
               </div>
@@ -150,7 +99,7 @@ export default async function AdminAnalyticsPage() {
                 <div>
                   <p className="text-sm text-gray-600">총 조회수</p>
                   <p className="text-3xl font-bold">{stats.totalViews.toLocaleString()}</p>
-                  <p className="text-sm text-green-600">↑ 23% 전월 대비</p>
+                  <p className="text-sm text-gray-500">실시간 집계</p>
                 </div>
                 <Eye className="w-12 h-12 text-orange-600" />
               </div>
@@ -162,7 +111,7 @@ export default async function AdminAnalyticsPage() {
                 <div>
                   <p className="text-sm text-gray-600">평균 주문 금액</p>
                   <p className="text-3xl font-bold">₩{Math.round(stats.avgOrderValue).toLocaleString()}</p>
-                  <p className="text-sm text-green-600">↑ 5% 전월 대비</p>
+                  <p className="text-sm text-gray-500">전체 평균</p>
                 </div>
                 <TrendingUp className="w-12 h-12 text-red-600" />
               </div>
@@ -174,7 +123,7 @@ export default async function AdminAnalyticsPage() {
                 <div>
                   <p className="text-sm text-gray-600">전환율</p>
                   <p className="text-3xl font-bold">{stats.conversionRate.toFixed(1)}%</p>
-                  <p className="text-sm text-green-600">↑ 2% 전월 대비</p>
+                  <p className="text-sm text-gray-500">주문/사용자 비율</p>
                 </div>
                 <BarChart className="w-12 h-12 text-indigo-600" />
               </div>
@@ -216,20 +165,26 @@ export default async function AdminAnalyticsPage() {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {Object.entries(categoryStats).map(([category, count]: [string, number]) => (
-                  <div key={category} className="flex items-center justify-between">
-                    <span className="capitalize">{category}</span>
+                {categoryStats.map((stat) => (
+                  <div key={stat.category} className="flex items-center justify-between">
+                    <span className="capitalize">{stat.category}</span>
                     <div className="flex items-center gap-3">
                       <div className="w-32 bg-gray-200 rounded-full h-2">
                         <div 
                           className="bg-blue-600 h-2 rounded-full" 
-                          style={{ width: `${(count / hotdeals.length) * 100}%` }}
+                          style={{ width: `${stat.percentage}%` }}
                         ></div>
                       </div>
-                      <span className="text-sm font-medium w-8 text-right">{count}</span>
+                      <span className="text-sm font-medium w-12 text-right">{stat.count}개</span>
+                      <span className="text-xs text-gray-500 w-10 text-right">{stat.percentage}%</span>
                     </div>
                   </div>
                 ))}
+                {categoryStats.length === 0 && (
+                  <div className="text-center text-gray-500 py-8">
+                    <p>카테고리 데이터가 없습니다.</p>
+                  </div>
+                )}
               </div>
             </CardContent>
           </Card>
@@ -242,23 +197,28 @@ export default async function AdminAnalyticsPage() {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {topHotdeals.map((hotdeal: HotDealRow, index: number) => (
+              {topHotdeals.map((hotdeal) => (
                 <div key={hotdeal.id} className="flex items-center gap-4 p-4 bg-gray-50 rounded-lg">
                   <div className="w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center font-bold">
-                    {index + 1}
+                    {hotdeal.ranking}
                   </div>
                   <div className="flex-1">
-                    <h3 className="font-medium">{hotdeal.title}</h3>
+                    <h3 className="font-medium line-clamp-2">{hotdeal.title}</h3>
                     <p className="text-sm text-gray-600">
-                      {hotdeal.category} · {hotdeal.source}
+                      {hotdeal.category || '기타'} · {hotdeal.source}
                     </p>
                   </div>
                   <div className="text-right">
-                    <p className="font-bold text-lg">{(Number(hotdeal.views) || 0).toLocaleString()}</p>
+                    <p className="font-bold text-lg">{hotdeal.views.toLocaleString()}</p>
                     <p className="text-sm text-gray-600">조회수</p>
                   </div>
                 </div>
               ))}
+              {topHotdeals.length === 0 && (
+                <div className="text-center text-gray-500 py-8">
+                  <p>인기 핫딜 데이터가 없습니다.</p>
+                </div>
+              )}
             </div>
           </CardContent>
         </Card>

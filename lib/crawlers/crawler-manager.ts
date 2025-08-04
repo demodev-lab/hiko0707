@@ -1,9 +1,35 @@
 import { PpomppuCrawler } from './ppomppu-crawler'
 import { CrawlerOptions } from './base-hotdeal-crawler'
 import type { CrawlResult } from './types'
+import { SupabaseHotDealService } from '@/lib/services/supabase-hotdeal-service'
+import { writeFile, readFile, mkdir } from 'fs/promises'
+import { existsSync } from 'fs'
+import { join } from 'path'
 import chalk from 'chalk'
 
 export type CrawlerSource = 'ppomppu' | 'ruliweb' | 'clien' | 'quasarzone' | 'coolenjoy' | 'itcm'
+
+export interface CrawlJobOptions {
+  sources: CrawlerSource[]
+  maxPages?: number
+  pageDelay?: number
+  detailDelay?: number
+  skipDetail?: boolean
+  concurrent?: boolean
+  retryAttempts?: number
+  retryDelay?: number
+}
+
+export interface CrawlJobResult {
+  success: boolean
+  stats: {
+    totalCrawled: number
+    totalSaved: number
+    totalErrors: number
+    duration: number
+  }
+  errors?: Map<string, string[]>
+}
 
 export class CrawlerManager {
   private options: CrawlerOptions
@@ -94,5 +120,184 @@ export class CrawlerManager {
 
   private async delay(ms: number): Promise<void> {
     await new Promise(resolve => setTimeout(resolve, ms))
+  }
+
+  /**
+   * 크롤링 결과를 데이터베이스에 저장
+   */
+  async saveToDatabase(results: CrawlResult[]): Promise<void> {
+    console.log(chalk.cyan('\n💾 데이터베이스 저장 중...'))
+    
+    for (const result of results) {
+      if (result.hotdeals.length > 0) {
+        try {
+          const importResult = await SupabaseHotDealService.importFromCrawler(
+            result.hotdeals[0]?.source || 'unknown',
+            result.hotdeals
+          )
+          
+          console.log(chalk.green(`✅ ${result.hotdeals[0]?.source} 저장 완료:`))
+          console.log(chalk.gray(`   - 신규: ${importResult.added}개`))
+          console.log(chalk.gray(`   - 업데이트: ${importResult.updated}개`))
+          console.log(chalk.gray(`   - 오류: ${importResult.errors.length}개`))
+        } catch (error) {
+          console.error(chalk.red(`❌ 데이터베이스 저장 실패:`), error)
+        }
+      }
+    }
+  }
+
+  /**
+   * 크롤링 결과를 JSON 파일로 내보내기
+   */
+  async exportToJson(
+    results: CrawlResult[], 
+    outputDir: string, 
+    groupBySource: boolean = false
+  ): Promise<string[]> {
+    console.log(chalk.cyan('\n📁 JSON 파일 내보내기...'))
+    
+    // 출력 디렉토리 생성
+    if (!existsSync(outputDir)) {
+      await mkdir(outputDir, { recursive: true })
+    }
+
+    const files: string[] = []
+    const timestamp = new Date().toISOString().replace(/[:.]/g, '-')
+
+    if (groupBySource) {
+      // 소스별로 별개 파일 생성
+      for (const result of results) {
+        if (result.hotdeals.length > 0) {
+          const source = result.hotdeals[0]?.source || 'unknown'
+          const filename = `hotdeal-${source}-${timestamp}.json`
+          const filepath = join(outputDir, filename)
+          
+          await writeFile(filepath, JSON.stringify({
+            source,
+            timestamp: new Date().toISOString(),
+            count: result.hotdeals.length,
+            hotdeals: result.hotdeals
+          }, null, 2))
+          
+          files.push(filepath)
+          console.log(chalk.green(`✅ ${filename} 생성 완료 (${result.hotdeals.length}개 딜)`))
+        }
+      }
+    } else {
+      // 모든 소스를 하나의 파일로 합치기
+      const allHotdeals = results.flatMap(r => r.hotdeals)
+      const filename = `hotdeal-all-${timestamp}.json`
+      const filepath = join(outputDir, filename)
+      
+      await writeFile(filepath, JSON.stringify({
+        timestamp: new Date().toISOString(),
+        sources: results.length,
+        count: allHotdeals.length,
+        hotdeals: allHotdeals
+      }, null, 2))
+      
+      files.push(filepath)
+      console.log(chalk.green(`✅ ${filename} 생성 완료 (${allHotdeals.length}개 딜)`))
+    }
+
+    return files
+  }
+
+  /**
+   * JSON 파일에서 데이터 가져오기
+   */
+  async importFromJson(filepath: string): Promise<any[]> {
+    console.log(chalk.cyan(`📂 JSON 파일 가져오기: ${filepath}`))
+    
+    try {
+      const content = await readFile(filepath, 'utf-8')
+      const data = JSON.parse(content)
+      
+      const hotdeals = data.hotdeals || []
+      console.log(chalk.green(`✅ ${hotdeals.length}개 딜 가져오기 완료`))
+      
+      return hotdeals
+    } catch (error) {
+      console.error(chalk.red(`❌ JSON 파일 읽기 실패:`), error)
+      return []
+    }
+  }
+
+  // ===== 정적 메서드들 =====
+
+  /**
+   * 크롤 작업 실행 (정적 메서드)
+   */
+  static async executeCrawlJob(options: CrawlJobOptions): Promise<CrawlJobResult> {
+    const startTime = Date.now()
+    let totalCrawled = 0
+    let totalSaved = 0
+    let totalErrors = 0
+    const errors = new Map<string, string[]>()
+
+    try {
+      const manager = new CrawlerManager({
+        maxPages: options.maxPages || 2,
+        delay: options.pageDelay || 3000,
+        retryAttempts: options.retryAttempts || 3
+      })
+
+      const results = await manager.crawl(options.sources)
+      
+      // 통계 집계
+      for (const result of results) {
+        totalCrawled += result.totalCrawled
+        totalSaved += result.newDeals + result.updatedDeals
+        totalErrors += result.errors
+      }
+
+      // 데이터베이스 저장
+      if (totalCrawled > 0) {
+        await manager.saveToDatabase(results)
+      }
+
+      const duration = Date.now() - startTime
+
+      return {
+        success: totalErrors === 0,
+        stats: {
+          totalCrawled,
+          totalSaved,
+          totalErrors,
+          duration
+        },
+        errors: errors.size > 0 ? errors : undefined
+      }
+    } catch (error) {
+      const duration = Date.now() - startTime
+      
+      return {
+        success: false,
+        stats: {
+          totalCrawled,
+          totalSaved,
+          totalErrors: totalErrors + 1,
+          duration
+        },
+        errors: new Map([['general', [String(error)]]])
+      }
+    }
+  }
+
+  /**
+   * 크롤러 상태 조회 (정적 메서드)
+   */
+  static async getCrawlerStatus(): Promise<{
+    isRunning: boolean
+    lastRun?: Date
+    availableCrawlers: string[]
+    runningJobs: string[]
+  }> {
+    return {
+      isRunning: false, // 실제 구현 시 상태 체크 로직 추가
+      availableCrawlers: ['ppomppu'],
+      runningJobs: []
+    }
   }
 }

@@ -35,7 +35,7 @@ import { useHotDeals } from '@/hooks/use-supabase-hotdeals'
 import { transformSupabaseToLocal, transformLocalToSupabase } from '@/lib/utils/hotdeal-transformers'
 import { SupabaseHotDealService } from '@/lib/services/supabase-hotdeal-service'
 import { useBackendCrawler } from '@/hooks/use-backend-crawler'
-import { CrawlerSource } from '@/lib/crawlers/new-crawler-manager'
+import { CrawlerSource } from '@/lib/crawlers/crawler-manager'
 
 
 // 크롤링 히스토리 타입

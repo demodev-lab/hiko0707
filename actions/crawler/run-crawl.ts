@@ -67,10 +67,17 @@ export async function getCrawlerStatus() {
 // 사용 가능한 크롤러 목록 조회
 export async function getAvailableCrawlers() {
   // 개발 환경에서는 인증 체크 스킵
-  const { CrawlerFactory } = await import('@/lib/crawlers/crawler-factory')
+  const status = await CrawlerManager.getCrawlerStatus()
   
   return {
-    crawlers: CrawlerFactory.getAllCrawlerInfo(),
-    available: CrawlerFactory.getAvailableCrawlers()
+    crawlers: [
+      { id: 'ppomppu', name: '뽐뿌', status: 'available' },
+      { id: 'ruliweb', name: '루리웹', status: 'coming_soon' },
+      { id: 'clien', name: '클리앙', status: 'coming_soon' },
+      { id: 'quasarzone', name: '퀘이사존', status: 'coming_soon' },
+      { id: 'coolenjoy', name: '쿨엔조이', status: 'coming_soon' },
+      { id: 'itcm', name: '잇츠엠', status: 'coming_soon' }
+    ],
+    available: status.availableCrawlers
   }
 }

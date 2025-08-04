@@ -92,6 +92,9 @@ export function HotDealCard({ deal }: HotDealCardProps) {
             showLoader={true}
             showFallbackIcon={true}
             fallbackText={deal.seller || '상품 이미지'}
+            communitySource={deal.source}
+            preload={isHot}
+            monitorPerformance={true}
             onLoadComplete={() => console.log('🖼️ HotDeal image loaded:', deal.title, deal.originalImageUrl)}
             onError={() => console.log('🚫 HotDeal image failed:', deal.title, deal.originalImageUrl)}
           />

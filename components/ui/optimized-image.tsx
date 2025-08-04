@@ -3,6 +3,8 @@
 import { useState, useCallback, useEffect } from 'react'
 import Image, { ImageProps } from 'next/image'
 import { cn } from '@/lib/utils'
+import { ImageOptimizationService } from '@/lib/services/image-optimization-service'
+import { HotDealSource } from '@/types/hotdeal'
 
 interface OptimizedImageProps extends Omit<ImageProps, 'onLoad' | 'onError'> {
   fallbackSrc?: string
@@ -14,6 +16,9 @@ interface OptimizedImageProps extends Omit<ImageProps, 'onLoad' | 'onError'> {
   onError?: () => void
   showFallbackIcon?: boolean
   fallbackText?: string
+  communitySource?: HotDealSource
+  preload?: boolean
+  monitorPerformance?: boolean
 }
 
 export function OptimizedImage({
@@ -28,44 +33,130 @@ export function OptimizedImage({
   onError,
   showFallbackIcon = true,
   fallbackText,
+  communitySource,
+  preload = false,
+  monitorPerformance = true,
   ...props
 }: OptimizedImageProps) {
   const [isLoading, setIsLoading] = useState(true)
   const [hasError, setHasError] = useState(false)
-  const [currentSrc, setCurrentSrc] = useState(src)
+  const [currentSrc, setCurrentSrc] = useState('')
+  const [loadStartTime] = useState(() => performance.now())
 
-  // src가 변경되면 상태 초기화
+  // 이미지 URL 최적화 및 초기화
   useEffect(() => {
-    setCurrentSrc(src)
+    if (!src) {
+      setHasError(true)
+      setIsLoading(false)
+      return
+    }
+
+    // 이미지 최적화 서비스를 통한 URL 처리
+    const optimizedSrc = ImageOptimizationService.optimizeImageUrl(src, {
+      width: typeof props.width === 'number' ? props.width : undefined,
+      height: typeof props.height === 'number' ? props.height : undefined,
+      quality: props.quality || 85,
+    })
+
+    setCurrentSrc(optimizedSrc)
     setIsLoading(true)
     setHasError(false)
-  }, [src])
+
+    // 프리로딩 요청 시 이미지 미리 로드
+    if (preload) {
+      ImageOptimizationService.preloadImage(optimizedSrc, 'high').catch(() => {
+        // 프리로드 실패는 무시 (실제 로딩에서 처리)
+      })
+    }
+  }, [src, props.width, props.height, props.quality, preload])
 
   const handleLoad = useCallback(() => {
-    console.log('✅ Image loaded successfully:', currentSrc, { alt, width: props.width, height: props.height })
+    const loadTime = performance.now() - loadStartTime
+    
+    if (monitorPerformance) {
+      ImageOptimizationService.monitorImagePerformance(
+        currentSrc,
+        loadTime,
+        true,
+        false
+      )
+    }
+
+    console.log('✅ Image loaded successfully:', currentSrc, { 
+      alt, 
+      width: props.width, 
+      height: props.height,
+      loadTime: `${Math.round(loadTime)}ms`
+    })
+    
     setIsLoading(false)
     onLoadComplete?.()
-  }, [onLoadComplete, currentSrc, alt, props.width, props.height])
+  }, [onLoadComplete, currentSrc, alt, props.width, props.height, loadStartTime, monitorPerformance])
 
   const handleError = useCallback(() => {
+    const loadTime = performance.now() - loadStartTime
+    
     console.log('❌ Image failed to load:', currentSrc)
     console.log('❌ Image error details:', {
       src: currentSrc,
       alt,
       fallbackSrc,
-      hasError
+      hasError,
+      loadTime: `${Math.round(loadTime)}ms`
     })
+    
     setIsLoading(false)
     
+    // fallbackSrc가 있고 아직 시도하지 않았다면 시도
     if (fallbackSrc && currentSrc !== fallbackSrc && !hasError) {
       console.log('🔄 Trying fallback image:', fallbackSrc)
-      setCurrentSrc(fallbackSrc)
+      const optimizedFallback = ImageOptimizationService.optimizeImageUrl(fallbackSrc, {
+        width: typeof props.width === 'number' ? props.width : undefined,
+        height: typeof props.height === 'number' ? props.height : undefined,
+        quality: props.quality || 85,
+      })
+      setCurrentSrc(optimizedFallback)
       setIsLoading(true)
+      
+      if (monitorPerformance) {
+        ImageOptimizationService.monitorImagePerformance(
+          currentSrc,
+          loadTime,
+          false,
+          true
+        )
+      }
+    } else if (communitySource && !hasError) {
+      // 커뮤니티별 기본 이미지로 대체
+      console.log('🔄 Trying community fallback for:', communitySource)
+      const communityFallback = ImageOptimizationService.getFallbackImageUrl(communitySource)
+      setCurrentSrc(communityFallback)
+      setIsLoading(true)
+      
+      if (monitorPerformance) {
+        ImageOptimizationService.monitorImagePerformance(
+          currentSrc,
+          loadTime,
+          false,
+          true
+        )
+      }
     } else {
       setHasError(true)
+      
+      if (monitorPerformance) {
+        ImageOptimizationService.monitorImagePerformance(
+          currentSrc,
+          loadTime,
+          false,
+          false
+        )
+      }
     }
+    
     onError?.()
-  }, [fallbackSrc, currentSrc, onError, alt, hasError])
+  }, [fallbackSrc, currentSrc, onError, alt, hasError, communitySource, 
+      props.width, props.height, props.quality, loadStartTime, monitorPerformance])
 
   // 기본 blur placeholder 생성
   const defaultBlurDataURL = blurDataURL || generateBlurDataURL()

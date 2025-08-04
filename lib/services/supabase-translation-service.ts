@@ -4,15 +4,12 @@ import { GoogleTranslateClient } from '@/lib/i18n/google-translate'
 
 export interface HotDealTranslation {
   id: string
-  hot_deal_id: string
-  language: Language
+  hotdeal_id: string
+  language: string
   title: string
   description?: string
-  product_comment?: string
-  status: 'pending' | 'translating' | 'completed' | 'failed'
-  cached_at: string
-  expires_at: string
-  error?: string
+  is_auto_translated: boolean
+  translated_at: string
   created_at: string
   updated_at: string
 }
@@ -38,8 +35,8 @@ export class SupabaseTranslationService {
       // 1. 기존 번역 확인
       const existing = await this.getTranslation(hotDealId, language)
       
-      // 2. 캐시가 유효한 경우 반환
-      if (existing && this.isValid(existing)) {
+      // 2. 기존 번역이 있고 최근 것이면 반환 (7일 이내)
+      if (existing && this.isRecentTranslation(existing)) {
         return existing
       }
 
@@ -47,11 +44,11 @@ export class SupabaseTranslationService {
       if (language === 'ko') {
         // 한국어는 번역하지 않음
         return await this.createTranslation({
-          hot_deal_id: hotDealId,
+          hotdeal_id: hotDealId,
           language: 'ko',
           title: originalTitle,
-          product_comment: originalComment,
-          status: 'completed'
+          description: originalComment,
+          is_auto_translated: false
         })
       }
 
@@ -75,10 +72,10 @@ export class SupabaseTranslationService {
     hotDealId: string,
     language: Language
   ): Promise<HotDealTranslation | null> {
-    const { data, error } = await supabase
+    const { data, error } = await supabase()
       .from('hotdeal_translations')
       .select('*')
-      .eq('hot_deal_id', hotDealId)
+      .eq('hotdeal_id', hotDealId)
       .eq('language', language)
       .single()
 
@@ -90,10 +87,10 @@ export class SupabaseTranslationService {
    * 핫딜의 모든 번역 조회
    */
   async getTranslations(hotDealId: string): Promise<HotDealTranslation[]> {
-    const { data, error } = await supabase
+    const { data, error } = await supabase()
       .from('hotdeal_translations')
       .select('*')
-      .eq('hot_deal_id', hotDealId)
+      .eq('hotdeal_id', hotDealId)
 
     if (error || !data) return []
     return data
@@ -104,30 +101,24 @@ export class SupabaseTranslationService {
    */
   async createTranslation(
     data: {
-      hot_deal_id: string
-      language: Language
+      hotdeal_id: string
+      language: string
       title: string
       description?: string
-      product_comment?: string
-      status: HotDealTranslation['status']
-      error?: string
+      is_auto_translated?: boolean
     }
   ): Promise<HotDealTranslation | null> {
     const now = new Date()
-    const expiresAt = new Date(now.getTime() + this.cacheExpirationDays * 24 * 60 * 60 * 1000)
 
-    const { data: created, error } = await supabase
+    const { data: created, error } = await supabase()
       .from('hotdeal_translations')
       .insert({
-        hot_deal_id: data.hot_deal_id,
+        hotdeal_id: data.hotdeal_id,
         language: data.language,
         title: data.title,
         description: data.description,
-        product_comment: data.product_comment,
-        status: data.status,
-        error: data.error,
-        cached_at: now.toISOString(),
-        expires_at: expiresAt.toISOString()
+        is_auto_translated: data.is_auto_translated ?? true,
+        translated_at: now.toISOString()
       })
       .select()
       .single()
@@ -148,16 +139,13 @@ export class SupabaseTranslationService {
     data: Partial<{
       title: string
       description: string
-      product_comment: string
-      status: HotDealTranslation['status']
-      error: string
+      is_auto_translated: boolean
     }>
   ): Promise<HotDealTranslation | null> {
-    const { data: updated, error } = await supabase
+    const { data: updated, error } = await supabase()
       .from('hotdeal_translations')
       .update({
         ...data,
-        cached_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
       })
       .eq('id', id)
@@ -181,58 +169,47 @@ export class SupabaseTranslationService {
     originalTitle: string,
     originalComment?: string
   ): Promise<HotDealTranslation | null> {
-    // 1. 번역 상태 생성
-    const pendingTranslation = await this.createTranslation({
-      hot_deal_id: hotDealId,
-      language,
-      title: originalTitle,
-      product_comment: originalComment,
-      status: 'translating'
-    })
-
-    if (!pendingTranslation) return null
-
     try {
-      // 2. 번역 수행
+      // 1. 번역 수행
       const [translatedTitle, translatedComment] = await Promise.all([
         this.googleTranslate.translate(originalTitle, 'ko', language),
         originalComment ? this.googleTranslate.translate(originalComment, 'ko', language) : Promise.resolve(undefined)
       ])
 
-      // 3. 번역 결과 업데이트
-      return await this.updateTranslation(pendingTranslation.id, {
+      // 2. 번역 결과 저장
+      return await this.createTranslation({
+        hotdeal_id: hotDealId,
+        language,
         title: translatedTitle,
-        product_comment: translatedComment,
-        status: 'completed'
+        description: translatedComment,
+        is_auto_translated: true
       })
     } catch (error) {
-      // 4. 번역 실패 처리
-      await this.updateTranslation(pendingTranslation.id, {
-        status: 'failed',
-        error: error instanceof Error ? error.message : 'Translation failed'
-      })
+      console.error('Translation failed:', error)
       return null
     }
   }
 
   /**
-   * 번역 캐시 유효성 검사
+   * 번역이 최근 것인지 확인 (7일 이내)
    */
-  private isValid(translation: HotDealTranslation): boolean {
-    if (translation.status !== 'completed') return false
-    
-    const expiresAt = new Date(translation.expires_at)
-    return expiresAt > new Date()
+  private isRecentTranslation(translation: HotDealTranslation): boolean {
+    const translatedAt = new Date(translation.translated_at)
+    const expirationTime = this.cacheExpirationDays * 24 * 60 * 60 * 1000
+    return (Date.now() - translatedAt.getTime()) < expirationTime
   }
 
   /**
-   * 만료된 번역 정리
+   * 만료된 번역 정리 (7일 이상 된 번역 삭제)
    */
   async cleanupExpiredTranslations(): Promise<number> {
-    const { data, error } = await supabase
+    const expirationDate = new Date()
+    expirationDate.setDate(expirationDate.getDate() - this.cacheExpirationDays)
+
+    const { data, error } = await supabase()
       .from('hotdeal_translations')
       .delete()
-      .lt('expires_at', new Date().toISOString())
+      .lt('translated_at', expirationDate.toISOString())
       .select()
 
     if (error) {
@@ -278,15 +255,21 @@ export class SupabaseTranslationService {
    */
   async getTranslationStatus(
     hotDealId: string
-  ): Promise<Record<Language, HotDealTranslation['status']>> {
+  ): Promise<Record<Language, 'pending' | 'completed' | 'expired'>> {
     const translations = await this.getTranslations(hotDealId)
     const languages: Language[] = ['ko', 'en', 'zh', 'vi', 'mn', 'th', 'ja', 'ru']
     
-    const status: Record<Language, HotDealTranslation['status']> = {} as any
+    const status: Record<Language, 'pending' | 'completed' | 'expired'> = {} as any
     
     languages.forEach(lang => {
       const translation = translations.find(t => t.language === lang)
-      status[lang] = translation?.status || 'pending'
+      if (!translation) {
+        status[lang] = 'pending'
+      } else if (this.isRecentTranslation(translation)) {
+        status[lang] = 'completed'
+      } else {
+        status[lang] = 'expired'
+      }
     })
     
     return status

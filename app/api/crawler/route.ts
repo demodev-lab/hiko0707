@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { HotdealCrawlerManager, CrawlerSource } from '@/lib/crawlers/new-crawler-manager'
+import { CrawlerManager, CrawlerSource } from '@/lib/crawlers/crawler-manager'
 import { db } from '@/lib/db/database-service'
 import { crawlerScheduler } from '@/lib/services/crawler-scheduler'
 
@@ -34,7 +34,7 @@ export async function POST(request: NextRequest) {
     }
     
     // 기존 로직 유지 (하위 호환성)
-    const manager = new HotdealCrawlerManager({
+    const manager = new CrawlerManager({
       headless: options.headless,
       maxPages: options.pages,
       delay: 4000,
@@ -78,12 +78,12 @@ export async function POST(request: NextRequest) {
       totalDeals += result.hotdeals.length
       
       results.push({
-        source: result.source,
+        source: options.source,
         totalDeals: result.hotdeals.length,
         newDeals,
         updatedDeals,
-        statistics: result.statistics,
-        crawledAt: result.crawledAt
+        duration: result.duration,
+        crawledAt: new Date().toISOString()
       })
     }
     

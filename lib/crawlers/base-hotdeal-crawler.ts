@@ -1,5 +1,6 @@
 import { chromium, Browser, Page, BrowserContext } from 'playwright'
 import type { HotDeal } from '@/types/hotdeal'
+import { HotDealClassificationService } from '@/lib/services/hotdeal-classification-service'
 
 export interface CrawlerOptions {
   headless?: boolean
@@ -184,23 +185,19 @@ export abstract class BaseHotdealCrawler {
   }
 
   protected inferCategory(title: string): string {
-    const categories = {
-      '[의류/잡화]': ['의류', '옷', '신발', '가방', '악세서리', '패션', '블랙야크', '나이키', '아디다스'],
-      '[식품/건강]': ['식품', '음식', '건강', '비타민', '영양제', '홍삼', '건강식품'],
-      '[가전/디지털]': ['가전', '전자', '디지털', '컴퓨터', '노트북', '스마트폰', '갤럭시', '아이폰'],
-      '[생활/가구]': ['생활', '가구', '인테리어', '주방', '욕실', '청소', '수납'],
-      '[도서/문구]': ['도서', '책', '문구', '필기구', '노트', '다이어리'],
-      '[화장품/미용]': ['화장품', '미용', '스킨케어', '메이크업', '향수', '헤어'],
-      '[기타]': []
-    }
-
-    for (const [category, keywords] of Object.entries(categories)) {
-      if (keywords.some(keyword => title.includes(keyword))) {
-        return category
+    try {
+      const category = HotDealClassificationService.classifyByTitle(title)
+      
+      // 기존 대괄호 형식으로 반환 (하위 호환성)
+      if (category === '기타') {
+        return '[기타]'
       }
+      
+      return `[${category}]`
+    } catch (error) {
+      console.error('카테고리 분류 중 오류:', error)
+      return '[기타]'
     }
-
-    return '[기타]'
   }
 
   protected parseDate(dateStr: string): Date {

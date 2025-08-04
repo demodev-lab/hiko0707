@@ -6,7 +6,7 @@ import { Search, Filter, X, TrendingUp, Clock } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent } from '@/components/ui/card'
-import { useSupabaseHotDeals } from '@/hooks/use-supabase-hotdeals'
+import { useSearchHotDeals } from '@/hooks/use-supabase-hotdeals'
 import { HotDealCard } from '@/components/features/hotdeal/hotdeal-card'
 import { HotDeal } from '@/types/hotdeal'
 import { useLanguage } from '@/lib/i18n/context'
@@ -21,12 +21,12 @@ export default function SearchPage() {
   const { t } = useLanguage()
   const router = useRouter()
   const searchParams = useSearchParams()
-  const { hotdeals } = useSupabaseHotDeals()
   
   const [searchQuery, setSearchQuery] = useState(searchParams.get('q') || '')
-  const [filteredDeals, setFilteredDeals] = useState<HotDeal[]>([])
-  const [isSearching, setIsSearching] = useState(false)
+  const [currentPage, setCurrentPage] = useState(1)
   const [showFilters, setShowFilters] = useState(false)
+  
+  const pageSize = 20
 
   // Get filter params from URL
   const categories = searchParams.get('categories')?.split(',').filter(Boolean) || []
@@ -37,115 +37,47 @@ export default function SearchPage() {
   const sortBy = (searchParams.get('sort') || 'latest') as SortOption
   const freeShipping = searchParams.get('freeShipping') === 'true'
   const todayOnly = searchParams.get('todayOnly') === 'true'
-
-  // Debounced search function
-  const debouncedSearch = useCallback(
-    debounce((query: string) => {
-      performSearch(query)
-    }, 300),
-    [hotdeals, categories, sortBy, priceMin, priceMax, communitySources, shoppingSources, freeShipping, todayOnly]
-  )
-
-  // Perform search and filtering
-  const performSearch = (query: string) => {
-    setIsSearching(true)
-    
-    let results = [...hotdeals]
-
-    // Filter by search query
-    if (query.trim()) {
-      const lowerQuery = query.toLowerCase()
-      results = results.filter(deal => 
-        deal.title.toLowerCase().includes(lowerQuery) ||
-        deal.category?.toLowerCase().includes(lowerQuery) ||
-        deal.source?.toLowerCase().includes(lowerQuery) ||
-        deal.seller?.toLowerCase().includes(lowerQuery) ||
-        deal.productComment?.toLowerCase().includes(lowerQuery)
-      )
+  
+  // Map sort options to Supabase format
+  const getSupabaseSortBy = (sort: SortOption) => {
+    switch (sort) {
+      case 'latest': return 'created_at'
+      case 'price_low': return 'sale_price'
+      case 'price_high': return 'sale_price'
+      case 'popular': return 'created_at' // Using created_at as fallback since views not available in searchHotDeals
+      default: return 'created_at'
     }
-
-    // Apply filters
-    if (categories.length > 0) {
-      results = results.filter(deal => {
-        // Map deal categories to filter categories
-        const dealCategory = deal.category?.toLowerCase() || ''
-        return categories.some(cat => {
-          switch(cat) {
-            case 'electronics': return dealCategory.includes('전자') || dealCategory.includes('it')
-            case 'food': return dealCategory.includes('식품') || dealCategory.includes('음식')
-            case 'beauty': return dealCategory.includes('뷰티') || dealCategory.includes('화장') || dealCategory.includes('패션')
-            case 'home': return dealCategory.includes('생활') || dealCategory.includes('가전')
-            case 'event': return dealCategory.includes('이벤트') || dealCategory.includes('상품권')
-            case 'game': return dealCategory.includes('게임') || dealCategory.includes('앱')
-            default: return dealCategory.includes('기타')
-          }
-        })
-      })
-    }
-
-    // Filter by price range
-    if (priceMin) {
-      const min = parseInt(priceMin)
-      results = results.filter(deal => deal.price >= min)
-    }
-    if (priceMax) {
-      const max = parseInt(priceMax)
-      results = results.filter(deal => deal.price <= max)
-    }
-
-    // Filter by community sources
-    if (communitySources.length > 0) {
-      results = results.filter(deal => 
-        communitySources.some(source => deal.source?.toLowerCase().includes(source.toLowerCase()))
-      )
-    }
-
-    // Filter by shopping sources
-    if (shoppingSources.length > 0) {
-      results = results.filter(deal => 
-        shoppingSources.some(source => deal.seller?.toLowerCase().includes(source.toLowerCase()))
-      )
-    }
-
-    // Filter by free shipping
-    if (freeShipping) {
-      results = results.filter(deal => deal.shipping?.isFree)
-    }
-
-    // Filter by today only
-    if (todayOnly) {
-      const today = new Date()
-      today.setHours(0, 0, 0, 0)
-      results = results.filter(deal => {
-        const dealDate = new Date(deal.crawledAt)
-        dealDate.setHours(0, 0, 0, 0)
-        return dealDate.getTime() === today.getTime()
-      })
-    }
-
-    // Sort results
-    switch (sortBy) {
-      case 'latest':
-        results.sort((a, b) => new Date(b.crawledAt).getTime() - new Date(a.crawledAt).getTime())
-        break
-      case 'price_low':
-        results.sort((a, b) => a.price - b.price)
-        break
-      case 'price_high':
-        results.sort((a, b) => b.price - a.price)
-        break
-      case 'popular':
-        results.sort((a, b) => (b.viewCount || 0) - (a.viewCount || 0))
-        break
-    }
-
-    setFilteredDeals(results)
-    setIsSearching(false)
   }
+  
+  const getSortOrder = (sort: SortOption) => {
+    switch (sort) {
+      case 'price_low': return 'asc'
+      case 'latest': return 'desc'
+      case 'price_high': return 'desc'
+      case 'popular': return 'desc'
+      default: return 'desc'
+    }
+  }
+  
+  // Use server-side search with pagination
+  const { data: searchResults, isLoading } = useSearchHotDeals(
+    searchQuery,
+    {
+      limit: pageSize,
+      offset: (currentPage - 1) * pageSize,
+      sortBy: getSupabaseSortBy(sortBy),
+      sortOrder: getSortOrder(sortBy),
+      status: 'active'
+    }
+  )
+  
+  const hotdeals = searchResults?.data || []
+  const totalCount = searchResults?.count || 0
+  const totalPages = Math.ceil(totalCount / pageSize)
 
-  // Update search when query or filters change
+  // Update page when search parameters change
   useEffect(() => {
-    debouncedSearch(searchQuery)
+    setCurrentPage(1) // Reset to first page when search changes
   }, [searchQuery, categories, sortBy, priceMin, priceMax, communitySources, shoppingSources, freeShipping, todayOnly])
 
   // Handle search query change from URL
@@ -178,12 +110,12 @@ export default function SearchPage() {
       <div className="mb-6">
         <div className="flex items-center justify-between">
           <div className="text-sm text-gray-500">
-            {isSearching ? (
+            {isLoading ? (
               <span>검색 중...</span>
             ) : (
               <span>
                 {searchQuery && `"${searchQuery}"에 대한 `}
-                검색 결과 {filteredDeals.length}개
+                검색 결과 {totalCount.toLocaleString()}개 (페이지 {currentPage}/{totalPages})
               </span>
             )}
           </div>
@@ -218,37 +150,85 @@ export default function SearchPage() {
 
         {/* Search Results */}
         <div className="flex-1">
-          {isSearching ? (
+          {isLoading ? (
             <div className="flex justify-center items-center py-20">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
             </div>
-          ) : filteredDeals.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredDeals.map((deal) => (
-                <HotDealCard key={deal.id} deal={deal} />
-              ))}
-            </div>
+          ) : hotdeals.length > 0 ? (
+            <>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+                {hotdeals.map((deal) => (
+                  <HotDealCard key={deal.id} deal={deal as any} />
+                ))}
+              </div>
+              
+              {/* Pagination */}
+              {totalPages > 1 && (
+                <div className="flex justify-center items-center gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    disabled={currentPage === 1}
+                    onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                  >
+                    이전
+                  </Button>
+                  
+                  <div className="flex items-center gap-1">
+                    {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                      const page = i + 1
+                      const shouldShow = 
+                        page === 1 || 
+                        page === totalPages || 
+                        (page >= currentPage - 1 && page <= currentPage + 1)
+                      
+                      if (!shouldShow) return null
+                      
+                      return (
+                        <Button
+                          key={page}
+                          variant={currentPage === page ? "default" : "outline"}
+                          size="sm"
+                          onClick={() => setCurrentPage(page)}
+                        >
+                          {page}
+                        </Button>
+                      )
+                    })}
+                  </div>
+                  
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    disabled={currentPage === totalPages}
+                    onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                  >
+                    다음
+                  </Button>
+                </div>
+              )}
+            </>
           ) : (
-        <Card className="max-w-md mx-auto">
-          <CardContent className="py-12 text-center">
-            <Search className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 mb-2">
-              검색 결과가 없습니다
-            </h3>
-            <p className="text-sm text-gray-500 mb-4">
-              다른 검색어를 시도하거나 필터를 조정해보세요
-            </p>
-            <Button 
-              variant="outline" 
-              onClick={() => {
-                router.push('/search')
-                window.location.reload()
-              }}
-            >
-              검색 초기화
-            </Button>
-          </CardContent>
-        </Card>
+            <Card className="max-w-md mx-auto">
+              <CardContent className="py-12 text-center">
+                <Search className="w-12 h-12 text-gray-300 mx-auto mb-4" />
+                <h3 className="text-lg font-medium text-gray-900 mb-2">
+                  검색 결과가 없습니다
+                </h3>
+                <p className="text-sm text-gray-500 mb-4">
+                  다른 검색어를 시도하거나 필터를 조정해보세요
+                </p>
+                <Button 
+                  variant="outline" 
+                  onClick={() => {
+                    router.push('/search')
+                    window.location.reload()
+                  }}
+                >
+                  검색 초기화
+                </Button>
+              </CardContent>
+            </Card>
           )}
         </div>
       </div>

@@ -1,7 +1,8 @@
 #!/usr/bin/env tsx
 
 import { Command } from 'commander'
-import { HotdealCrawlerManager, CrawlerSource } from '@/lib/crawlers/new-crawler-manager'
+import { CrawlerManager } from '@/lib/crawlers/crawler-manager'
+import { CrawlerSource } from '@/lib/crawlers/types'
 import chalk from 'chalk'
 import { CrawlerOptions } from '@/lib/crawlers/base-hotdeal-crawler'
 
@@ -41,7 +42,7 @@ program
     console.log(chalk.gray(`- JSON 저장: ${options.saveJson}`))
     
     try {
-      const manager = new HotdealCrawlerManager(crawlerOptions)
+      const manager = new CrawlerManager(crawlerOptions)
       
       // Import from JSON if specified
       if (options.import) {

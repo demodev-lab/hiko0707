@@ -294,20 +294,8 @@ export function useToggleFavoriteHotDeal() {
 export function useHotDealStats(period: 'today' | 'week' | 'month' | 'all' = 'today') {
   return useQuery({
     queryKey: ['hotdeals', 'stats', period],
-    queryFn: async () => {
-      // This would need to be implemented in SupabaseHotDealService
-      // For now, return a placeholder
-      return {
-        totalDeals: 0,
-        activeDeals: 0,
-        endedDeals: 0,
-        totalViews: 0,
-        totalLikes: 0,
-        byCategory: {},
-        bySource: {}
-      }
-    },
-    staleTime: 30 * 60 * 1000, // 30 minutes
+    queryFn: () => SupabaseHotDealService.getHotDealStats(period),
+    staleTime: 30 * 60 * 1000, // 30 minutes - 통계는 자주 변경되지 않으므로 캐시 활용
   })
 }
 

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { crawlerScheduler } from '@/lib/services/crawler-scheduler'
-import { CrawlerSource } from '@/lib/crawlers/new-crawler-manager'
+import { CrawlerSource } from '@/lib/crawlers/crawler-manager'
 import '@/lib/services/crawler-scheduler-init' // 초기화 코드 실행
 
 // GET: 모든 크롤링 작업 조회

@@ -31,7 +31,7 @@ export default function OrderDetailPage() {
 
   const copyOrderNumber = () => {
     if (order) {
-      navigator.clipboard.writeText(order.orderNumber)
+      navigator.clipboard.writeText(order.order_number)
       toast.success('주문번호가 복사되었습니다')
     }
   }
@@ -40,7 +40,7 @@ export default function OrderDetailPage() {
     toast.info('영수증 다운로드 기능은 준비 중입니다')
   }
 
-  const getStatusColor = (status: Order['status']) => {
+  const getStatusColor = (status: string) => {
     switch (status) {
       case 'confirmed': return 'bg-blue-100 text-blue-800'
       case 'purchasing': return 'bg-yellow-100 text-yellow-800'
@@ -51,7 +51,7 @@ export default function OrderDetailPage() {
     }
   }
 
-  const getStatusText = (status: Order['status']) => {
+  const getStatusText = (status: string) => {
     switch (status) {
       case 'confirmed': return '주문확인'
       case 'purchasing': return '구매중'
@@ -96,7 +96,7 @@ export default function OrderDetailPage() {
             </Button>
             <div>
               <h1 className="text-2xl font-bold">주문 상세</h1>
-              <p className="text-gray-600">주문번호: {order.orderNumber}</p>
+              <p className="text-gray-600">주문번호: {order.order_number}</p>
             </div>
           </div>
           
@@ -119,7 +119,7 @@ export default function OrderDetailPage() {
               <div>
                 <p className="text-sm text-gray-600">주문일시</p>
                 <p className="text-lg font-medium">
-                  {format(new Date(order.createdAt), 'yyyy년 MM월 dd일 HH:mm', { locale: ko })}
+                  {format(new Date(order.created_at), 'yyyy년 MM월 dd일 HH:mm', { locale: ko })}
                 </p>
               </div>
               <Badge className={getStatusColor(order.status)}>
@@ -128,7 +128,7 @@ export default function OrderDetailPage() {
             </div>
             
             {/* Order Tracking Component */}
-            <OrderTracking order={order} />
+            {/* <OrderTracking order={order} /> */}
           </CardContent>
         </Card>
 
@@ -143,44 +143,43 @@ export default function OrderDetailPage() {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                {order.items.map((item, index) => (
-                  <div key={item.id} className="border rounded-lg p-4">
-                    <div className="flex justify-between items-start">
-                      <div className="flex-1">
-                        <h4 className="font-medium">{item.productName}</h4>
-                        {item.productUrl && (
-                          <a 
-                            href={item.productUrl} 
-                            target="_blank" 
-                            rel="noopener noreferrer"
-                            className="text-sm text-blue-600 hover:underline"
-                          >
-                            상품 링크 보기
-                          </a>
-                        )}
-                        <div className="mt-2 space-y-1">
+                {/* 주문 상품 정보 - product_info 및 hot_deals 정보 활용 */}
+                <div className="border rounded-lg p-4">
+                  <div className="flex justify-between items-start">
+                    <div className="flex-1">
+                      <h4 className="font-medium">{(order as any).hot_deals?.title || '상품명 없음'}</h4>
+                      {(order as any).hot_deals?.original_url && (
+                        <a 
+                          href={(order as any).hot_deals.original_url} 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className="text-sm text-blue-600 hover:underline"
+                        >
+                          상품 링크 보기
+                        </a>
+                      )}
+                      <div className="mt-2 space-y-1">
+                        <p className="text-sm text-gray-600">
+                          수량: {order.quantity}개
+                        </p>
+                        {order.option && (
                           <p className="text-sm text-gray-600">
-                            수량: {item.quantity}개
+                            옵션: {order.option}
                           </p>
-                          {item.options && Object.keys(item.options).length > 0 && (
-                            <p className="text-sm text-gray-600">
-                              옵션: {Object.entries(item.options).map(([key, value]) => `${key}: ${value}`).join(', ')}
-                            </p>
-                          )}
-                          {item.notes && (
-                            <p className="text-sm text-gray-600">
-                              메모: {item.notes}
-                            </p>
-                          )}
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        <p className="font-medium">₩{(item.price * item.quantity).toLocaleString()}</p>
-                        <p className="text-sm text-gray-600">개당 ₩{item.price.toLocaleString()}</p>
+                        )}
+                        {order.special_requests && (
+                          <p className="text-sm text-gray-600">
+                            특별 요청사항: {order.special_requests}
+                          </p>
+                        )}
                       </div>
                     </div>
+                    <div className="text-right">
+                      <p className="font-medium">₩{((order as any).hot_deals?.sale_price * order.quantity || 0).toLocaleString()}</p>
+                      <p className="text-sm text-gray-600">개당 ₩{((order as any).hot_deals?.sale_price || 0).toLocaleString()}</p>
+                    </div>
                   </div>
-                ))}
+                </div>
               </CardContent>
             </Card>
 
@@ -195,18 +194,14 @@ export default function OrderDetailPage() {
               <CardContent className="space-y-4">
                 <div>
                   <p className="text-sm text-gray-600 mb-1">받는 사람</p>
-                  <p className="font-medium">{order.shippingAddress.fullName}</p>
+                  <p className="font-medium">{(order as any).shipping_address?.name || '정보 없음'}</p>
                 </div>
                 
                 <div>
                   <p className="text-sm text-gray-600 mb-1">연락처</p>
                   <p className="flex items-center gap-2">
                     <Phone className="w-4 h-4 text-gray-400" />
-                    {order.shippingAddress.phoneNumber}
-                  </p>
-                  <p className="flex items-center gap-2 mt-1">
-                    <Mail className="w-4 h-4 text-gray-400" />
-                    {order.shippingAddress.email}
+                    {(order as any).shipping_address?.phone || '정보 없음'}
                   </p>
                 </div>
                 
@@ -215,17 +210,18 @@ export default function OrderDetailPage() {
                   <p className="flex items-start gap-2">
                     <MapPin className="w-4 h-4 text-gray-400 mt-0.5" />
                     <span>
-                      {order.shippingAddress.addressLine1}<br />
-                      {order.shippingAddress.addressLine2 && (
-                        <>{order.shippingAddress.addressLine2}<br /></>
+                      {(order as any).shipping_address?.address}<br />
+                      {(order as any).shipping_address?.address_detail && (
+                        <>{(order as any).shipping_address.address_detail}<br /></>
                       )}
-                      {order.shippingAddress.postalCode}
+                      {(order as any).shipping_address?.post_code}
                     </span>
                   </p>
                 </div>
                 
 
-                {order.internationalTrackingNumber && (
+                {/* 운송장 번호는 추후 구현 예정 */}
+                {/* {order.internationalTrackingNumber && (
                   <div>
                     <p className="text-sm text-gray-600 mb-1">국제 운송장 번호</p>
                     <p className="font-medium">{order.internationalTrackingNumber}</p>
@@ -236,7 +232,7 @@ export default function OrderDetailPage() {
                     <p className="text-sm text-gray-600 mb-1">한국 운송장 번호</p>
                     <p className="font-medium">{order.koreanTrackingNumber}</p>
                   </div>
-                )}
+                )} */}
               </CardContent>
             </Card>
           </div>
@@ -252,48 +248,63 @@ export default function OrderDetailPage() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">상품 금액</span>
-                    <span>₩{order.subtotal.toLocaleString()}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">대행 수수료</span>
-                    <span>₩{order.serviceFee.toLocaleString()}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">국내 배송비</span>
-                    <span>₩{order.domesticShippingFee.toLocaleString()}</span>
-                  </div>
+                  {/* 견적서 정보가 있으면 표시 */}
+                  {(order as any).quotes && (order as any).quotes.length > 0 && (
+                    <>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">상품 금액</span>
+                        <span>₩{((order as any).quotes[0].product_cost || 0).toLocaleString()}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">대행 수수료</span>
+                        <span>₩{((order as any).quotes[0].fee || 0).toLocaleString()}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">국내 배송비</span>
+                        <span>₩{((order as any).quotes[0].domestic_shipping || 0).toLocaleString()}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">국제 배송비</span>
+                        <span>₩{((order as any).quotes[0].international_shipping || 0).toLocaleString()}</span>
+                      </div>
+                      
+                      <Separator />
+                      
+                      <div className="flex justify-between text-lg font-semibold">
+                        <span>총 결제금액</span>
+                        <span>₩{((order as any).quotes[0].total_amount || 0).toLocaleString()}</span>
+                      </div>
+                      
+                      <div className="pt-2">
+                        <p className="text-sm text-gray-600">결제 방법</p>
+                        <p className="font-medium">
+                          {(order as any).quotes[0].payment_method || '미정'}
+                        </p>
+                      </div>
+                    </>
+                  )}
                   
-                  <Separator />
-                  
-                  <div className="flex justify-between text-lg font-semibold">
-                    <span>총 결제금액</span>
-                    <span>₩{order.totalAmount.toLocaleString()}</span>
-                  </div>
-                  
-                  <div className="pt-2">
-                    <p className="text-sm text-gray-600">결제 방법</p>
-                    <p className="font-medium">
-                      {order.paymentMethod === 'card' && '신용/체크카드'}
-                      {order.paymentMethod === 'bank_transfer' && '계좌이체'}
-                    </p>
-                  </div>
+                  {/* 견적서가 없으면 기본 메시지 */}
+                  {(!((order as any).quotes) || (order as any).quotes.length === 0) && (
+                    <div className="text-center py-4">
+                      <p className="text-gray-600">견적서 준비 중입니다.</p>
+                    </div>
+                  )}
                 </div>
               </CardContent>
             </Card>
 
             {/* Customer Notes */}
-            {order.customerNotes && (
+            {order.special_requests && (
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <MessageCircle className="w-5 h-5" />
-                    고객 메모
+                    특별 요청사항
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-sm">{order.customerNotes}</p>
+                  <p className="text-sm">{order.special_requests}</p>
                 </CardContent>
               </Card>
             )}

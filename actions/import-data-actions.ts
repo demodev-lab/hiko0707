@@ -1,6 +1,6 @@
 'use server'
 
-import { HotdealCrawlerManager } from '@/lib/crawlers/new-crawler-manager'
+import { CrawlerManager } from '@/lib/crawlers/crawler-manager'
 import { revalidatePath } from 'next/cache'
 
 export interface ImportResult {
@@ -12,7 +12,7 @@ export interface ImportResult {
 
 export async function importHotdealsFromFile(filename: string): Promise<ImportResult> {
   try {
-    const manager = new HotdealCrawlerManager()
+    const manager = new CrawlerManager()
     const filepath = `./exports/${filename}`
     
     // JSON 파일에서 데이터 읽기
