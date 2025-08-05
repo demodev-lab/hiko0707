@@ -63,16 +63,16 @@ async function migrateHotDeals() {
 
     for (const hotdeal of localHotDeals) {
       // 필수 필드 검사
-      if (!hotdeal.source || !hotdeal.sourcePostId) {
-        log.warning(`유효하지 않은 핫딜 (ID: ${hotdeal.id}) - source 또는 sourcePostId 없음`)
+      if (!hotdeal.source || !hotdeal.source_id) {
+        log.warning(`유효하지 않은 핫딜 (ID: ${hotdeal.id}) - source 또는 source_id 없음`)
         invalidHotDeals.push(hotdeal)
         continue
       }
 
       // 날짜 형식 검증
       try {
-        new Date(hotdeal.crawledAt)
-        // endDate는 HotDeal 타입에 없음
+        new Date(hotdeal.created_at)
+        // end_date는 HotDeal 타입에 있음
         validHotDeals.push(hotdeal)
       } catch (error) {
         log.warning(`유효하지 않은 날짜 형식 (ID: ${hotdeal.id})`)
@@ -105,7 +105,7 @@ async function migrateHotDeals() {
           // 중복 체크
           const exists = await SupabaseHotDealService.checkDuplicate(
             hotdeal.source,
-            hotdeal.sourcePostId
+            hotdeal.source_id
           )
 
           if (exists) {
@@ -145,9 +145,9 @@ async function migrateHotDeals() {
               totalAdded++
               
               // 조회수 동기화
-              if (hotdeal.viewCount && hotdeal.viewCount > 0) {
+              if (hotdeal.views && hotdeal.views > 0) {
                 // 조회수는 직접 업데이트 불가능하므로 로그만 남김
-                log.info(`조회수 ${hotdeal.viewCount}은 마이그레이션 후 재설정됩니다`)
+                log.info(`조회수 ${hotdeal.views}은 마이그레이션 후 재설정됩니다`)
               }
             } else {
               totalErrors++

@@ -30,7 +30,7 @@ type OrderWithRelations = Database['public']['Tables']['proxy_purchases_request'
 }
 import { format } from 'date-fns'
 import { ko } from 'date-fns/locale'
-import { useAuth } from '@/hooks/use-auth'
+import { useSupabaseUser } from '@/hooks/use-supabase-user'
 import { toast } from 'sonner'
 import {
   ArrowLeft,
@@ -78,7 +78,7 @@ const statusColors: Record<BuyForMeRequest['status'], string> = {
 export default function OrderDetailPage() {
   const params = useParams()
   const router = useRouter()
-  const { currentUser } = useAuth()
+  const { user: currentUser } = useSupabaseUser()
   const { order: requestData, isLoading, error } = useSupabaseOrderDetail(params.id as string)
 
   // 사용자 본인의 주문인지 확인

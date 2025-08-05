@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { useAuth } from '@/hooks/use-auth'
+import { useSignIn } from '@clerk/nextjs'
 import { loginSchema, type LoginFormData } from '@/lib/validations'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -12,7 +12,8 @@ import Link from 'next/link'
 import { Loader2 } from 'lucide-react'
 
 export function LoginForm() {
-  const { login, isLoading } = useAuth()
+  const { signIn, isLoaded } = useSignIn()
+  const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   const {
@@ -24,11 +25,35 @@ export function LoginForm() {
   })
 
   const onSubmit = async (data: LoginFormData) => {
+    if (!isLoaded) return
+    
+    setIsLoading(true)
+    setError(null)
+    
     try {
-      setError(null)
-      await login(data.email, data.password)
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to login')
+      const result = await signIn.create({
+        identifier: data.email,
+        password: data.password,
+      })
+
+      if (result.status === 'complete') {
+        // 로그인 성공 - Clerk가 자동으로 리다이렉트 처리
+        window.location.href = '/hotdeals'
+      } else {
+        // 추가 인증 필요한 경우
+        console.log('Additional verification required:', result.status)
+      }
+    } catch (err: any) {
+      console.error('Login error:', err)
+      if (err.errors?.[0]?.code === 'form_identifier_not_found') {
+        setError('등록되지 않은 이메일입니다.')
+      } else if (err.errors?.[0]?.code === 'form_password_incorrect') {
+        setError('비밀번호가 올바르지 않습니다.')
+      } else {
+        setError(err.errors?.[0]?.message || '로그인에 실패했습니다.')
+      }
+    } finally {
+      setIsLoading(false)
     }
   }
 

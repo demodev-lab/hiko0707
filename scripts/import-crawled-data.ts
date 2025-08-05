@@ -53,27 +53,28 @@ export function convertCrawledDataToHotDeals(crawledFilePath: string): HotDeal[]
     const hotDeal: HotDeal = {
       id: `crawled_${deal.sourcePostId}_${Date.now()}_${index}`,
       title: deal.title,
-      price: price,
-      imageUrl: deal.originalImage || deal.thumbnailImage,
-      originalUrl: deal.url,
+      original_price: price,
+      sale_price: price,
+      discount_rate: 0,
+      image_url: deal.originalImage || deal.thumbnailImage,
+      thumbnail_url: deal.thumbnailImage || deal.originalImage,
+      original_url: deal.url,
       seller: deal.storeName,
       source: deal.source as HotDealSource,
-      sourcePostId: deal.sourcePostId,
-      crawledAt: new Date(deal.postDate),
-      userId: deal.author,
-      communityCommentCount: deal.commentCount,
-      communityRecommendCount: deal.recommendCount,
-      ranking: undefined,
-      shipping: {
-        isFree: deal.isFreeShipping
-      },
-      productComment: deal.content,
+      source_id: deal.sourcePostId,
+      author_name: deal.author,
+      comment_count: deal.commentCount,
+      like_count: deal.recommendCount || 0,
+      is_free_shipping: deal.isFreeShipping,
+      shopping_comment: deal.content,
       category: deal.category,
       status: deal.isEnded ? 'ended' : 'active',
-      viewCount: deal.views,
-      likeCount: 0,
-      commentCount: 0,
-      translationStatus: 'pending'
+      views: deal.views,
+      end_date: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+      created_at: new Date(deal.postDate).toISOString(),
+      updated_at: new Date().toISOString(),
+      deleted_at: null,
+      description: null
     };
     
     return hotDeal;
@@ -96,36 +97,36 @@ export async function importCrawledData(crawledFilePath: string) {
     for (const deal of hotDeals) {
       try {
         // 중복 확인
-        const isDuplicate = await SupabaseHotDealService.checkDuplicate(deal.source, deal.sourcePostId);
+        const isDuplicate = await SupabaseHotDealService.checkDuplicate(deal.source, deal.source_id);
         
         if (isDuplicate) {
-          console.log(`⏭️  중복 건너뛰기: ${deal.source} - ${deal.sourcePostId}`);
+          console.log(`⏭️  중복 건너뛰기: ${deal.source} - ${deal.source_id}`);
           skippedCount++;
         } else {
           // Supabase 형식으로 변환
           const supabaseData = {
             title: deal.title,
-            description: deal.productComment || null,
-            original_price: deal.price || 0,
-            sale_price: deal.price || 0,
-            discount_rate: 0, // crawled data에는 없음
-            thumbnail_url: deal.imageUrl || '',
-            image_url: deal.imageUrl || '',
-            original_url: deal.originalUrl || '',
+            description: deal.description || null,
+            original_price: deal.original_price || 0,
+            sale_price: deal.sale_price || 0,
+            discount_rate: deal.discount_rate || 0,
+            thumbnail_url: deal.thumbnail_url || '',
+            image_url: deal.image_url || '',
+            original_url: deal.original_url || '',
             category: deal.category || 'general',
             source: deal.source,
-            source_id: deal.sourcePostId,
+            source_id: deal.source_id,
             seller: deal.seller || null,
-            is_free_shipping: deal.shipping?.isFree || false,
+            is_free_shipping: deal.is_free_shipping || false,
             status: 'active' as const,
-            end_date: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
-            views: deal.viewCount || 0,
-            comment_count: deal.communityCommentCount || 0,
-            like_count: 0,
-            author_name: deal.userId || 'Unknown',
-            shopping_comment: '',
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString()
+            end_date: deal.end_date,
+            views: deal.views || 0,
+            comment_count: deal.comment_count || 0,
+            like_count: deal.like_count || 0,
+            author_name: deal.author_name || 'Unknown',
+            shopping_comment: deal.shopping_comment || '',
+            created_at: deal.created_at,
+            updated_at: deal.updated_at
           };
           
           // Supabase에 저장

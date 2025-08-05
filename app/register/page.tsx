@@ -7,13 +7,13 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { RegisterForm } from '@/components/forms/register-form'
 import { SocialLoginButtons } from '@/components/features/auth/social-login-buttons'
 import { useLanguage } from '@/lib/i18n/context'
-import { useAuth } from '@/hooks/use-auth'
+import { useClerkRole } from '@/hooks/use-clerk-role'
 import { useEffect } from 'react'
 
 export default function RegisterPage() {
   const router = useRouter()
   const { t } = useLanguage()
-  const { isAuthenticated } = useAuth()
+  const { isAuthenticated } = useClerkRole()
 
   useEffect(() => {
     if (isAuthenticated) {

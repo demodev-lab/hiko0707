@@ -5,7 +5,8 @@ import { usePathname, useRouter } from 'next/navigation'
 import { Home, TrendingUp, ShoppingBag, User, Heart, Sparkles } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useLanguage } from '@/lib/i18n/context'
-import { useAuth } from '@/hooks/use-auth'
+import { useClerkRole } from '@/hooks/use-clerk-role'
+import { useSupabaseUser } from '@/hooks/use-supabase-user'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useState, useEffect } from 'react'
 import { Badge } from '@/components/ui/badge'
@@ -21,7 +22,8 @@ export function MobileNavV2() {
   const pathname = usePathname()
   const router = useRouter()
   const { t } = useLanguage()
-  const { currentUser, isAuthenticated } = useAuth()
+  const { isAuthenticated } = useClerkRole()
+  const { user: currentUser } = useSupabaseUser()
   const [mounted, setMounted] = useState(false)
   useEffect(() => {
     setMounted(true)

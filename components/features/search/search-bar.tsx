@@ -6,7 +6,7 @@ import { Search, X, Clock, TrendingUp } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { useSearchSuggestions, useRecentSearches } from '@/hooks/use-search-suggestions'
+import { useSearchSuggestions, useRecentSearches } from '@/hooks/use-supabase-search-suggestions'
 import { highlightText } from '@/lib/search-utils'
 import { useLanguage } from '@/lib/i18n/context'
 
@@ -206,7 +206,7 @@ export function SearchBar({
                 </h3>
               </div>
               <div className="space-y-1">
-                {recentSearches.map((search) => (
+                {recentSearches.map((search: string) => (
                   <div key={search} className="flex items-center justify-between group">
                     <button
                       onClick={() => handleSuggestionClick(search)}

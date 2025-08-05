@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Heart } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useToggleFavorite, useIsFavorited, useFavoriteCount } from '@/hooks/use-favorites'
-import { useAuth } from '@/hooks/use-auth'
+import { useClerkRole } from '@/hooks/use-clerk-role'
 import { useRouter } from 'next/navigation'
 
 // Favorite 타입 정의 (LocalStorage 의존성 제거)
@@ -43,7 +43,7 @@ export function FavoriteButton({
   className
 }: FavoriteButtonProps) {
   const router = useRouter()
-  const { isAuthenticated } = useAuth()
+  const { isAuthenticated } = useClerkRole()
   const { data: isFavorited = false } = useIsFavorited(itemId, itemType)
   const { data: favoriteCount = 0 } = useFavoriteCount(itemId, itemType)
   const toggleFavorite = useToggleFavorite()

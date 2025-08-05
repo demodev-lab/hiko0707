@@ -57,7 +57,7 @@ async function importLatestHotdeals() {
         // 중복 확인
         const isDuplicate = await SupabaseHotDealService.checkDuplicate(
           hotdeal.source,
-          hotdeal.sourcePostId
+          hotdeal.source_id
         )
         
         if (isDuplicate) {

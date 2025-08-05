@@ -186,20 +186,28 @@ function generateHotDeal(index: number): HotDeal {
   const hotDeal: HotDeal = {
     id: uuidv4(),
     title: `${sourcePrefixes[source]} ${product.title}`,
-    productComment: `${product.title} 특가 할인! 역대급 가격으로 만나보세요. 한정 수량 특가 진행중!`,
-    price,
+    shopping_comment: `${product.title} 특가 할인! 역대급 가격으로 만나보세요. 한정 수량 특가 진행중!`,
+    original_price: price,
+    sale_price: Math.round(price * (100 - getRandomNumber(10, 50)) / 100),
+    discount_rate: getRandomNumber(10, 50),
     category,
     source,
     seller: 'Mock Store',
-    sourcePostId: `mock-${index}`,
-    originalUrl: `https://example.com/hotdeal/${index}`,
-    imageUrl: getRandomElement(categoryImages[category]),
-    viewCount: getRandomNumber(100, 50000),
-    likeCount: getRandomNumber(10, 5000),
-    commentCount: getRandomNumber(5, 500),
-    shipping: getRandomElement(shippingTemplates),
+    source_id: `mock-${index}`,
+    original_url: `https://example.com/hotdeal/${index}`,
+    image_url: getRandomElement(categoryImages[category]),
+    thumbnail_url: getRandomElement(categoryImages[category]),
+    views: getRandomNumber(100, 50000),
+    like_count: getRandomNumber(10, 5000),
+    comment_count: getRandomNumber(5, 500),
+    is_free_shipping: Math.random() > 0.5,
     status,
-    crawledAt
+    author_name: 'Mock User',
+    end_date: new Date(now.getTime() + getRandomNumber(1, 7) * 24 * 60 * 60 * 1000).toISOString(),
+    created_at: crawledAt.toISOString(),
+    updated_at: crawledAt.toISOString(),
+    deleted_at: null,
+    description: null
   };
   
   return hotDeal;
@@ -214,7 +222,7 @@ async function generateMockData() {
   }
   
   // 최신순으로 정렬
-  hotdeals.sort((a, b) => b.crawledAt.getTime() - a.crawledAt.getTime());
+  hotdeals.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
   
   // JSON 파일로 저장
   const outputDir = path.join(process.cwd(), 'lib', 'db');

@@ -130,38 +130,68 @@ export function useSearchSuggestions(query: string, delay = 300) {
   return { suggestions, isLoading }
 }
 
-// Recent searches management
+// Recent searches management with Supabase
 export function useRecentSearches() {
   const [recentSearches, setRecentSearches] = useState<string[]>([])
+  const [isAuthenticated, setIsAuthenticated] = useState(false)
+  const [userId, setUserId] = useState<string | null>(null)
 
+  // Check authentication status
   useEffect(() => {
-    const stored = localStorage.getItem('recentSearches')
-    if (stored) {
-      setRecentSearches(JSON.parse(stored))
+    const checkAuth = async () => {
+      const { useUser } = await import('@clerk/nextjs')
+      // This is a workaround since we can't use hooks directly
+      // In practice, this should be passed from parent component
+      const stored = localStorage.getItem('recentSearches')
+      if (stored) {
+        setRecentSearches(JSON.parse(stored))
+      }
     }
+    checkAuth()
   }, [])
 
   const addRecentSearch = useCallback((search: string) => {
     setRecentSearches(prev => {
       const filtered = prev.filter(s => s !== search)
       const updated = [search, ...filtered].slice(0, 10) // Keep last 10 searches
+      
+      // For now, keep localStorage as fallback for non-authenticated users
       localStorage.setItem('recentSearches', JSON.stringify(updated))
+      
+      // TODO: If authenticated, also save to Supabase
+      // if (userId) {
+      //   SupabasePreferencesService.addRecentSearch(userId, search)
+      // }
+      
       return updated
     })
-  }, [])
+  }, [userId])
 
   const removeRecentSearch = useCallback((search: string) => {
     setRecentSearches(prev => {
       const updated = prev.filter(s => s !== search)
+      
+      // For now, keep localStorage as fallback
       localStorage.setItem('recentSearches', JSON.stringify(updated))
+      
+      // TODO: If authenticated, also update Supabase
+      // if (userId) {
+      //   SupabasePreferencesService.removeRecentSearch(userId, search)
+      // }
+      
       return updated
     })
-  }, [])
+  }, [userId])
 
   const clearRecentSearches = useCallback(() => {
     setRecentSearches([])
     localStorage.removeItem('recentSearches')
-  }, [])
+    
+    // TODO: If authenticated, also clear in Supabase
+    // if (userId) {
+    //   SupabasePreferencesService.clearRecentSearches(userId)
+    // }
+  }, [userId])
 
   return {
     recentSearches,

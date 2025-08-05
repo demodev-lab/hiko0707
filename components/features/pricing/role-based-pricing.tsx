@@ -5,12 +5,12 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Check, Star, Crown } from 'lucide-react'
 import { RoleBasedContent, ShowForRole } from '@/components/auth/role-based-content'
-import { useAuth } from '@/hooks/use-auth'
+import { useSupabaseUser } from '@/hooks/use-supabase-user'
 import Link from 'next/link'
 import { cn } from '@/lib/utils'
 
 export function RoleBasedPricing() {
-  const { currentUser } = useAuth()
+  const { user: currentUser } = useSupabaseUser()
   
   const plans = [
     {

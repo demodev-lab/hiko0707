@@ -10,7 +10,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { toast } from 'sonner'
 import { useLanguage } from '@/lib/i18n/context'
-import { useAuth } from '@/hooks/use-auth'
+import { useSignUp } from '@clerk/nextjs'
 import { registerSchema } from '@/lib/validations'
 import { Loader2 } from 'lucide-react'
 
@@ -23,7 +23,7 @@ interface RegisterFormProps {
 export function RegisterForm({ onSuccess }: RegisterFormProps) {
   const [isLoading, setIsLoading] = useState(false)
   const { t } = useLanguage()
-  const { register } = useAuth()
+  const { signUp, isLoaded } = useSignUp()
 
   const form = useForm<RegisterFormData>({
     resolver: zodResolver(registerSchema),
@@ -37,32 +37,43 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
   })
 
   const onSubmit = async (data: RegisterFormData) => {
+    if (!isLoaded) return
+    
     setIsLoading(true)
 
     try {
-      const success = await register({
-        name: data.name,
-        email: data.email,
+      const result = await signUp.create({
+        emailAddress: data.email,
         password: data.password,
-        role: data.role,
-        createdAt: new Date(),
-        updatedAt: new Date(),
+        firstName: data.name.split(' ')[0] || data.name,
+        lastName: data.name.split(' ').slice(1).join(' ') || undefined,
       })
 
-      if (success) {
+      // 이메일 인증 필요한 경우
+      if (result.status === 'missing_requirements') {
+        await signUp.prepareEmailAddressVerification({
+          strategy: 'email_code'
+        })
+        toast.success(t('auth.verificationEmailSent'), {
+          description: t('auth.checkEmail'),
+        })
+      } else if (result.status === 'complete') {
         toast.success(t('auth.registerSuccess'), {
           description: t('auth.registerSuccessDesc'),
         })
         onSuccess?.()
-      } else {
+      }
+    } catch (error: any) {
+      console.error('Registration error:', error)
+      if (error.errors?.[0]?.code === 'form_identifier_exists') {
         toast.error(t('auth.registerError'), {
           description: t('auth.emailExists'),
         })
+      } else {
+        toast.error(t('common.error'), {
+          description: error.errors?.[0]?.message || t('common.tryAgain'),
+        })
       }
-    } catch (error) {
-      toast.error(t('common.error'), {
-        description: t('common.tryAgain'),
-      })
     } finally {
       setIsLoading(false)
     }

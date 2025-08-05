@@ -8,17 +8,13 @@ import { StaggerContainer, StaggerItem } from '@/components/ui/animated'
 import { usePopularHotDeals } from '@/hooks/use-supabase-hotdeals'
 import { LoadingSpinner } from '@/components/ui/loading-spinner'
 import { calculateTodayRankings } from '@/lib/utils/ranking-utils'
-import { transformSupabaseToLocal } from '@/lib/utils/hotdeal-transformers'
 
 export function HotDealsSection() {
   // 인기 핫딜 6개 가져오기
-  const { data: popularDeals, isLoading: loading, error } = usePopularHotDeals(6)
-  
-  // Supabase 데이터를 LocalStorage 형식으로 변환
-  const hotdeals = popularDeals?.map(transformSupabaseToLocal) || []
+  const { data: hotdeals, isLoading: loading, error } = usePopularHotDeals(6)
   
   // 순위 계산된 핫딜 목록
-  const rankedHotdeals = calculateTodayRankings(hotdeals)
+  const rankedHotdeals = calculateTodayRankings(hotdeals || [])
   
   // 오늘 업로드된 핫딜 중 커뮤니티 조회수가 가장 높은 6개 선택
   const today = new Date()
@@ -38,8 +34,8 @@ export function HotDealsSection() {
 
   // 디버깅용 로그
   console.log('HotDealsSection:', { 
-    totalHotdeals: hotdeals.length,
-    todayDeals: hotdeals.filter(deal => {
+    totalHotdeals: hotdeals?.length || 0,
+    todayDeals: (hotdeals || []).filter(deal => {
       const crawledDate = new Date(deal.created_at)
       return crawledDate.toDateString() === todayStr
     }).length,
@@ -93,8 +89,8 @@ export function HotDealsSection() {
         </div>
         <div className="text-center py-12 sm:py-16 text-gray-500">
           <p>오늘 업로드된 핫딜이 없습니다.</p>
-          <p className="text-sm mt-2">전체 핫딜 개수: {hotdeals.length}개</p>
-          <p className="text-sm">오늘 업로드된 핫딜: {hotdeals.filter(deal => {
+          <p className="text-sm mt-2">전체 핫딜 개수: {hotdeals?.length || 0}개</p>
+          <p className="text-sm">오늘 업로드된 핫딜: {(hotdeals || []).filter(deal => {
             const crawledDate = new Date(deal.created_at)
             return crawledDate.toDateString() === todayStr
           }).length}개</p>

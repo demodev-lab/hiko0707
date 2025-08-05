@@ -4,7 +4,8 @@ import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { ShoppingBag } from 'lucide-react'
 import { BuyForMeModal } from './buy-for-me-modal'
-import { useAuth } from '@/hooks/use-auth'
+import { useClerkRole } from '@/hooks/use-clerk-role'
+import { useSupabaseUser } from '@/hooks/use-supabase-user'
 import { useRouter } from 'next/navigation'
 // import { RoleBasedContent } from '@/components/auth/role-based-content' // 사용하지 않음
 import { toast } from 'sonner'
@@ -36,7 +37,8 @@ export function BuyForMeButton({
   className = ''
 }: BuyForMeButtonProps) {
   const [modalOpen, setModalOpen] = useState(false)
-  const { currentUser, isAuthenticated } = useAuth()
+  const { isAuthenticated } = useClerkRole()
+  const { user: currentUser } = useSupabaseUser()
   const router = useRouter()
 
   const handleClick = (e: React.MouseEvent) => {

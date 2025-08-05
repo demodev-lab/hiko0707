@@ -34,7 +34,7 @@ import {
   Globe,
   Home
 } from 'lucide-react'
-import { useAuth } from '@/hooks/use-auth'
+import { useSupabaseUser } from '@/hooks/use-supabase-user'
 import { useSupabaseBuyForMe } from '@/hooks/use-supabase-buy-for-me'
 import { useSupabaseUserAddresses } from '@/hooks/use-supabase-order'
 import { toast } from 'sonner'
@@ -87,7 +87,7 @@ interface BuyForMeModalProps {
 }
 
 export function BuyForMeModal({ open, onOpenChange, hotdeal }: BuyForMeModalProps) {
-  const { currentUser } = useAuth()
+  const { user: currentUser } = useSupabaseUser()
   const { createRequest, isCreating } = useSupabaseBuyForMe()
   const { addresses, defaultAddress, createAddressAsync, isCreatingAddress } = useSupabaseUserAddresses(currentUser?.id || '')
   const router = useRouter()

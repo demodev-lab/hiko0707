@@ -2,7 +2,7 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '@/lib/supabase/client'
-import { useAuth } from './use-auth'
+import { useSupabaseUser } from './use-supabase-user'
 import { toast } from 'sonner'
 import { useEffect } from 'react'
 import type { Database } from '@/database.types'
@@ -138,7 +138,7 @@ export function useHotDealComments(hotdealId: string, enablePolling = true) {
 }
 
 export function useCreateComment() {
-  const { currentUser } = useAuth()
+  const { user: currentUser } = useSupabaseUser()
   const queryClient = useQueryClient()
   
   return useMutation({
@@ -193,7 +193,7 @@ export function useCreateComment() {
 }
 
 export function useUpdateComment() {
-  const { currentUser } = useAuth()
+  const { user: currentUser } = useSupabaseUser()
   const queryClient = useQueryClient()
   
   return useMutation({
@@ -248,7 +248,7 @@ export function useUpdateComment() {
 }
 
 export function useDeleteComment() {
-  const { currentUser } = useAuth()
+  const { user: currentUser } = useSupabaseUser()
   const queryClient = useQueryClient()
   
   return useMutation({
@@ -300,7 +300,7 @@ export function useDeleteComment() {
 }
 
 export function useLikeComment() {
-  const { currentUser } = useAuth()
+  const { user: currentUser } = useSupabaseUser()
   const queryClient = useQueryClient()
   
   return useMutation({
@@ -406,7 +406,7 @@ async function updateCommentLikeCount(commentId: string) {
 
 // 사용자가 댓글에 좋아요했는지 확인
 export function useCommentLikes(commentIds: string[]) {
-  const { currentUser } = useAuth()
+  const { user: currentUser } = useSupabaseUser()
   
   return useQuery({
     queryKey: ['comment-likes', currentUser?.id, ...commentIds],

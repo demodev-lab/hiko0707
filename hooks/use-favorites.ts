@@ -19,7 +19,7 @@
  */
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { useAuth } from './use-auth'
+import { useSupabaseUser } from './use-supabase-user'
 import { toast } from 'sonner'
 
 // Favorite 타입 정의 (LocalStorage 의존성 제거)
@@ -38,7 +38,7 @@ interface Favorite {
 }
 
 export function useFavorites(itemType?: 'hotdeal' | 'product') {
-  const { currentUser } = useAuth()
+  const { user: currentUser } = useSupabaseUser()
   
   return useQuery({
     queryKey: ['favorites', currentUser?.id, itemType],
@@ -54,7 +54,7 @@ export function useFavorites(itemType?: 'hotdeal' | 'product') {
 }
 
 export function useFavoriteIds(itemType?: 'hotdeal' | 'product') {
-  const { currentUser } = useAuth()
+  const { user: currentUser } = useSupabaseUser()
   
   return useQuery({
     queryKey: ['favorite-ids', currentUser?.id, itemType],
@@ -70,7 +70,7 @@ export function useFavoriteIds(itemType?: 'hotdeal' | 'product') {
 }
 
 export function useIsFavorited(itemId: string, itemType: 'hotdeal' | 'product') {
-  const { currentUser } = useAuth()
+  const { user: currentUser } = useSupabaseUser()
   
   return useQuery({
     queryKey: ['is-favorited', currentUser?.id, itemId, itemType],
@@ -99,7 +99,7 @@ export function useFavoriteCount(itemId: string, itemType: 'hotdeal' | 'product'
 }
 
 export function useToggleFavorite() {
-  const { currentUser } = useAuth()
+  const { user: currentUser } = useSupabaseUser()
   const queryClient = useQueryClient()
   
   return useMutation({
@@ -135,7 +135,7 @@ export function useToggleFavorite() {
 }
 
 export function useDeleteFavorite() {
-  const { currentUser } = useAuth()
+  const { user: currentUser } = useSupabaseUser()
   const queryClient = useQueryClient()
   
   return useMutation({

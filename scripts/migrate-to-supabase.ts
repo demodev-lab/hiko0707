@@ -26,11 +26,11 @@ async function migrateHotDealsToSupabase() {
         // 중복 확인
         const existing = await supabaseRepo.findBySourceAndPostId(
           hotdeal.source,
-          hotdeal.sourcePostId
+          hotdeal.source_id
         )
         
         if (existing) {
-          console.log(`⏭️  Skipping duplicate: ${hotdeal.source} - ${hotdeal.sourcePostId}`)
+          console.log(`⏭️  Skipping duplicate: ${hotdeal.source} - ${hotdeal.source_id}`)
           skipped++
         } else {
           // Supabase에 저장
@@ -42,7 +42,7 @@ async function migrateHotDealsToSupabase() {
             }
           } else {
             failed++
-            console.error(`❌ Failed to migrate: ${hotdeal.source} - ${hotdeal.sourcePostId}`)
+            console.error(`❌ Failed to migrate: ${hotdeal.source} - ${hotdeal.source_id}`)
           }
         }
       } catch (error) {

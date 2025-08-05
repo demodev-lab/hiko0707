@@ -3,7 +3,8 @@
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
-import { useAuth } from '@/hooks/use-auth'
+import { useClerkRole } from '@/hooks/use-clerk-role'
+import { useSupabaseUser } from '@/hooks/use-supabase-user'
 import { useCreateComment } from '@/hooks/use-supabase-hotdeal-comments'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
@@ -24,7 +25,8 @@ export function CommentForm({
   placeholder = '댓글을 작성해주세요...'
 }: CommentFormProps) {
   const router = useRouter()
-  const { isAuthenticated, currentUser } = useAuth()
+  const { isAuthenticated } = useClerkRole()
+  const { user: currentUser } = useSupabaseUser()
   const [content, setContent] = useState('')
   const [isFocused, setIsFocused] = useState(false)
   const createComment = useCreateComment()

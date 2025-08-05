@@ -32,7 +32,6 @@ import {
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { useHotDeals } from '@/hooks/use-supabase-hotdeals'
-import { transformSupabaseToLocal, transformLocalToSupabase } from '@/lib/utils/hotdeal-transformers'
 import { SupabaseHotDealService } from '@/lib/services/supabase-hotdeal-service'
 import { useBackendCrawler } from '@/hooks/use-backend-crawler'
 import { CrawlerSource } from '@/lib/crawlers/crawler-manager'
@@ -69,8 +68,8 @@ export default function HotDealManagerPage() {
     sortOrder: 'desc'
   })
   
-  // LocalStorage 형식으로 변환
-  const hotdeals = supabaseData?.data?.map(transformSupabaseToLocal) || []
+  // Supabase 데이터를 직접 사용
+  const hotdeals = supabaseData?.data || []
   
   const { 
     crawl, 
@@ -218,7 +217,7 @@ export default function HotDealManagerPage() {
         // 소스와 소스ID로 중복 체크
         const isDuplicate = await SupabaseHotDealService.checkDuplicate(
           deal.source || 'unknown',
-          deal.sourceId || deal.id
+          deal.sourceId || deal.source_post_id || deal.id
         )
         
         if (isDuplicate) {
@@ -226,20 +225,26 @@ export default function HotDealManagerPage() {
           continue
         }
         
-        // 데이터 변환 및 저장
-        const transformedDeal = transformLocalToSupabase({
-          ...deal,
-          id: deal.id || `hotdeals_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-          communityCommentCount: deal.communityCommentCount || 0,
-          communityRecommendCount: deal.communityRecommendCount || 0,
-          viewCount: deal.viewCount || 0,
-          price: deal.price || 0,
-          crawledAt: deal.crawledAt || deal.postDate || new Date().toISOString(),
+        // 데이터 형식 변환 및 저장
+        const supabaseDeal = {
+          title: deal.title,
+          original_url: deal.originalUrl || deal.original_url,
+          seller: deal.seller,
+          sale_price: deal.price || deal.sale_price || 0,
+          image_url: deal.imageUrl || deal.image_url,
+          category: deal.category,
           source: deal.source || 'imported',
-          sourceId: deal.sourceId || deal.id
-        })
+          source_post_id: deal.sourceId || deal.source_post_id || deal.id,
+          post_date: deal.postDate || deal.post_date || new Date().toISOString(),
+          views: deal.viewCount || deal.views || 0,
+          comment_count: deal.communityCommentCount || deal.comment_count || 0,
+          like_count: deal.communityRecommendCount || deal.like_count || 0,
+          status: 'active' as const,
+          created_at: deal.crawledAt || deal.created_at || new Date().toISOString(),
+          // ID는 createHotDeal에서 자동 생성되므로 전달하지 않음
+        }
         
-        const result = await SupabaseHotDealService.createHotDeal(transformedDeal)
+        const result = await SupabaseHotDealService.createHotDeal(supabaseDeal)
         if (result) {
           importedCount++
         }

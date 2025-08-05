@@ -19,7 +19,7 @@
  */
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { useAuth } from './use-auth'
+import { useSupabaseUser } from './use-supabase-user'
 import { toast } from 'sonner'
 import { useEffect } from 'react'
 
@@ -74,7 +74,7 @@ export function useHotDealComments(hotdealId: string, enablePolling = true) {
 }
 
 export function useCreateComment() {
-  const { currentUser } = useAuth()
+  const { user: currentUser } = useSupabaseUser()
   const queryClient = useQueryClient()
   
   return useMutation({
@@ -110,7 +110,7 @@ export function useCreateComment() {
 }
 
 export function useUpdateComment() {
-  const { currentUser } = useAuth()
+  const { user: currentUser } = useSupabaseUser()
   const queryClient = useQueryClient()
   
   return useMutation({
@@ -140,7 +140,7 @@ export function useUpdateComment() {
 }
 
 export function useDeleteComment() {
-  const { currentUser } = useAuth()
+  const { user: currentUser } = useSupabaseUser()
   const queryClient = useQueryClient()
   
   return useMutation({
@@ -164,7 +164,7 @@ export function useDeleteComment() {
 }
 
 export function useLikeComment() {
-  const { currentUser } = useAuth()
+  const { user: currentUser } = useSupabaseUser()
   const queryClient = useQueryClient()
   
   return useMutation({

@@ -17,7 +17,7 @@ import { useLanguage } from '@/lib/i18n/context'
 import { useCreateOrder } from '@/hooks/use-orders'
 import { OrderFormData, ShippingMethod, PaymentMethod, calculateServiceFee } from '@/types/order'
 import { toast } from 'sonner'
-import { useAuth } from '@/hooks/use-auth'
+import { useSupabaseUser } from '@/hooks/use-supabase-user'
 import { useRouter } from 'next/navigation'
 import { notificationService } from '@/lib/notifications/notification-service'
 import { UrlParser, ParsedProduct } from './url-parser'
@@ -53,7 +53,7 @@ interface OrderFormProps {
 export function OrderForm({ initialData, hotdealId, onSuccess }: OrderFormProps) {
   const { t } = useLanguage()
   const router = useRouter()
-  const { currentUser } = useAuth()
+  const { user: currentUser } = useSupabaseUser()
   const createOrder = useCreateOrder()
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [showUrlParser, setShowUrlParser] = useState(false)

@@ -3,7 +3,7 @@
 import { createContext, useContext, ReactNode } from 'react'
 import { OnboardingTour } from './onboarding-tour'
 import { WelcomeModal } from './welcome-modal'
-import { useOnboarding, defaultTourSteps, pageTourSteps } from '@/hooks/use-onboarding'
+import { useSupabaseOnboarding, defaultTourSteps, pageTourSteps } from '@/hooks/use-supabase-onboarding'
 import { useLanguage } from '@/lib/i18n/context'
 import { useRouter } from 'next/navigation'
 
@@ -60,7 +60,7 @@ export function OnboardingProvider({
     trackUserAction,
     hasCompletedFullOnboarding,
     canShowOnboarding
-  } = useOnboarding({
+  } = useSupabaseOnboarding({
     autoStart: enableAutoStart,
     tourSteps: getPageTourSteps()
   })

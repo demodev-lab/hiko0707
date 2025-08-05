@@ -1,0 +1,445 @@
+@charset "utf-8";
+@import url('//fonts.googleapis.com/css?family=Roboto:400,700');
+@import url('../../../nariya/css/g5.css');
+/********************************************************
+■ Theme Common
+********************************************************/
+body { margin:0; padding:0;	background:#000; color:#bababa; }
+h1, h2, h3, h4, h5, h6, .en { font-family:"Roboto", sans-serif; }
+
+::-webkit-scrollbar{ width:15px;height:15px;}
+::-webkit-scrollbar-track{background-color:#333;}
+::-webkit-scrollbar-thumb{background:#888; }
+::-webkit-scrollbar-thumb:hover{background:#ccc;}
+::-webkit-scrollbar-thumb:active{background:#ccc;}
+::-webkit-scrollbar-button { display: none; }
+::-webkit-scrollbar-arrow {background:#ccc; }
+
+/********************************************************
+■ Theme Layout : 테마 레이아웃
+********************************************************/
+
+@media all and (max-width:991px) { 
+	.responsive .wrapper { overflow-x:hidden; }
+}
+.nt-container,
+.nt-container-wide { margin:0 auto;   }
+@media all and (min-width:500px) { 
+	.responsive .boxed-a.wrapper .nt-container.px-xl-0 { padding-left:1.5rem !important; padding-right:1.5rem !important; }
+	.responsive .boxed-b.wrapper { padding-left:1.5rem !important; padding-right:1.5rem !important; }
+	.responsive .boxed-b.wrapper #nt_title .nt-container.px-xl-0,
+	.responsive .boxed-b.wrapper #nt_wing .nt-container.px-xl-0 { padding-left:1.5rem !important; padding-right:1.5rem !important; }
+}
+
+/* 비반응형 */
+.no-responsive .boxed-a.wrapper .nt-container.px-xl-0 { padding-left:1.5rem !important; padding-right:1.5rem !important; }
+.no-responsive .boxed-b.wrapper { padding-left:1.5rem !important; padding-right:1.5rem !important; }
+.no-responsive .boxed-b.wrapper #nt_title .nt-container.px-xl-0,
+.no-responsive .boxed-b.wrapper #nt_wing .nt-container.px-xl-0 { padding-left:1.5rem !important; padding-right:1.5rem !important; }
+@media all and (max-width:1200px) {
+	.no-responsive .wrapper.wided .nt-container.px-xl-0 { padding-left:1.5rem !important; padding-right:1.5rem !important; }
+	.no-responsive .wrapper.wided #nt_title .nt-container.px-xl-0,
+	.no-responsive .wrapper.wided #nt_wing .nt-container.px-xl-0 { padding-left:1.5rem !important; padding-right:1.5rem !important; }
+}
+
+
+
+
+
+.logoin {padding: 4px; }
+
+
+/********************************************************
+■ Loader : 페이지 로딩바
+********************************************************/
+#nt_loader { background: #000; left: 0; top: 0; width: 100%; height: 100%; display: block; position: fixed; z-index: 100000; }
+#nt_loader .loader { margin: -25px 0 0 -25px; left: 50%; top: 50%; width: 50px; height: 50px; line-height:50px; font-size: 45px; position: absolute; z-index: 10001; }
+
+/********************************************************
+■ LNB
+********************************************************/
+#nt_lnb ul { list-style: none; margin: 0; }
+#nt_lnb ul > li { float: left; padding: 0 13px; }
+#nt_lnb ul > li::after { font-family: dotum; font-weight: normal; float: right; color:#bababa; content: "|"; margin-right:-15px; }
+#nt_lnb ul > li:first-child { padding-left:0; }
+#nt_lnb ul > li:last-child { padding-right:0; }
+#nt_lnb ul > li:last-child::after { content: ""; margin-right:0; }
+#nt_lnb ul > li > a { float:left; white-space:nowrap; }
+#nt_lnb .dropdown-toggle::after { color:#bababa; }
+
+/********************************************************
+■ PC 헤더(Header)
+********************************************************/
+#header_pc .nt-container {  no-repeat right bottom; }
+/* #header_pc .header-logo img { max-width:100%; }*/
+#header_pc .header-search { width:300px;	max-width:300px; }
+
+#header_pc .header-search form { padding:0; border-width:2px; border-style:solid;  }
+#header_pc .header-search input { font-size:16px !important; color: #bababa; background: #000; border:0 !important; box-shadow:none !important; -webkit-box-shadow:none !important; }
+#header_pc .header-search .form-control:focus { box-shadow:none !important; -webkit-box-shadow: none !important; } 
+#header_pc .header-search .btn3 {width:40px; border: 0; background: #333;color: #bababa; }
+#header_pc .top-banner { width:100%;	max-width:600px; padding: 3px 0px 3px 0px; }
+.border-primary2{border-color:#666!important}
+/********************************************************
+■ 모바일 헤더(Header)
+********************************************************/
+#header_mo { box-shadow: 0px 5px 5px -2px rgba(25, 25, 25, 1); -webkit-box-shadow: 0px 5px 5px -2px rgba(25, 25, 25, 1.15); -moz-box-shadow: 0px 5px 5px -2px rgba(25, 25, 25, 1.15); }
+
+/********************************************************
+■ PC 주메뉴
+********************************************************/
+/* 공통 */
+#nt_menu { position:relative; z-index:20; box-shadow: 0px 5px 5px -2px rgba(50, 60, 70, 0.15); -webkit-box-shadow: 0px 5px 5px -2px rgba(50, 60, 70, 0.15); -moz-box-shadow: 0px 5px 5px -2px rgba(50, 60, 70, 0.15); }
+#nt_menu .nt-container,
+#nt_menu .me-list .me-li,
+#nt_menu .sub-1dul,
+#nt_menu .sub-1dli { position:relative; }
+#nt_menu .sub-slide { display:none; visibility:visible; }
+#nt_menu .sub-icon::after { font-family: "FontAwesome"; float: right; position: relative; content: "\f105"; }
+#nt_menu .me-icon {	width:4.0rem; text-align:center; }
+#nt_menu .me-a { display:block; position:relative; text-align:center; color:#e7e7e7; }
+#nt_menu .me-li.on .me-a,
+#nt_menu .me-li:hover .me-a { color:#fff; background:rgba(0,0,0,0.5) !important; }
+#nt_menu .sub-2div { left:100%; top:0; position:absolute; z-index:22; background: #fff; box-shadow: 0 6px 12px rgba(0, 0, 0, .175); -webkit-box-shadow: 0 6px 12px rgba(0, 0, 0, .175); } 
+#nt_menu .sub-2dul { }
+#nt_menu .sub-2dli { }
+#nt_menu .sub-2da { display:block; color:#000; border-bottom: 1px solid #eee; } 
+#nt_menu .sub-2dli.on .sub-2da,
+#nt_menu .sub-2dli:hover .sub-2da { color:#000; background: #fafafa; border-color: #eee; font-weight: bold; }
+#nt_menu .sub-2line { display:block; color:#000; font-weight:bold; background:#f5f5f5; }
+.nt-menu .sub-1div { position:absolute; left:0; z-index:21; width:auto; text-align:left; top:100%; left:0; background:#fff; box-shadow: 0 6px 12px rgba(0, 0, 0, .175); -webkit-box-shadow: 0 6px 12px rgba(0, 0, 0, .175); }
+.nt-menu .sub-1div::before { left: 50%; margin-left:-8px; }
+.nt-menu .sub-1da { display:block; color:#000; border-bottom: 1px solid #eee; }
+.nt-menu .sub-1line { position:relative; display:block; }
+.nt-menu .sub-1dli.on .sub-1da,
+.nt-menu .sub-1dli:hover .sub-1da { color:#000; background: #f5f5f5; border-color: #eee; font-weight:bold; }
+.nt-menu .sub-1line { color:#000; font-weight:bold; background:#fafafa; }
+.nt-menu .me-sh { padding:0.59rem 1.0rem; } /* 서브메뉴 높이설정 : 페딩값으로 조절 */ 
+
+/* 메뉴 상단 고정 */
+#nt_sticky_wrap.me-sticky { position:fixed; width:100%; z-index:999; left:0; top:0; }
+@media all and (min-width:992px) {
+	.wrapper.m-lg-auto #nt_sticky_wrap.me-sticky nav { margin:0 auto !important; }
+	.wrapper.ml-lg-auto #nt_sticky_wrap.me-sticky nav { margin:0 0 0 auto !important; }
+	.wrapper.mr-lg-auto #nt_sticky_wrap.me-sticky nav { margin:0 auto 0 0 !important; }
+}
+
+/********************************************************
+■ 페이지 타이틀
+********************************************************/
+#nt_title { position:relative; overflow:hidden;  }
+#nt_title .nt-container { position:relative; z-index:2; height:70px; }
+#nt_title .page-title { font-size:26px; letter-spacing:-1px; line-height:1.4; }
+#nt_title .breadcrumb a {  }
+#nt_title .breadcrumb-item + .breadcrumb-item::before {	font-family: dotum;	font-weight: normal; color:#aaa; content:">"; }
+@media all and (max-width:991px) {
+	.responsive #nt_title .page-title { font-size:24px; letter-spacing:0; }
+}
+@media all and (max-width:767px) {
+	.responsive #nt_title .page-title { font-size:22px; }
+	.responsive #nt_title .nt-container { height:60px; }
+}
+@media all and (max-width:575px) {
+	.responsive #nt_title .page-title { font-size:20px; }
+	.responsive #nt_title .nt-container { height:50px; }
+}
+
+/********************************************************
+■ Wing
+********************************************************/
+#nt_wing .nt-container { position:relative; overflow:visible !important; line-height:14px; }
+#nt_wing img { max-width:100%; }
+#nt_wing .wing-left{ position:absolute; width:200px; }
+#nt_wing .wing-right { position:absolute; width:200px; } 
+#nt_wing .wing-left { left:-200px; }
+#nt_wing .wing-right { right:-210px; }
+.boxed-b #nt_wing .wing-left { left:-210px; }
+.boxed-b #nt_wing .wing-right { right:-210px; }
+
+/********************************************************
+■ Footer 
+********************************************************/
+#nt_footer .nt-links ul { list-style: none; margin: 0px 0px 0px 0px; padding:0; }
+#nt_footer .nt-links ul > li { display: inline-block; padding: 0 13px; } 
+#nt_footer ul > li:first-child { padding-left:0; }
+#nt_footer ul > li:last-child { padding-right:0; }
+#nt_footer .nt-links ul > li::after { font-family: dotum; font-weight: normal; float: right; color:#bababa; content: "|"; margin-right:-15px; }
+#nt_footer .nt-links ul > li:last-child::after { content: ""; }
+#nt_footer .nt-links ul > li > a { color: #bababa; white-space:nowrap;	}
+@media all and (max-width:991px) {
+	.responsive #nt_footer .nt-links ul > li { float:none; display:inline-block; }
+}
+
+/********************************************************
+■ Widget Title 위젯 타이틀
+********************************************************/
+h3.h3 { padding:0; margin:0; font-weight:bold; }
+hr.hr::before { width:100%; height:1px; content: ""; position:absolute; left:0; bottom:1px; line-height:1px; background-color:#555; }
+hr.hr { display:block; position:relative; height:3px; border: none; line-height:1px; padding:0;	margin:0; }
+hr.hr::after { width:4.0rem; height:1px;content: ""; position:absolute; left:0; bottom:0; line-height:0px; }
+@media all and (max-width:575px) {
+	.responsive h3.h3 {	padding-left:1.0rem; padding-right:1.0rem; }
+	.responsive hr.hr::after { left:1.0rem;	}
+}
+
+/********************************************************
+■ Bootstrap 4 : 부트스트랩 기본 속성
+********************************************************/
+/* 툴팁 */
+.tooltip .tooltip-inner { font-size:1.0rem !important; }
+
+/* 체크박스, 라디오버튼 재지정 */
+.custom-checkbox .custom-control-label::before,
+.custom-checkbox .custom-control-label::after,
+.custom-radio .custom-control-label::before,
+.custom-radio .custom-control-label::after { top:0.15rem !important; width:1.4rem !important; height:1.4rem !important; }
+
+/* 체크박스, 라디오버튼과 글자간 간격 */
+.custom-checkbox .custom-control-label span,
+.custom-radio .custom-control-label span { cursor: pointer; padding-left:0.5rem !important; }
+
+/* 스위치 버튼 재지정 */
+.custom-switch .custom-control-label::before,
+.custom-switch .custom-control-label::after { margin-top:2px; }
+
+/* Button */
+.btn-lg { padding: 10px 16px; border-radius: 3px; line-height: 1.33; font-size: 18px; }
+.btn-lg i {	top: 3px; font-size: 24px; position: relative; }
+
+/* Form */
+.col-form-label { font-weight:bold; }
+
+
+/* 라운드 스타일 */
+.na-round,
+.view_image img,
+.pretty-embed img { border-radius: 0.3rem !important; }
+
+/* 사각 스타일 */
+.is-square .na-round,
+.is-square .view_image img,
+.is-square .pretty-embed img,
+.is-square .btn,
+.is-square .alert,
+.is-square .nav-link,
+.is-square .form-control,
+.is-square .input-group-prepend,
+.is-square .input-group-append,
+.is-square .input-group-text,
+.is-square .custom-file-label,
+.is-square .custom-file-label:after,
+.is-square .custom-select,
+.is-square .label,
+.is-square .progress,
+.is-square .pagination li a,
+.is-square .list-group-item { border-radius:0 !important; }
+
+
+
+/* ■ 메인 랭킹 탭메뉴 */
+/**
+ * Tabs
+ */
+.tabs {
+	display: flex;
+	flex-wrap: wrap; // make sure it wraps
+	 
+}
+.tabs label {
+	order: 1; // Put the labels first
+	display: block;
+	padding: 0.3rem 0.5rem;
+	margin-right: 0.2rem;
+	cursor: pointer;
+  background: #333;
+  font-weight: bold;
+  transition: background ease 0.2s;
+}
+.tabs .tab {
+  order: 99; // Put the tabs last
+  flex-grow: 1;
+	width: 100%;
+	display: none;
+  padding: 0rem;
+}
+.tabs input[type="radio"] {
+	display: none;
+}
+.tabs input[type="radio"]:checked + label {
+	background: #000;
+		color: #fff;
+}
+.tabs input[type="radio"]:checked + label + .tab {
+	display: block;
+}
+
+@media (max-width: 15em) {
+  .tabs .tab,
+  .tabs label {
+    order: initial;
+  }
+  .tabs label {
+    width: 100%;
+    margin-right: 0;
+    margin-top: 0.2rem;
+  }
+}
+
+
+
+
+
+
+
+
+
+
+.rankin-tr .title_font {
+    padding: 0px;
+    text-align: center; 
+    background-color: #333;
+    color: #fff;
+   
+}
+.rankin-tr .title_font2 {
+    padding: 0px;
+    text-align: right; 
+    background-color: #333;
+    color: #fff;
+
+}
+
+.rankin-td  {
+  height:1px;
+    background-color: #222;
+
+}
+
+
+
+
+/**
+ * Generic Styling
+*/
+
+/* ■ 메인 배너 */
+
+.main-banner{
+padding: 0px 0px 0px -0px; 
+}
+
+/* ■ 우측배너 글자 간격 */
+.banner_alt{
+padding: 5px 0px 0px 0px; 
+}
+
+
+
+/* ■ 메인 탭메뉴 */
+/**
+ * Tabs
+ */
+.tabs2 {
+	display: flex;
+	flex-wrap: wrap; // make sure it wraps
+
+}
+.tabs2 label {
+	order: 1; // Put the labels first
+	display: block;
+	padding: 0.3rem 0.5rem;
+	margin-right: 0.2rem;
+	cursor: pointer;
+  background: #333;
+  font-weight: bold;
+  transition: background ease 0.2s;
+}
+.tabs2 .tab {
+  order: 99; // Put the tabs last
+  flex-grow: 1;
+	width: 100%;
+	display: none;
+  padding: 0rem;
+
+}
+.tabs2 input[type="radio"] {
+	display: none;
+}
+.tabs2 input[type="radio"]:checked + label {
+	background: #000;
+	color: #fff;
+   border: 1px solid #000;;
+}
+.tabs2 input[type="radio"]:checked + label + .tab {
+	display: block;
+}
+
+.badge{
+width:54px;
+height:54px; 
+overflow: hidden;
+}
+
+.new-icon {
+  opacity: 0.8;
+  padding: 3px 19px 3px 0px;
+	background-color: #fff;
+	text-align: center;
+	position: relative;
+	top: -57px;
+	left: -18px;
+	font-size: 12px;
+	color: #000;
+	width:62px;
+	height:16px;
+	transform: rotate(-45deg);
+}
+
+
+
+
+.nt-noti-cnt3 { 
+background-color: rgba(0,0,0,0.3);
+border: 2px solid rgba(255,255,255,0.5);
+    border-radius: 30% !important;
+    color: red;
+    margin: 1em -10em -0em -1.7em;
+    padding: -0px 3px -0px 2px;
+    position: absolute;
+}
+
+.nt-noti-cnt4 { 
+
+
+
+   padding: -0px 3px -0px 2px;
+background-color: rgba(0,0,0,0.4);
+border: 2px solid rgba(255,255,255,0.4);
+  border-radius: 30% !important;
+	text-align: center;
+	position: relative;
+	top: -12px;
+	left: -50px;
+	font-size: 12px;
+	color: red;
+
+}
+
+/* ■ 본문 가리기 */
+    .viewmenu a{cursor:pointer;} 
+    .viewmenu .viewhide{display:none;}
+
+
+/* ■ 댓글 버튼 */
+.btn_submit10{
+width:70px;
+margin-top:0.18rem;
+  color: #fff;
+  background-color: #333;
+  border-color: #333;
+}
+
+/* ■ 포인트 이벤트 랜덤값 */
+.rand_data {
+color: #fff;
+}

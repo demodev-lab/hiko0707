@@ -18,7 +18,7 @@
 
 import { useState, useEffect } from 'react'
 import { db } from '@/lib/db/database-service'
-import { useAuth } from './use-auth'
+import { useSupabaseUser } from './use-supabase-user'
 import { toast } from 'sonner'
 
 // Address 타입 정의 (LocalStorage 의존성 제거)
@@ -38,7 +38,7 @@ interface Address {
 }
 
 export function useAddresses() {
-  const { currentUser } = useAuth()
+  const { user: currentUser } = useSupabaseUser()
   const [addresses, setAddresses] = useState<Address[]>([])
   const [defaultAddress, setDefaultAddress] = useState<Address | null>(null)
   const [loading, setLoading] = useState(false)

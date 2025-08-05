@@ -24,7 +24,7 @@ interface NestedComment extends CommentRow {
     avatar_url?: string
   }
 }
-import { useAuth } from '@/hooks/use-auth'
+import { useSupabaseUser } from '@/hooks/use-supabase-user'
 import { useUpdateComment, useDeleteComment, useLikeComment } from '@/hooks/use-supabase-hotdeal-comments'
 import { CommentForm } from './comment-form'
 import { cn } from '@/lib/utils'
@@ -38,7 +38,7 @@ interface CommentItemProps {
 }
 
 export function CommentItem({ comment, hotdealId, level = 0 }: CommentItemProps) {
-  const { currentUser } = useAuth()
+  const { user: currentUser } = useSupabaseUser()
   const [isEditing, setIsEditing] = useState(false)
   const [isReplying, setIsReplying] = useState(false)
   const [editContent, setEditContent] = useState(comment.content)

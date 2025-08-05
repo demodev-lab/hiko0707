@@ -18,12 +18,12 @@
 import { useState, useCallback, useEffect } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import type { BuyForMeRequest, CreateBuyForMeRequestData } from '@/types/buy-for-me'
-import { useAuth } from './use-auth'
+import { useSupabaseUser } from './use-supabase-user'
 import { toast } from 'sonner'
 import { notificationService } from '@/lib/notifications/notification-service'
 
 export function useBuyForMe() {
-  const { currentUser } = useAuth()
+  const { user: currentUser } = useSupabaseUser()
   const queryClient = useQueryClient()
 
   // 현재 사용자의 Buy for Me 요청 목록 조회

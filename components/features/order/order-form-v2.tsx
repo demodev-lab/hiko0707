@@ -43,7 +43,7 @@ import Image from 'next/image'
 import { useLanguage } from '@/lib/i18n/context'
 import { OrderFormData, calculateServiceFee } from '@/types/order'
 import { toast } from 'sonner'
-import { useAuth } from '@/hooks/use-auth'
+import { useSupabaseUser } from '@/hooks/use-supabase-user'
 import { useRouter } from 'next/navigation'
 import { notificationService } from '@/lib/notifications/notification-service'
 import { UrlParser, ParsedProduct } from './url-parser'
@@ -94,7 +94,7 @@ const steps = [
 export function OrderFormV2({ initialData, hotdealId, onSuccess }: OrderFormProps) {
   const { t } = useLanguage()
   const router = useRouter()
-  const { currentUser } = useAuth()
+  const { user: currentUser } = useSupabaseUser()
   const { createOrderAsync, isCreatingOrder } = useSupabaseOrders(currentUser?.id || '')
   const { convert, format } = useCurrency()
   const { addresses, defaultAddress, createAddressAsync, isCreatingAddress } = useSupabaseUserAddresses(currentUser?.id || '')

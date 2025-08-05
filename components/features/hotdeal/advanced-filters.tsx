@@ -10,7 +10,7 @@ import { Separator } from '@/components/ui/separator'
 import { Badge } from '@/components/ui/badge'
 import { Checkbox } from '@/components/ui/checkbox'
 import { RangeSlider } from '@/components/ui/range-slider'
-import { useFilterPresets } from '@/hooks/use-filter-presets'
+import { useSupabaseFilterPresets, type FilterPreset } from '@/hooks/use-supabase-filter-presets'
 import { useLanguage } from '@/lib/i18n/context'
 import { 
   Filter, 
@@ -108,12 +108,14 @@ export function AdvancedFilters({
   const { t } = useLanguage()
   const { 
     presets, 
+    isLoading,
     savePreset, 
     deletePreset, 
     applyPreset, 
     findMatchingPreset,
-    getDefaultPresets 
-  } = useFilterPresets()
+    isSavingPreset,
+    isDeletingPreset
+  } = useSupabaseFilterPresets()
 
   // Filter states
   const [category, setCategory] = useState('all')
@@ -228,14 +230,17 @@ export function AdvancedFilters({
   const handleSavePreset = () => {
     if (!presetName.trim()) return
     
-    savePreset(presetName, {
-      category,
-      source: selectedSources,
-      brands: selectedBrands,
-      minPrice: priceRange[0],
-      maxPrice: priceRange[1],
-      sortBy,
-      tags: selectedTags,
+    savePreset({
+      name: presetName,
+      filters: {
+        category,
+        source: selectedSources,
+        brands: selectedBrands,
+        minPrice: priceRange[0],
+        maxPrice: priceRange[1],
+        sortBy,
+        tags: selectedTags,
+      }
     })
     
     setPresetName('')
@@ -311,8 +316,8 @@ export function AdvancedFilters({
                   </div>
                 </div>
                 <DialogFooter>
-                  <Button onClick={handleSavePreset} disabled={!presetName.trim()}>
-                    저장
+                  <Button onClick={handleSavePreset} disabled={!presetName.trim() || isSavingPreset}>
+                    {isSavingPreset ? '저장 중...' : '저장'}
                   </Button>
                 </DialogFooter>
               </DialogContent>
@@ -333,14 +338,14 @@ export function AdvancedFilters({
       
       <CardContent className="space-y-4">
         {/* Filter Presets */}
-        {(presets.length > 0 || getDefaultPresets().length > 0) && (
+        {!isLoading && presets.length > 0 && (
           <div className="space-y-2">
             <Label className="flex items-center gap-2">
               <Bookmark className="w-4 h-4" />
               필터 프리셋
             </Label>
             <div className="grid grid-cols-2 gap-2">
-              {[...getDefaultPresets(), ...presets].map((preset) => (
+              {presets.map((preset: FilterPreset) => (
                 <Button
                   key={preset.id}
                   variant="outline"

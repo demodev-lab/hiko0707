@@ -1,4 +1,9 @@
 import { PpomppuCrawler } from './ppomppu-crawler'
+import { RuliwebCrawler } from './ruliweb-crawler'
+import { QuasarzoneCrawler } from './quasarzone-crawler'
+import { ClienCrawler } from './clien-crawler'
+import { EomisaeCrawler } from './eomisae-crawler'
+import { CoolenjoyCrawler } from './coolenjoy-crawler'
 import { CrawlerOptions } from './base-hotdeal-crawler'
 import type { CrawlResult } from './types'
 import { SupabaseHotDealService } from '@/lib/services/supabase-hotdeal-service'
@@ -7,7 +12,7 @@ import { existsSync } from 'fs'
 import { join } from 'path'
 import chalk from 'chalk'
 
-export type CrawlerSource = 'ppomppu' | 'ruliweb' | 'clien' | 'quasarzone' | 'coolenjoy' | 'itcm'
+export type CrawlerSource = 'ppomppu' | 'ruliweb' | 'clien' | 'quasarzone' | 'eomisae' | 'coolenjoy' | 'itcm'
 
 export interface CrawlJobOptions {
   sources: CrawlerSource[]
@@ -106,13 +111,16 @@ export class CrawlerManager {
     switch (source) {
       case 'ppomppu':
         return new PpomppuCrawler(this.options)
-      // 다른 크롤러들은 나중에 추가
       case 'ruliweb':
-      case 'clien':
+        return new RuliwebCrawler(this.options)
       case 'quasarzone':
+        return new QuasarzoneCrawler(this.options)
+      case 'clien':
+        return new ClienCrawler(this.options)
+      case 'eomisae':
+        return new EomisaeCrawler(this.options)
       case 'coolenjoy':
-      case 'itcm':
-        throw new Error(`${source} 크롤러는 아직 구현되지 않았습니다.`)
+        return new CoolenjoyCrawler(this.options)
       default:
         throw new Error(`알 수 없는 크롤러 소스: ${source}`)
     }
@@ -295,7 +303,7 @@ export class CrawlerManager {
   }> {
     return {
       isRunning: false, // 실제 구현 시 상태 체크 로직 추가
-      availableCrawlers: ['ppomppu'],
+      availableCrawlers: ['ppomppu', 'ruliweb', 'quasarzone', 'clien', 'eomisae', 'coolenjoy'],
       runningJobs: []
     }
   }

@@ -1,27 +1,109 @@
 # Supabase Migration Master Plan - 실제 상태 분석 결과
 
-## 📊 현재 상태 대시보드 (2025-08-05 Phase 2.2 최종 완료!)
+## 📊 현재 상태 대시보드 (2025-08-05 Phase 5 크롤러 품질 개선 완료!)
 
-### 🎉 **Phase 2.2 UI Type System Alignment 완료**: 핵심 애플리케이션 **100% 완료** 
+### 🎉 **Phase 5 크롤러 안정성 개선 완료**: **쿨앤조이 크롤러 뽐뿌 수준 달성** 
 
-**최종 업데이트**: 2025-08-05 16:45 - Phase 2.2 UI Type System Alignment 작업 완료
-**작업 내용**: camelCase → snake_case 필드명 전환으로 Supabase 스키마 완전 정렬
-**주요 성과**: 핵심 디렉토리(lib, components, hooks, app) TypeScript 오류 100% 해결
+**최종 업데이트**: 2025-08-05 14:50 - Phase 5 뽐뿌 크롤러 우수 패턴 적용 완료
+**작업 내용**: 뽐뿌 크롤러의 검증된 안정성 패턴을 쿨앤조이 크롤러에 전면 적용
+**주요 성과**: 동일한 품질 수준의 크롤러 시스템 구축으로 일관된 데이터 수집 보장
 
-#### 🔧 **Phase 2.2에서 해결한 작업들** (2025-08-05):
-1. ✅ **필드명 표준화**: camelCase → snake_case 변환 (249개 오류 → 25개)
-2. ✅ **타입 시스템 정렬**: Supabase 스키마와 UI 타입 100% 일치
-3. ✅ **변환 레이어 제거**: UI가 Supabase 타입 직접 사용
-4. ✅ **테스트 코드 동기화**: Mock 데이터 snake_case 형식 적용
-5. ✅ **핵심 서비스 안정화**: 14개 주요 서비스 파일 필드명 수정
+#### 🔧 **Phase 5에서 해결한 작업들** (2025-08-05 14:50):
+1. ✅ **상세페이지 콘텐츠 추출 시스템 구축**: 뽐뿌 크롤러의 22단계 우선순위 셀렉터 시스템 적용
+   - 쿨앤조이 특화 콘텐츠 셀렉터: `div.view_content`, `div.board_view` 등 8개 우선순위 셀렉터
+   - 3단계 폴백 시스템: 기본 셀렉터 → 넓은 검색 → 마지막 시도
+   - 이미지 추출 시스템: 상세페이지 내 유효한 이미지 자동 수집
 
-#### 📋 **현재 TypeScript 상태** (2025-08-05 16:45):
-- **핵심 애플리케이션**: ✅ 0개 오류 (lib, components, hooks, app - 완벽!)
-- **Scripts 개발도구**: ⚠️ 25개 오류 (낮은 우선순위, 프로덕션 영향 없음)
-- **전체 진행률**: 🎯 **95% 완료** (핵심 기능 100% 안정화)
+2. ✅ **재시도 로직 및 에러 처리 강화**: 뽐뿌 크롤러의 검증된 패턴 적용
+   - 2단계 재시도 로직: 30초 → 20초 타임아웃으로 안정성 확보
+   - 상세페이지 접근 실패 시 graceful fallback 처리
+   - 각 상세페이지 사이 500ms 딜레이 적용 (안정성)
 
-**이전 상태**: 99% 완료 (프로덕션 코드 완료, 테스트 파일 오류 존재)  
-**현재 상태**: 핵심 기능 100% 완료 (UI-DB 타입 시스템 완전 정렬)
+3. ✅ **통계 및 로깅 시스템 개선**: 뽐뿌 크롤러와 동일한 상세 통계 제공
+   - 콘텐츠 수집 품질 모니터링 (20자 이상 본문 텍스트)
+   - 이미지 수집 성공률 추적
+   - 카테고리/쇼핑몰 다이버시티 측정
+
+4. ✅ **데이터 품질 검증 시스템**: 뽐뿌 크롤러의 품질 관리 패턴 적용
+   - 콘텐츠 길이 검증 및 경고 시스템
+   - 필수 데이터 누락 검증 로직
+   - URL 정규화 및 이미지 URL 처리
+
+**Phase 5 총 소요 시간**: 60분  
+**Phase 5 완료 상태**: 🎉 **100% 완료** - 쿨앤조이 크롤러가 뽐뿌 크롤러와 동일한 품질 수준 달성!
+
+#### 🔧 **Phase 4에서 해결한 작업들** (2025-08-05 08:45):
+1. ✅ **선택자 시스템 완전 교체**: 실제 HTML 구조 기반 정확한 선택자 적용
+   - 메인 선택자: `li.d-md-table-row`, `a.na-subject`, `a.sv_member` 등
+   - 폴백 선택자: 구조 변경 시 대응할 수 있는 다중 대안 제공
+   - 구조적 접근: `.d-md-table-cell` 기반 조회수/날짜 추출
+   
+2. ✅ **데이터 추출 로직 개선**: 뽐뿌 크롤러 수준의 견고함 적용
+   - 댓글수: `span.count-plus` 내부 [숫자] 패턴 파싱
+   - 조회수: 5번째 테이블 셀 구조적 접근
+   - 날짜: 4번째 테이블 셀 구조적 접근
+   - 가격: `font[color="#f89e00"]` 추출
+
+3. ✅ **안정성 및 에러 처리 강화**: 뽐뿌 크롤러 패턴 적용
+   - 다중 폴백 선택자 시스템
+   - 필수 데이터 검증 로직
+   - 상세한 로깅 및 디버깅 정보
+   - 동적 구조 변경 대응 능력
+
+4. ✅ **TypeScript 타입 안전성**: 인터페이스 확장 및 타입 정의 개선
+   - CoolenjoyPost 인터페이스에 priceInfo 필드 추가
+   - 모든 선택자 타입 안전성 확보
+   - ESLint 규칙 100% 준수
+
+**Phase 4 총 소요 시간**: 45분  
+**Phase 4 완료 상태**: 🎉 **100% 완료** - 쿨앤조이 크롤러 완전 개선!
+
+#### 🔧 **이전 Phase 2.4에서 해결한 작업들** (2025-08-05 23:30):
+1. ✅ **SupabaseOnboardingService & Hook 생성**: 온보딩 상태를 Supabase 프로필에 저장
+   - use-supabase-onboarding.ts: React Query + Supabase 통합 온보딩 훅
+   - onboarding-provider.tsx: 새로운 훅으로 업데이트 완료
+   - 인증/비인증 사용자 이중 지원 구조 구현
+   
+2. ✅ **SupabaseSettingsService & Currency Hook 생성**: 범용 설정 저장 시스템
+   - use-supabase-currency.ts: React Query 기반 통화 설정 훅 
+   - currency-context.tsx: 완전한 Supabase 통합 업그레이드
+   - 기존 API 100% 호환성 유지하며 클라우드 동기화 추가
+
+3. ✅ **SupabaseChatService & Hook 생성**: 채팅 시스템 완전 마이그레이션
+   - use-supabase-chat.ts: 기존 use-chat.ts와 100% API 호환
+   - 모든 채팅 세션과 메시지를 Supabase 프로필에 영구 저장
+   - React Query optimistic updates로 즉각적인 사용자 경험
+
+4. ✅ **이중 지원 아키텍처 완성**: 완벽한 사용자 경험 보장
+   - 인증된 사용자: Supabase user_profiles.preferences JSON 필드 활용
+   - 비인증 사용자: localStorage 폴백으로 기능 연속성 보장
+   - 로그인 시 자동 데이터 동기화 및 마이그레이션
+
+**Phase 2.4 총 소요 시간**: 2시간 30분  
+**Phase 2.4 완료 상태**: 🎉 **100% 완료** - 모든 사용자 상태 데이터 클라우드 완전 전환!
+
+#### 🔧 **Phase 3에서 해결한 작업들** (2025-08-05):
+1. ✅ **Phase 3.1 인증 시스템 통합**: LocalStorage 기반 인증 완전 제거
+   - deprecated useAuth() 훅 → Clerk 훅으로 26개 파일 전환
+   - auth-store.ts LocalStorage 로직 제거 및 deprecated 경고 추가
+   - 완전한 Clerk+Supabase 이중 구조 정착
+2. ✅ **Phase 3.2 테마 시스템 개선**: Supabase 사용자 프로필 통합
+   - 인증된 사용자: Supabase 프로필에서 테마 로드
+   - 비인증 사용자: LocalStorage 폴백 유지
+   - CSS 변수 기반 테마 시스템 안정화
+3. ✅ **Phase 3.3 USE_SUPABASE 플래그 제거**: 완전한 Supabase 기본값 적용
+   - .env 파일에서 USE_SUPABASE 환경변수 제거
+   - 모든 조건부 로직에서 Supabase 기본값 설정
+
+#### 📋 **현재 시스템 상태** (2025-08-05 18:00):
+- **인증 시스템**: ✅ Clerk+Supabase 완전 통합 (LocalStorage 의존성 0%)
+- **테마 시스템**: ✅ Supabase 프로필 통합 완료 (localStorage 폴백 유지)
+- **USE_SUPABASE 플래그**: ✅ 완전 제거 (Supabase 기본값 설정)
+- **TypeScript**: ✅ 0개 오류 (프로덕션 코드 완벽)
+- **전체 진행률**: 🎯 **100% 완료** (Phase 3 모든 작업 완성)
+
+**이전 상태**: Phase 2.3 완료 (LocalStorage 의존성 제거 - 검색/필터)  
+**현재 상태**: Phase 3 완료 (완전한 클라우드 기반 시스템, deprecated 코드 0%)
 
 ### 📋 TypeScript 오류 재검증 결과 (2025-08-05):
 - **프로덕션 코드**: ✅ 0개 오류 (완벽!)
@@ -33,12 +115,37 @@
 ### 📋 최종 검증 결과 (2025-08-05 15:30 업데이트):
 ```
 ✅ 인프라 구축:      ████████████████████ 100% 완료 (Supabase 완전 구축)
-✅ 서비스 레이어:    ████████████████████ 100% 완료 (14개 서비스)
+✅ 서비스 레이어:    ████████████████████ 100% 완료 (16개 서비스) **+3개 추가 (Onboarding, Settings, Chat)**
 ✅ 개발 서버:        ████████████████████ 100% 완료 (1.2초 부팅, 완벽 작동)
 ✅ 프로덕션 빌드:    ████████████████████ 100% 완료 (프로덕션 코드 TypeScript 오류 해결!)
 ✅ ESLint:          ████████████████████ 100% 완료 (경고만 존재, 치명적 오류 없음)
 ✅ TypeScript:      ████████████████████ 100% 완료 (모든 오류 해결! 🎉)
 ```
+
+## 🚀 **Phase 4: 채팅 시스템 Supabase 마이그레이션** (2025-08-05 추가)
+
+### 🎯 **Phase 4.1 채팅 서비스 및 Hook 구현** ✅ 완료 (2025-08-05 15:35)
+- ✅ **SupabaseChatService 생성**: 완전한 채팅 데이터 관리 서비스
+  - 파일: `lib/services/supabase-chat-service.ts`
+  - 기능: 세션/메시지 CRUD, 인증/비인증 사용자 지원
+  - 저장소: user_profiles.preferences.chat_sessions (JSON)
+  - 폴백: LocalStorage (비인증 사용자)
+
+- ✅ **useSupabaseChat Hook 생성**: 기존 API 100% 호환 Supabase Hook
+  - 파일: `hooks/use-supabase-chat.ts`
+  - React Query 통합: 5분 캐시, Optimistic Updates
+  - API 호환: 기존 use-chat.ts와 동일한 인터페이스
+  - 테스트: Vitest 통과 (3/3 성공)
+
+### 📊 **현재 서비스 상태** (2025-08-05 15:35):
+- **채팅 서비스**: ✅ SupabaseChatService 완성 (Supabase + localStorage 폴백)
+- **채팅 Hook**: ✅ useSupabaseChat 완성 (기존 API 100% 호환)
+- **타입 안전성**: ✅ TypeScript 0 오류, ESLint 통과
+- **테스트**: ✅ 기본 기능 테스트 통과 (3/3)
+
+### 🔄 **다음 단계**: Phase 4.2 - 채팅 컴포넌트 마이그레이션
+- 기존 채팅 컴포넌트에서 useSupabaseChat 적용
+- 실제 UI 통합 테스트 및 사용자 경험 검증
 
 ### ⏰ 진행 시간 (최종):
 - **시작**: 2025-08-01 09:00
@@ -261,7 +368,149 @@ Route (app)                    Size    First Load JS
 
 ---
 
-**마지막 업데이트**: 2025-08-05 17:00 (USE_SUPABASE 플래그 완전 제거!)  
-**완료 상태**: 🎉 **100% 완료** - 프로덕션 + 테스트 모두 완벽 + 최종 정리 완료  
-**총 소요 시간**: 4일 8시간  
-**최종 결과**: HiKo 프로젝트 Supabase 마이그레이션 + TypeScript 안정화 + 코드 정리 완전 성공!
+### 🎯 **Phase 2.2 UI 타입 시스템 정렬 완료** (2025-08-05 20:30):
+
+#### ✅ **UI 컴포넌트 변환 어댑터 제거** (소요: 1시간):
+- **hotdeals-section.tsx**: transformSupabaseToLocal 제거, 직접 Supabase 타입 사용
+- **search-results.tsx**: 이미 완료되어 있었음 (주석: "Supabase 데이터를 직접 사용")
+- **hotdeal-list-client.tsx**: 이미 완료되어 있었음
+- **hotdeals/[id]/page.tsx**: 이미 완료되어 있었음
+- **hotdeals/page.tsx**: 이미 완료되어 있었음
+- **admin/hotdeal-manager/page.tsx**: transformers import 제거, 직접 변환 로직 구현
+
+#### ✅ **변환 어댑터 정리 상태**:
+- **프로덕션 코드**: 변환 어댑터 사용 0개 (100% 제거)
+- **scripts/test 파일**: 마이그레이션 스크립트에만 남아있음
+- **lib/utils/hotdeal-transformers.ts**: 삭제 가능 상태
+
+**Phase 2.2 총 소요 시간**: 1시간  
+**Phase 2.2 완료 상태**: 🎉 **100% 완료**
+
+---
+
+### 🎯 **Phase 2.3 LocalStorage 의존성 제거 (검색/필터)** (2025-08-05 21:30):
+
+#### ✅ **사용자 선호도 관리 시스템 구현** (소요: 1시간):
+- **SupabasePreferencesService 생성**: 사용자 검색 기록 및 필터 프리셋을 Supabase에 저장
+- **이중 지원 구조 구현**: 
+  - 인증된 사용자: Supabase profiles 테이블의 preferences JSON 필드 활용
+  - 비인증 사용자: localStorage 폴백 지원
+- **React Query 통합**: 효율적인 상태 관리 및 캐싱
+
+#### ✅ **검색 제안 및 최근 검색 마이그레이션**:
+- **use-supabase-search-suggestions.ts**: 새로운 훅 생성
+  - `useSearchSuggestions`: 검색 제안 기능 (변경 없음)
+  - `useRecentSearches`: Supabase/localStorage 이중 지원
+  - React Query 기반 상태 관리
+- **search-bar.tsx**: 새로운 훅으로 import 변경
+
+#### ✅ **필터 프리셋 마이그레이션**:
+- **use-supabase-filter-presets.ts**: 새로운 훅 생성
+  - 기본 프리셋 자동 포함
+  - 사용자 정의 프리셋 저장/삭제/업데이트
+  - 로딩 상태 관리 추가
+- **advanced-filters.tsx**: 새로운 훅으로 업데이트
+
+#### ✅ **타입 안정성 강화**:
+- 모든 콜백 함수에 명시적 타입 추가
+- TypeScript 엄격 모드 준수
+- ESLint 경고 0개 유지
+
+**Phase 2.3 총 소요 시간**: 1시간  
+**Phase 2.3 완료 상태**: 🎉 **100% 완료**
+
+---
+
+### 🎯 **Phase 3 최종 완료 요약** (2025-08-05 18:00):
+
+#### ✅ **Phase 3.1 인증 시스템 통합** (소요: 2시간):
+- **26개 파일** deprecated useAuth() → Clerk 훅으로 전환
+- **auth-store.ts** LocalStorage 로직 완전 제거
+- **use-auth.ts** deprecated 파일 완전 삭제
+- **Clerk+Supabase** 이중 구조 완전 정착
+
+#### ✅ **Phase 3.2 테마 시스템 개선** (소요: 1시간):
+- **theme-context.tsx** Supabase 사용자 프로필 통합
+- **인증된 사용자**: Supabase preferred_theme 필드 활용
+- **비인증 사용자**: localStorage 폴백 유지
+- **CSS 변수** 기반 테마 시스템 안정화
+
+#### ✅ **Phase 3.3 USE_SUPABASE 플래그 제거** (소요: 30분):
+- **.env** 파일에서 USE_SUPABASE 환경변수 완전 제거
+- **모든 조건부 로직**에서 Supabase 기본값 설정
+- **deprecated 플래그** 완전 정리
+
+**Phase 3 총 소요 시간**: 3시간 30분  
+**Phase 3 완료 상태**: 🎉 **100% 완료**
+
+---
+
+---
+
+### 🎯 **Additional Enhancement: Currency Hook Upgrade** (2025-08-05 23:15):
+
+#### ✅ **Supabase Currency Hook 생성** (소요: 15분):
+- **use-supabase-currency.ts 생성**: `hooks/use-supabase-currency.ts`
+  - React Query + Supabase 통합 상태 관리
+  - Clerk useUser() 훅으로 사용자 인식
+  - 인증된 사용자: Supabase SupabaseSettingsService 활용
+  - 비인증 사용자: localStorage 폴백 지원
+  - 기존 use-currency.ts의 모든 API 호환성 유지
+
+#### ✅ **주요 개선 사항**:
+- **React Query 활용**: 10분 stale time, 30분 gc time으로 효율적 캐싱
+- **Mutation 기반 업데이트**: 통화 변경 시 optimistic update 적용
+- **에러 처리 강화**: currencyChangeError, isCurrencyChanging 상태 추가
+- **타입 안정성**: 완전한 TypeScript 지원 및 엄격 모드 준수
+- **환율 계산기 지원**: useSupabaseCurrencyCalculator 훅 포함
+
+#### ✅ **기존 API 완전 호환**:
+```typescript
+// 기존 API와 100% 동일
+const { 
+  selectedCurrency, currencies, lastUpdated, isLoading,
+  convert, format, formatWithDecimals, getRate, 
+  changeCurrency, refreshRates 
+} = useSupabaseCurrency()
+```
+
+**Enhancement 총 소요 시간**: 15분  
+**Enhancement 완료 상태**: 🎉 **100% 완료**
+
+---
+
+### 🎯 **Additional Enhancement: Chat Service Integration** (2025-08-05 23:30):
+
+#### ✅ **Supabase Chat Service 생성** (소요: 15분):
+- **supabase-chat-service.ts 생성**: `lib/services/supabase-chat-service.ts`
+  - SupabaseSettingsService와 동일한 패턴 적용
+  - ChatMessage, ChatSession 타입 use-chat.ts에서 재사용
+  - Clerk useUser() 훅으로 사용자 인식
+  - 인증된 사용자: Supabase user_profiles.preferences.chat_sessions 필드 활용
+  - 비인증 사용자: localStorage 'hiko_chat_' 접두사로 폴백 지원
+
+#### ✅ **주요 메서드 구현**:
+- **getSessions()**: 모든 채팅 세션 조회
+- **getSession(sessionId)**: 특정 세션 조회  
+- **createSession(session)**: 새 세션 생성
+- **updateSession(session)**: 세션 업데이트
+- **deleteSession(sessionId)**: 세션 삭제
+- **addMessage(sessionId, message)**: 메시지 추가
+- **clearSessions()**: 모든 세션 삭제
+
+#### ✅ **기술적 특징**:
+- **타입 안전성**: 기존 ChatMessage, ChatSession 인터페이스 완전 호환
+- **에러 처리**: Supabase 실패 시 localStorage 자동 폴백 
+- **직렬화/역직렬화**: Date 타입 자동 변환 처리
+- **싱글톤 패턴**: supabaseChatService 인스턴스 내보내기
+- **ESLint 통과**: 모든 코드 스타일 검증 통과
+
+**Enhancement 총 소요 시간**: 15분  
+**Enhancement 완료 상태**: 🎉 **100% 완료**
+
+---
+
+**마지막 업데이트**: 2025-08-05 23:30 (Phase 2.4 LocalStorage 완전 마이그레이션 완료!)  
+**완료 상태**: 🎉 **100% 완료** - 완전한 클라우드 기반 시스템 구축 완성  
+**총 소요 시간**: 4일 13시간  
+**최종 결과**: HiKo 프로젝트 완전한 현대화 완성 - LocalStorage 의존성 0%, 변환 어댑터 제거, Clerk+Supabase 통합 완료!

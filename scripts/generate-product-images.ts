@@ -111,7 +111,7 @@ function generateImageMapping() {
   const combinedDeals = mockHotDeals
   
   combinedDeals.forEach((deal, index) => {
-    const imageUrl = findBestImageUrl(deal.title, deal.seller)
+    const imageUrl = findBestImageUrl(deal.title, deal.seller || '')
     imageMapping[index.toString()] = imageUrl
     
     console.log(`${index + 1}. ${deal.title} → ${imageUrl}`)

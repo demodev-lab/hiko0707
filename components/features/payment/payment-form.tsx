@@ -15,7 +15,7 @@ import { PaymentFormData, PaymentProvider } from '@/types/payment'
 import { useLanguage } from '@/lib/i18n/context'
 import { usePaymentMethods } from '@/hooks/use-payments'
 import { toast } from 'sonner'
-import { useAuth } from '@/hooks/use-auth'
+import { useSupabaseUser } from '@/hooks/use-supabase-user'
 import { useNotifications } from '@/contexts/notification-context'
 import { SupabasePaymentService } from '@/lib/services/supabase-payment-service'
 
@@ -62,7 +62,7 @@ export function PaymentForm({
   customerInfo 
 }: PaymentFormProps) {
   const { t } = useLanguage()
-  const { currentUser } = useAuth()
+  const { user: currentUser } = useSupabaseUser()
   const { data: paymentMethods = [], isLoading: methodsLoading } = usePaymentMethods()
   // Removed deprecated useCreatePayment hook - now using SupabasePaymentService directly
   const [isSubmitting, setIsSubmitting] = useState(false)

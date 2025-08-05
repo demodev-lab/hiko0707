@@ -152,7 +152,7 @@ class ImageScraper {
       
       try {
         // 이미지 검색
-        const imageUrl = await this.searchProductImage(deal.title, deal.seller)
+        const imageUrl = await this.searchProductImage(deal.title, deal.seller || '')
         
         if (imageUrl) {
           // 파일명 생성

@@ -19,7 +19,7 @@ import {
   Info
 } from 'lucide-react'
 import { RoleBasedContent } from '@/components/auth/role-based-content'
-import { useAuth } from '@/hooks/use-auth'
+import { useSupabaseUser } from '@/hooks/use-supabase-user'
 import Link from 'next/link'
 import { FeeCalculator } from '@/components/features/order/fee-calculator'
 
@@ -95,7 +95,7 @@ function GuestDashboard() {
 
 // 멤버 대시보드
 function MemberDashboard() {
-  const { currentUser } = useAuth()
+  const { user: currentUser } = useSupabaseUser()
   const [isClient, setIsClient] = useState(false)
   
   useEffect(() => {
@@ -217,7 +217,7 @@ function MemberDashboard() {
 
 // 관리자 대시보드
 function AdminDashboard() {
-  const { currentUser } = useAuth()
+  const { user: currentUser } = useSupabaseUser()
   const [isClient, setIsClient] = useState(false)
   
   useEffect(() => {

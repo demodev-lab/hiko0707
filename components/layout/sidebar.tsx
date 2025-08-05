@@ -16,7 +16,9 @@ import {
 } from 'lucide-react'
 import { useAtom } from 'jotai'
 import { isSidebarOpenAtom } from '@/states/ui-store'
-import { useAuth } from '@/hooks/use-auth'
+import { useClerkRole } from '@/hooks/use-clerk-role'
+import { useSupabaseUser } from '@/hooks/use-supabase-user'
+import { useClerk } from '@clerk/nextjs'
 import { Button } from '@/components/ui/button'
 
 const navigation = [
@@ -37,7 +39,9 @@ const accountNavigation = [
 export function Sidebar() {
   const pathname = usePathname()
   const [isSidebarOpen] = useAtom(isSidebarOpenAtom)
-  const { currentUser, logout } = useAuth()
+  const { isAuthenticated } = useClerkRole()
+  const { user: currentUser } = useSupabaseUser()
+  const { signOut } = useClerk()
 
   return (
     <aside className={cn(
@@ -52,16 +56,16 @@ export function Sidebar() {
           </div>
           <h3 className="font-medium text-gray-900">{currentUser?.name || '사용자'}</h3>
           <p className="text-sm text-gray-500">{currentUser?.email}</p>
-          {currentUser?.preferredLanguage && (
+          {currentUser?.preferred_language && (
             <div className="mt-2 text-xs text-gray-400">
-              언어: {currentUser.preferredLanguage === 'ko' ? '한국어' : 
-                     currentUser.preferredLanguage === 'en' ? 'English' :
-                     currentUser.preferredLanguage === 'zh' ? '中文' :
-                     currentUser.preferredLanguage === 'vi' ? 'Tiếng Việt' :
-                     currentUser.preferredLanguage === 'mn' ? 'Монгол' :
-                     currentUser.preferredLanguage === 'th' ? 'ไทย' :
-                     currentUser.preferredLanguage === 'ja' ? '日本語' :
-                     currentUser.preferredLanguage === 'ru' ? 'Русский' : currentUser.preferredLanguage}
+              언어: {currentUser.preferred_language === 'ko' ? '한국어' : 
+                     currentUser.preferred_language === 'en' ? 'English' :
+                     currentUser.preferred_language === 'zh' ? '中文' :
+                     currentUser.preferred_language === 'vi' ? 'Tiếng Việt' :
+                     currentUser.preferred_language === 'mn' ? 'Монгол' :
+                     currentUser.preferred_language === 'th' ? 'ไทย' :
+                     currentUser.preferred_language === 'ja' ? '日本語' :
+                     currentUser.preferred_language === 'ru' ? 'Русский' : currentUser.preferred_language}
             </div>
           )}
         </div>
@@ -142,7 +146,7 @@ export function Sidebar() {
         {/* 로그아웃 버튼 */}
         <div className="border-t p-4">
           <Button
-            onClick={logout}
+            onClick={() => signOut()}
             variant="outline"
             className="w-full justify-start text-red-600 border-red-200 hover:bg-red-50 hover:text-red-700"
           >
