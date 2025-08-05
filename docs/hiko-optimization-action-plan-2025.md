@@ -1,17 +1,21 @@
-# HiKo 프로젝트 최적화 실행 계획 (2025년 8월)
+# HiKo 프로젝트 최적화 실행 계획 (2025년 1월)
 
-## 📊 현재 상태 분석 요약
+## 📊 현재 상태 종합 분석
 
-### 프로젝트 상태
-- **공식 문서 상태**: 100% 완료 (supabase-migration-optimized.md)
-- **실제 진행률**: 85% 완료
-- **주요 차이점**: 이중 데이터 레이어 존재, LocalStorage 의존성 잔존
+### 프로젝트 실제 상태
+- **문서 상태**: 100% 완료 주장 (supabase-migration-optimized.md)
+- **실제 진행률**: 약 85% 완료
+- **핵심 차이점**: 
+  - 이중 데이터 레이어 존재 (Supabase ↔ LocalStorage 변환)
+  - 31개 파일에서 LocalStorage 사용 중 (54개에서 수정)
+  - 크롤러 1/6만 구현 (뽐뿌만)
 
-### 발견된 주요 이슈
-1. **이중 데이터 레이어**: Supabase ↔ LocalStorage 변환 어댑터 사용 중
-2. **LocalStorage 의존성**: 54개 파일에서 여전히 사용
-3. **UUID 형식 오류**: 하드코딩된 'temp-user-id' 사용
-4. **미구현 기능**: 크롤러 5개, 실제 API 연동 미완료
+### 주요 발견 사항
+1. **이중 인증 구조 (Clerk + Supabase)는 적절함** - 수정 불필요
+2. **변환 어댑터는 UI 준비 후 제거** - 크롤러는 이미 Supabase 직접 저장
+3. **쇼핑 코멘트 기능 정상** - 데이터 수집 부분만 점검 필요
+4. **UUID 형식 오류**: 하드코딩된 'temp-user-id' 사용
+5. **미구현 기능**: 크롤러 5개, 번역 API, 결제 시스템
 
 ### 현재 작동 상태
 - ✅ 개발 서버: 정상 작동 (1.2초 부팅)
@@ -19,60 +23,82 @@
 - ✅ TypeScript: 오류 없음
 - ⚠️ ESLint: 8개 경고 존재
 
-## 🎯 작업 필요성 분석
+## 🎯 수정된 작업 우선순위
 
 ### 필수 작업 (Must Have)
 1. **UUID 오류 수정** - 데이터 무결성 위협
-2. **이중 데이터 레이어 통합** - 성능 및 복잡도 문제
-3. **LocalStorage 의존성 제거** - 보안 및 데이터 영속성
-4. **크롤러 확장** - 비즈니스 핵심 기능 (현재 16.7%만 구현)
+2. **UI 타입 시스템 정렬** - 변환 어댑터 제거 전 필수
+3. **크롤러 확장** - 비즈니스 핵심 기능 (현재 16.7%만 구현)
+4. **쇼핑 코멘트 데이터 수집 개선** - 핵심 기능 복구
 
 ### 중요 작업 (Should Have)
-5. **번역 API 연동** - 현재 시뮬레이션으로 작동
-6. **ESLint 경고 해결** - 코드 품질
-7. **불필요한 파일 정리** - 유지보수성
+5. **선택적 LocalStorage 마이그레이션** - 일부는 유지
+6. **번역 API 연동** - 현재 시뮬레이션으로 작동
+7. **ESLint 경고 해결** - 코드 품질
+8. **불필요한 파일 정리** - 유지보수성
 
 ### 보류 가능 (Nice to Have)
-8. **결제 시스템 PG사 연동** - 장기 과제
-9. **자동 구매 프로세스** - 높은 복잡도
+9. **결제 시스템 PG사 연동** - 장기 과제
+10. **자동 구매 프로세스** - 높은 복잡도
+
+### 제외된 작업
+- **인증 시스템 통합** - Clerk + Supabase 구조 유지
 
 ## 📋 Phase별 실행 계획
 
-### Phase 1: 긴급 수정 (1-2일) ⚡
+### Phase 0: 현재 상태 검증 (0.5일) 🔍
+**목적**: 변환 어댑터 제거 전 데이터 플로우 확인
+
+#### 0.1 크롤러 → Supabase 저장 검증
+- [ ] ppomppu-crawler.ts 직접 저장 확인
+- [ ] shopping_comment 필드 실제 데이터 확인
+- [ ] 크롤링 로그 분석
+
+#### 0.2 UI → Supabase 조회 현황
+- [ ] 11개 파일의 transformSupabaseToLocal 사용 확인
+- [ ] 각 파일의 의존도 분석
+- [ ] 제거 영향도 평가
+
+### Phase 1: 긴급 버그 수정 (1-2일) ⚡
 
 #### 1.1 UUID 오류 수정
-- [ ] 'temp-user-id' 하드코딩 검색 및 제거
-- [ ] UUID 생성 유틸리티 함수 구현
-- [ ] 영향받는 컴포넌트 수정
-- [ ] 테스트 및 검증
+- [ ] 'temp-user-id' 하드코딩 검색
+- [ ] crypto.randomUUID() 또는 nanoid 사용으로 대체
+- [ ] 영향받는 컴포넌트 테스트
 
-#### 1.2 ESLint 경고 해결
-- [ ] app/search/page.tsx - useEffect 의존성 수정
-- [ ] app/test-image/page.tsx - Image 컴포넌트 사용
-- [ ] components/features/admin/hotdeal-trend-charts.tsx - 불필요한 의존성 제거
-- [ ] components/features/order/buy-for-me-modal.tsx - 의존성 추가
-- [ ] components/features/rewards/points-history.tsx - 의존성 추가
+#### 1.2 ESLint 경고 해결 (8개)
+- [ ] useEffect 의존성 배열 수정
+- [ ] 불필요한 의존성 제거
+- [ ] useMemo 적용 검토
 
 #### 1.3 불필요한 파일 정리
-- [ ] 테스트 스크립트 정리 (25개)
-  - test-*.js/ts 파일들
-  - scripts/test-*.ts 파일들
-- [ ] 백업 파일 제거
-  - actions/auth-actions.ts.backup
-- [ ] 사용하지 않는 mock 데이터 정리
+- [ ] test-*.ts 파일 25개 정리
+- [ ] *.backup 파일 제거
+- [ ] 사용하지 않는 mock 데이터 제거
 
-### Phase 2: 데이터 레이어 통합 (3-5일) 🔄
+### Phase 2: UI 타입 시스템 정렬 (3-5일) 🔄
 
-#### 2.1 변환 어댑터 제거 (우선순위 1)
-- [ ] transformSupabaseToLocal 사용처 파악 (11개 파일)
-- [ ] 각 파일에서 직접 Supabase 타입 사용으로 변경
-  - [ ] app/hotdeals/page.tsx
-  - [ ] app/hotdeals/[id]/page.tsx
-  - [ ] app/page.tsx
-  - [ ] components/features/home/hotdeals-section.tsx
-  - [ ] components/features/hotdeal/hotdeal-list-client.tsx
-  - [ ] 기타 6개 파일
-- [ ] hotdeal-transformers.ts 파일 제거
+#### 2.1 Supabase 스키마 직접 사용 준비
+- [ ] Database 타입 재생성 (`pnpm gen:types`)
+- [ ] snake_case 타입을 직접 사용하도록 UI 수정
+- [ ] 타입 매핑 유틸리티 작성 (필요시)
+
+#### 2.2 컴포넌트별 마이그레이션
+**우선순위 1 - 핫딜 관련**
+- [ ] app/hotdeals/page.tsx
+- [ ] app/hotdeals/[id]/page.tsx
+- [ ] components/features/hotdeal/hotdeal-list-client.tsx
+- [ ] components/features/home/hotdeals-section.tsx
+
+**우선순위 2 - 기타 페이지**
+- [ ] app/page.tsx (홈페이지)
+- [ ] app/search/page.tsx
+- [ ] components/features/search/search-results.tsx
+
+#### 2.3 변환 어댑터 제거
+- [ ] 모든 UI가 직접 조회 확인
+- [ ] hotdeal-transformers.ts 제거
+- [ ] 관련 import 정리
 
 #### 2.2 LocalStorage 의존성 제거 - Step 1 (검색/필터)
 - [ ] hooks/use-search-suggestions.ts - Supabase로 전환
