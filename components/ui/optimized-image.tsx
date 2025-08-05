@@ -1,12 +1,15 @@
 'use client'
 
 import { useState, useCallback, useEffect } from 'react'
-import Image, { ImageProps } from 'next/image'
+import Image, { ImageProps, StaticImageData } from 'next/image'
 import { cn } from '@/lib/utils'
 import { ImageOptimizationService } from '@/lib/services/image-optimization-service'
 import { HotDealSource } from '@/types/hotdeal'
 
-interface OptimizedImageProps extends Omit<ImageProps, 'onLoad' | 'onError'> {
+type StaticImport = StaticImageData
+
+interface OptimizedImageProps extends Omit<ImageProps, 'onLoad' | 'onError' | 'src'> {
+  src?: string | StaticImport
   fallbackSrc?: string
   showLoader?: boolean
   blurDataURL?: string
@@ -40,14 +43,23 @@ export function OptimizedImage({
 }: OptimizedImageProps) {
   const [isLoading, setIsLoading] = useState(true)
   const [hasError, setHasError] = useState(false)
-  const [currentSrc, setCurrentSrc] = useState('')
+  const [currentSrc, setCurrentSrc] = useState<string | StaticImport>('')
   const [loadStartTime] = useState(() => performance.now())
 
   // 이미지 URL 최적화 및 초기화
   useEffect(() => {
-    if (!src) {
+    if (!src || (typeof src === 'string' && src === '')) {
       setHasError(true)
       setIsLoading(false)
+      setCurrentSrc('')
+      return
+    }
+
+    // StaticImport인 경우 그대로 사용
+    if (typeof src !== 'string') {
+      setCurrentSrc(src as any)
+      setIsLoading(true)
+      setHasError(false)
       return
     }
 
@@ -64,7 +76,7 @@ export function OptimizedImage({
     setHasError(false)
 
     // 프리로딩 요청 시 이미지 미리 로드
-    if (preload) {
+    if (preload && typeof optimizedSrc === 'string') {
       ImageOptimizationService.preloadImage(optimizedSrc, 'high').catch(() => {
         // 프리로드 실패는 무시 (실제 로딩에서 처리)
       })
@@ -74,7 +86,7 @@ export function OptimizedImage({
   const handleLoad = useCallback(() => {
     const loadTime = performance.now() - loadStartTime
     
-    if (monitorPerformance) {
+    if (monitorPerformance && typeof currentSrc === 'string') {
       ImageOptimizationService.monitorImagePerformance(
         currentSrc,
         loadTime,
@@ -119,7 +131,7 @@ export function OptimizedImage({
       setCurrentSrc(optimizedFallback)
       setIsLoading(true)
       
-      if (monitorPerformance) {
+      if (monitorPerformance && typeof currentSrc === 'string') {
         ImageOptimizationService.monitorImagePerformance(
           currentSrc,
           loadTime,
@@ -134,7 +146,7 @@ export function OptimizedImage({
       setCurrentSrc(communityFallback)
       setIsLoading(true)
       
-      if (monitorPerformance) {
+      if (monitorPerformance && typeof currentSrc === 'string') {
         ImageOptimizationService.monitorImagePerformance(
           currentSrc,
           loadTime,
@@ -145,7 +157,7 @@ export function OptimizedImage({
     } else {
       setHasError(true)
       
-      if (monitorPerformance) {
+      if (monitorPerformance && typeof currentSrc === 'string') {
         ImageOptimizationService.monitorImagePerformance(
           currentSrc,
           loadTime,
@@ -164,24 +176,26 @@ export function OptimizedImage({
 
   return (
     <div className={cn('relative overflow-hidden', containerClassName)}>
-      <Image
-        {...props}
-        src={currentSrc}
-        alt={alt}
-        className={cn(
-          'transition-opacity duration-300',
-          isLoading && showLoader ? 'opacity-0' : 'opacity-100',
-          className
-        )}
-        onLoad={handleLoad}
-        onError={handleError}
-        placeholder="blur"
-        blurDataURL={defaultBlurDataURL}
-        priority={props.priority}
-        quality={props.quality || 85}
-        sizes={props.sizes || '(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw'}
-        unoptimized={typeof currentSrc === 'string' && currentSrc.startsWith('/images/')}
-      />
+      {currentSrc && !hasError ? (
+        <Image
+          {...props}
+          src={currentSrc}
+          alt={alt}
+          className={cn(
+            'transition-opacity duration-300',
+            isLoading && showLoader ? 'opacity-0' : 'opacity-100',
+            className
+          )}
+          onLoad={handleLoad}
+          onError={handleError}
+          placeholder="blur"
+          blurDataURL={defaultBlurDataURL}
+          priority={props.priority}
+          quality={props.quality || 85}
+          sizes={props.sizes || '(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw'}
+          unoptimized={typeof currentSrc === 'string' && (currentSrc.startsWith('/images/') || currentSrc.startsWith('data:'))}
+        />
+      ) : null}
       
       {/* 로딩 스켈레톤 */}
       {isLoading && showLoader && (
@@ -193,8 +207,8 @@ export function OptimizedImage({
         </div>
       )}
       
-      {/* 에러 상태 */}
-      {hasError && (
+      {/* 에러 상태 또는 이미지가 없는 경우 */}
+      {(hasError || !currentSrc) && (
         <div className="absolute inset-0 bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-900 flex items-center justify-center border-2 border-dashed border-gray-300 dark:border-gray-600">
           <div className="text-center text-gray-500 dark:text-gray-400 max-w-[80%]">
             {showFallbackIcon && (
