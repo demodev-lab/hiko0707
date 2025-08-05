@@ -5,29 +5,32 @@ import { HotDeal } from '@/types/hotdeal'
 import { CrawledHotDeal } from '@/lib/crawlers/types'
 import { v4 as uuidv4 } from 'uuid'
 
-// 크롤링된 데이터를 HotDeal 형식으로 변환
+// 크롤링된 데이터를 Supabase HotDeal 형식으로 변환
 function convertToHotDeal(crawledDeal: CrawledHotDeal): Omit<HotDeal, 'id'> {
   return {
     title: crawledDeal.title,
-    price: crawledDeal.price,
-    imageUrl: crawledDeal.imageUrl,
-    originalUrl: crawledDeal.originalUrl,
-    seller: crawledDeal.seller,
+    sale_price: crawledDeal.price || 0,
+    original_price: crawledDeal.price || 0,
+    image_url: crawledDeal.imageUrl || '',
+    thumbnail_url: crawledDeal.imageUrl || '',
+    original_url: crawledDeal.originalUrl,
+    seller: crawledDeal.seller || '',
     source: crawledDeal.source as HotDeal['source'],
-    crawledAt: crawledDeal.crawledAt,
-    userId: crawledDeal.userId,
-    sourcePostId: '',
-    communityCommentCount: crawledDeal.communityCommentCount || 0,
-    communityRecommendCount: crawledDeal.communityRecommendCount || 0,
-    ranking: undefined,
-    shipping: crawledDeal.shipping,
-    productComment: crawledDeal.productComment,
-    category: crawledDeal.category,
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+    author_name: crawledDeal.userId || 'anonymous',
+    source_id: '',
+    category: crawledDeal.category || 'general',
+    is_free_shipping: crawledDeal.shipping?.isFree || false,
+    shopping_comment: crawledDeal.productComment || '',
     status: 'active',
-    viewCount: crawledDeal.viewCount || 0,
-    likeCount: 0,
-    commentCount: 0,
-    translationStatus: 'pending'
+    views: crawledDeal.viewCount || 0,
+    like_count: 0,
+    comment_count: 0,
+    discount_rate: 0,
+    end_date: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+    description: null,
+    deleted_at: null
   }
 }
 
@@ -74,26 +77,28 @@ export async function saveHotDeal(crawledDeal: CrawledHotDeal): Promise<HotDeal 
     // Supabase 형식으로 변환
     const supabaseData = {
       title: hotDealData.title,
-      sale_price: hotDealData.price || 0,
+      sale_price: hotDealData.sale_price || 0,
       original_price: 0, // 원가 정보가 없으면 0
       source: hotDealData.source,
-      source_id: hotDealData.sourcePostId || `${hotDealData.source}-${Date.now()}`,
+      source_id: hotDealData.source_id || `${hotDealData.source}-${Date.now()}`,
       category: hotDealData.category || 'general',
-      image_url: hotDealData.imageUrl || '',
-      thumbnail_url: hotDealData.imageUrl || '',
-      original_url: hotDealData.originalUrl,
+      image_url: hotDealData.image_url || '',
+      thumbnail_url: hotDealData.image_url || '',
+      original_url: hotDealData.original_url,
       seller: hotDealData.seller || '',
-      author_name: hotDealData.userId || 'anonymous',
-      is_free_shipping: hotDealData.shipping?.isFree || false,
-      shopping_comment: hotDealData.productComment || '',
+      author_name: hotDealData.author_name || 'anonymous',
+      is_free_shipping: hotDealData.is_free_shipping || false,
+      shopping_comment: hotDealData.shopping_comment || '',
       status: 'active' as const,
-      views: hotDealData.viewCount || 0,
+      views: hotDealData.views || 0,
       like_count: 0,
       comment_count: 0,
       discount_rate: 0,
       end_date: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
       created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString()
+      updated_at: new Date().toISOString(),
+      description: null,
+      deleted_at: null
     }
     
     // 데이터베이스에 저장
@@ -108,28 +113,8 @@ export async function saveHotDeal(crawledDeal: CrawledHotDeal): Promise<HotDeal 
       const stats = await SupabaseHotDealService.getHotDealStats('all')
       console.log(`📊 저장 후 총 핫딜 수: ${stats.totalDeals}`)
       
-      // Supabase 데이터를 HotDeal 형식으로 변환하여 반환
-      return {
-        id: newHotDeal.id,
-        source: newHotDeal.source,
-        sourcePostId: newHotDeal.source_id,
-        category: newHotDeal.category,
-        title: newHotDeal.title,
-        productComment: newHotDeal.shopping_comment,
-        price: newHotDeal.sale_price,
-        seller: newHotDeal.seller,
-        originalUrl: newHotDeal.original_url,
-        imageUrl: newHotDeal.image_url,
-        thumbnailImageUrl: newHotDeal.thumbnail_url,
-        viewCount: newHotDeal.views,
-        likeCount: newHotDeal.like_count,
-        commentCount: newHotDeal.comment_count,
-        crawledAt: new Date(newHotDeal.created_at),
-        status: newHotDeal.status,
-        shipping: {
-          isFree: newHotDeal.is_free_shipping
-        }
-      } as HotDeal
+      // Supabase 데이터를 그대로 반환 (snake_case 형식)
+      return newHotDeal
     }
     
     return null

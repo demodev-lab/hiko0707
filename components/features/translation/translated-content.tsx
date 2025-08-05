@@ -8,7 +8,7 @@ import { useLanguage } from '@/lib/i18n/context'
 
 interface TranslatedContentProps {
   hotDeal: HotDeal
-  field: 'title' | 'description' | 'productComment'
+  field: 'title' | 'description'
   className?: string
   showIndicator?: boolean
   fallback?: React.ReactNode
@@ -26,9 +26,8 @@ export function TranslatedContent({
   
   // 한국어는 원본 표시
   if (language === 'ko') {
-    const content = field === 'productComment' ? hotDeal.productComment : 
-                    field === 'title' ? hotDeal.title : 
-                    field === 'description' ? hotDeal.productComment : ''
+    const content = field === 'title' ? hotDeal.title : 
+                    field === 'description' ? hotDeal.description || '' : ''
     return <span className={className}>{content}</span>
   }
   
@@ -39,9 +38,8 @@ export function TranslatedContent({
   
   // 번역이 없는 경우 원본 표시
   if (!translation) {
-    const content = field === 'productComment' ? hotDeal.productComment : 
-                    field === 'title' ? hotDeal.title : 
-                    field === 'description' ? hotDeal.productComment : ''
+    const content = field === 'title' ? hotDeal.title : 
+                    field === 'description' ? hotDeal.description || '' : ''
     return (
       <div className="space-y-1">
         <span className={className}>{content}</span>
@@ -58,11 +56,10 @@ export function TranslatedContent({
   
   // 번역 완료 - Supabase에서는 번역이 있으면 항상 완료 상태
   const translatedContent = field === 'title' ? translation.title :
-                          field === 'description' || field === 'productComment' ? translation.description :
+                          field === 'description' ? translation.description :
                           ''
-  const originalContent = field === 'productComment' ? hotDeal.productComment : 
-                          field === 'title' ? hotDeal.title : 
-                          field === 'description' ? hotDeal.productComment : ''
+  const originalContent = field === 'title' ? hotDeal.title : 
+                          field === 'description' ? hotDeal.description || '' : ''
   
   return (
     <div className="space-y-1">

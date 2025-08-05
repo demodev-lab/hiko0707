@@ -21,7 +21,6 @@ import {
 } from 'lucide-react'
 import { HotDealsSection } from '@/components/features/home/hotdeals-section'
 import { useHotDeals } from '@/hooks/use-supabase-hotdeals'
-import { transformSupabaseToLocal } from '@/lib/utils/hotdeal-transformers'
 import { useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { SignedIn, SignedOut } from '@clerk/nextjs'
@@ -46,9 +45,8 @@ export default function Home() {
     threeDaysAgo.setDate(threeDaysAgo.getDate() - 3)
     
     return supabaseHotdeals.data
-      .map(transformSupabaseToLocal)
       .filter(deal => {
-        const crawledDate = new Date(deal.crawledAt)
+        const crawledDate = new Date(deal.created_at)
         return crawledDate >= threeDaysAgo
       })
   }, [supabaseHotdeals])

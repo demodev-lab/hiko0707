@@ -56,32 +56,30 @@ export function HotDealsClient({ initialDeals }: HotDealsClientProps) {
       filtered = filtered.filter(d => d.seller && shoppingSources.includes(d.seller))
     }
     if (priceMin) {
-      filtered = filtered.filter(d => d.price >= parseInt(priceMin))
+      filtered = filtered.filter(d => d.sale_price >= parseInt(priceMin))
     }
     if (priceMax) {
-      filtered = filtered.filter(d => d.price <= parseInt(priceMax))
+      filtered = filtered.filter(d => d.sale_price <= parseInt(priceMax))
     }
-    if (freeShipping) {
-      filtered = filtered.filter(d => d.shipping?.isFree)
-    }
+    // freeShipping 필터는 현재 스키마에 없어서 제거
     if (todayOnly) {
       const today = new Date().toDateString()
-      filtered = filtered.filter(d => new Date(d.crawledAt).toDateString() === today)
+      filtered = filtered.filter(d => new Date(d.created_at).toDateString() === today)
     }
 
     // Apply sorting
     switch (sort) {
       case 'price_low':
-        filtered.sort((a, b) => a.price - b.price)
+        filtered.sort((a, b) => a.sale_price - b.sale_price)
         break
       case 'price_high':
-        filtered.sort((a, b) => b.price - a.price)
+        filtered.sort((a, b) => b.sale_price - a.sale_price)
         break
       case 'popular':
-        filtered.sort((a, b) => (b.viewCount || 0) - (a.viewCount || 0))
+        filtered.sort((a, b) => (b.views || 0) - (a.views || 0))
         break
       default: // 'latest'
-        filtered.sort((a, b) => new Date(b.crawledAt).getTime() - new Date(a.crawledAt).getTime())
+        filtered.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
     }
 
     setFilteredDeals(filtered)

@@ -68,20 +68,20 @@ async function importLatestHotdeals() {
             hotdeal.source,
             [{
               title: hotdeal.title,
-              description: hotdeal.productComment,
-              originalPrice: hotdeal.price,
-              salePrice: hotdeal.price,
-              thumbnailUrl: hotdeal.imageUrl,
-              imageUrl: hotdeal.imageUrl,
-              originalUrl: hotdeal.originalUrl,
-              url: hotdeal.originalUrl,
+              description: hotdeal.shopping_comment,
+              originalPrice: hotdeal.sale_price,
+              salePrice: hotdeal.sale_price,
+              thumbnailUrl: hotdeal.image_url,
+              imageUrl: hotdeal.image_url,
+              originalUrl: hotdeal.original_url,
+              url: hotdeal.original_url,
               category: hotdeal.category,
-              sourceId: hotdeal.sourcePostId,
+              sourceId: hotdeal.source_id,
               shopName: hotdeal.seller,
-              isFreeShipping: hotdeal.shipping?.isFree || false,
-              authorName: hotdeal.userId || 'Unknown',
+              isFreeShipping: hotdeal.is_free_shipping || false,
+              authorName: hotdeal.author_name || 'Unknown',
               shoppingComment: '',
-              postDate: hotdeal.crawledAt?.toISOString() || new Date().toISOString()
+              postDate: hotdeal.created_at || new Date().toISOString()
             }]
           )
           

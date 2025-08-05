@@ -1,12 +1,6 @@
 require('dotenv').config({ path: '.env.local' });
 
-// 환경변수 강제 설정
-process.env.USE_SUPABASE = 'true';
-process.env.NEXT_PUBLIC_USE_SUPABASE = 'true';
-
 console.log('🌍 환경변수 확인:');
-console.log('USE_SUPABASE:', process.env.USE_SUPABASE);
-console.log('NEXT_PUBLIC_USE_SUPABASE:', process.env.NEXT_PUBLIC_USE_SUPABASE);
 console.log('SUPABASE_URL:', !!process.env.NEXT_PUBLIC_SUPABASE_URL);
 console.log('SUPABASE_KEY:', !!process.env.SUPABASE_SERVICE_ROLE_KEY);
 

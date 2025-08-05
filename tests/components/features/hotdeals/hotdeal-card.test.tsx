@@ -38,15 +38,15 @@ describe('HotDealCard', () => {
   const mockDeal = createMockHotDeal({
     id: '1',
     title: 'Test Hot Deal',
-    price: 50000,
-    originalPrice: 100000,
-    discountRate: 50,
-    imageUrl: '/test-image.jpg',
+    sale_price: 50000,
+    original_price: 100000,
+    discount_rate: 50,
+    image_url: '/test-image.jpg',
     category: 'electronics',
     source: 'ppomppu',
-    viewCount: 1234,
-    likeCount: 56,
-    commentCount: 12
+    views: 1234,
+    like_count: 56,
+    comment_count: 12
   })
 
   beforeEach(() => {
@@ -122,7 +122,7 @@ describe('HotDealCard', () => {
 
   it('formats time ago correctly', () => {
     const recentDeal = createMockHotDeal({
-      crawledAt: new Date(Date.now() - 1000 * 60 * 5) // 5 minutes ago
+      created_at: new Date(Date.now() - 1000 * 60 * 5).toISOString() // 5 minutes ago
     })
     
     render(<HotDealCard deal={recentDeal} />)
@@ -131,7 +131,7 @@ describe('HotDealCard', () => {
 
   it('shows sold out state', () => {
     const soldOutDeal = createMockHotDeal({
-      isSoldOut: true
+      status: 'ended'
     })
     
     render(<HotDealCard deal={soldOutDeal} />)
@@ -143,7 +143,7 @@ describe('HotDealCard', () => {
 
   it('handles missing image gracefully', () => {
     const dealWithoutImage = createMockHotDeal({
-      imageUrl: undefined
+      image_url: undefined
     })
     
     render(<HotDealCard deal={dealWithoutImage} />)
@@ -215,8 +215,8 @@ describe('HotDealCard', () => {
 
   it('shows hot badge for popular items', () => {
     const hotDeal = createMockHotDeal({
-      viewCount: 15000,
-      communityRecommendCount: 2000
+      views: 15000,
+      like_count: 2000
     })
     
     render(<HotDealCard deal={hotDeal} />)
@@ -228,7 +228,7 @@ describe('HotDealCard', () => {
 
   it('displays crawled time correctly', () => {
     const recentDeal = createMockHotDeal({
-      crawledAt: new Date()
+      created_at: new Date().toISOString()
     })
     
     render(<HotDealCard deal={recentDeal} />)

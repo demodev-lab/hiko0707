@@ -12,28 +12,7 @@ import { SupabasePaymentService } from '@/lib/services/supabase-payment-service'
 import { formatDate } from '@/lib/utils'
 import { HotDeal } from '@/types/hotdeal'
 
-// Supabase 데이터를 HotDeal 타입으로 변환하는 함수
-const mapSupabaseToHotDeal = (supabaseData: any): HotDeal => ({
-  id: supabaseData.id,
-  source: supabaseData.source,
-  sourcePostId: supabaseData.source_id,
-  category: supabaseData.category,
-  title: supabaseData.title,
-  productComment: supabaseData.description,
-  price: supabaseData.sale_price || 0,
-  seller: supabaseData.seller,
-  originalUrl: supabaseData.original_url,
-  imageUrl: supabaseData.image_url,
-  thumbnailImageUrl: supabaseData.thumbnail_url,
-  viewCount: supabaseData.views || 0,
-  likeCount: supabaseData.like_count || 0,
-  commentCount: supabaseData.comment_count || 0,
-  crawledAt: new Date(supabaseData.crawled_at || supabaseData.created_at),
-  status: supabaseData.status,
-  shipping: {
-    isFree: supabaseData.is_free_shipping || false
-  }
-})
+// Supabase 데이터를 직접 사용 (snake_case)
 
 async function DashboardStats() {
   // Supabase에서 데이터 조회
@@ -50,8 +29,8 @@ async function DashboardStats() {
     limit: 100
   })
   
-  // HotDeal 타입으로 변환
-  const hotdeals = hotdealsData.map(mapSupabaseToHotDeal)
+  // HotDeal 데이터 직접 사용
+  const hotdeals = hotdealsData
   const orders = ordersData
   const payments = paymentsData
   
@@ -133,10 +112,10 @@ async function DashboardStats() {
                       </div>
                       <div className="flex items-center justify-between mt-2">
                         <span className="font-bold text-primary">
-                          ₩{deal.price.toLocaleString()}
+                          ₩{deal.sale_price.toLocaleString()}
                         </span>
                         <span className="text-sm text-gray-600">
-                          👍 {deal.likeCount || 0}
+                          👍 {deal.like_count || 0}
                         </span>
                       </div>
                     </div>

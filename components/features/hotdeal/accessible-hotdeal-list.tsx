@@ -45,7 +45,7 @@ export function AccessibleHotDealList({
     onNavigate: (direction, index) => {
       if (index !== undefined && currentDeals[index]) {
         const deal = currentDeals[index]
-        setAnnounceText(`${deal.title}, ${t('hotdeals.price')}: ${deal.price}원`)
+        setAnnounceText(`${deal.title}, ${t('hotdeals.price')}: ${deal.sale_price}원`)
         
         // 포커스를 해당 카드로 이동
         const cardElement = document.querySelector(`[aria-labelledby="deal-title-${deal.id}"]`)

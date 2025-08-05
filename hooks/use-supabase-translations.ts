@@ -28,7 +28,7 @@ export function useHotDealTranslation(hotDealId: string) {
         if (!hotdeal) return null
         
         // 시뮬레이션 번역 즉시 생성
-        const translations = getSimulatedTranslation(hotdeal.title, hotdeal.description || '', language)
+        const translations = getSimulatedTranslation(hotdeal.title, hotdeal.shopping_comment || '', language)
         
         translation = await SupabaseHotDealService.createTranslation({
           hotdeal_id: hotDealId,

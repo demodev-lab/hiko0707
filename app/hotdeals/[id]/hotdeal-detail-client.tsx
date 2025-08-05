@@ -24,8 +24,8 @@ export function HotDealDetailClient({ deal, sourceLabel }: HotDealDetailClientPr
           itemType="hotdeal"
           metadata={{
             title: deal.title,
-            image: deal.originalImageUrl || deal.imageUrl,
-            price: deal.price
+            image: deal.image_url || '',
+            price: deal.sale_price
           }}
           showCount
           variant="default"
@@ -33,9 +33,9 @@ export function HotDealDetailClient({ deal, sourceLabel }: HotDealDetailClientPr
         />
         <ShareButton
           title={deal.title}
-          description={`${deal.price.toLocaleString()}원`}
-          imageUrl={deal.originalImageUrl}
-          hashtags={['핫딜', '하이코', sourceLabel, deal.seller]}
+          description={`${deal.sale_price.toLocaleString()}원`}
+          imageUrl={deal.image_url || ''}
+          hashtags={['핫딜', '하이코', sourceLabel, deal.seller || '']}
           variant="outline"
           className="flex-1"
         />

@@ -122,10 +122,10 @@ export class PpomppuCrawler extends BaseHotdealCrawler {
             const hotdeal = this.convertToHotDeal(posts[i], detail)
             
             // 콘텐츠가 비어있는 경우 경고
-            if (!hotdeal.productComment || hotdeal.productComment.length < 10) {
+            if (!hotdeal.description || hotdeal.description.length < 10) {
               console.warn(chalk.yellow(`⚠️  콘텐츠가 비어있거나 너무 짧음: ${posts[i].title}`))
               console.warn(chalk.gray(`   URL: ${posts[i].url}`))
-              console.warn(chalk.gray(`   콘텐츠 길이: ${hotdeal.productComment?.length || 0}자`))
+              console.warn(chalk.gray(`   콘텐츠 길이: ${hotdeal.description?.length || 0}자`))
             }
             
             this.results.push(hotdeal)
@@ -678,29 +678,30 @@ export class PpomppuCrawler extends BaseHotdealCrawler {
     return {
       id: this.generateId('ppomppu', post.postNumber),
       title: post.title,
-      price: priceNum,  // 문자열 또는 null
+      sale_price: priceNum,  // 문자열 또는 null
       seller: storeName || '알 수 없음',
       category,
       // 매칭된 고해상도 이미지 또는 썸네일 사용
-      originalImageUrl: normalizedImageUrl || undefined,
-      imageUrl: normalizedImageUrl || undefined,
-      thumbnailImageUrl: post.thumbnailUrl ? (post.thumbnailUrl.startsWith('//') ? `https:${post.thumbnailUrl}` : post.thumbnailUrl) : undefined,
-      originalUrl: post.url,
+      original_url: post.url, // 실제 상품 페이지 URL
+      image_url: normalizedImageUrl || '',
+      thumbnail_url: post.thumbnailUrl ? (post.thumbnailUrl.startsWith('//') ? `https:${post.thumbnailUrl}` : post.thumbnailUrl) : '',
       source: 'ppomppu' as any,
-      sourcePostId: post.postNumber, // 뽐뿌 게시글 번호를 중복 체크용 ID로 사용
-      crawledAt: post.postDate,
-      userId: post.author,
-      communityCommentCount: 0, // 커뮤니티 댓글수는 수집하지 않음
-      communityRecommendCount: post.recommendCount || 0,
-      isPopular: post.isPopular,
-      isHot: post.isHot,
-      ranking: undefined,
-      shipping: isFreeShipping ? { isFree: true } : undefined,
-      productComment: detail?.content || '',
+      source_id: post.postNumber, // 뽐뿌 게시글 번호를 중복 체크용 ID로 사용
+      created_at: post.postDate.toISOString(),
+      author_name: post.author,
+      comment_count: 0, // 커뮤니티 댓글수는 수집하지 않음
+      like_count: post.recommendCount || 0,
+      description: detail?.content || '',
       status: 'active' as const,
-      viewCount: post.views || 0,
-      likeCount: 0,
-      commentCount: 0
+      views: post.views || 0,
+      // 스키마에 필요한 추가 필드들
+      original_price: priceNum > 0 ? priceNum : 0,
+      discount_rate: 0,
+      end_date: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(), // 7일 후
+      shopping_comment: '',
+      is_free_shipping: isFreeShipping,
+      updated_at: new Date().toISOString(),
+      deleted_at: null
       // createdAt and updatedAt not part of HotDeal interface
     }
   }
@@ -734,10 +735,10 @@ export class PpomppuCrawler extends BaseHotdealCrawler {
 
     for (const hotdeal of hotdeals) {
       try {
-        // 중복 체크 (source + sourcePostId로 unique 체크)
+        // 중복 체크 (source + source_id로 unique 체크)
         const existing = await this.supabaseRepository.findBySourceAndPostId(
           hotdeal.source,
-          hotdeal.sourcePostId
+          hotdeal.source_id
         )
         
         if (existing) {

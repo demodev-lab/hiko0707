@@ -7,7 +7,6 @@ import { Card } from '@/components/ui/card'
 import { HotDealsClient } from './hotdeals-client'
 import { HotDeal } from '@/types/hotdeal'
 import { useHotDeals } from '@/hooks/use-supabase-hotdeals'
-import { transformSupabaseToLocal } from '@/lib/utils/hotdeal-transformers'
 
 function HotDealsStats({ deals }: { deals: HotDeal[] }) {
   // 3일 이내 핫딜만 활성으로 간주
@@ -15,7 +14,7 @@ function HotDealsStats({ deals }: { deals: HotDeal[] }) {
   threeDaysAgo.setDate(threeDaysAgo.getDate() - 3)
   
   const activeDeals = deals.filter(deal => {
-    const crawledDate = new Date(deal.crawledAt)
+    const crawledDate = new Date(deal.created_at)
     return crawledDate >= threeDaysAgo
   })
   
@@ -66,8 +65,8 @@ export default function HotDealsPage() {
     sortOrder: 'desc'
   })
 
-  // LocalStorage 형식으로 변환
-  const hotdeals = supabaseHotdeals?.data?.map(transformSupabaseToLocal) || []
+  // 이제 변환 없이 직접 사용
+  const hotdeals = supabaseHotdeals?.data || []
 
   // 페이지 로드시 데이터 새로고침
   useEffect(() => {

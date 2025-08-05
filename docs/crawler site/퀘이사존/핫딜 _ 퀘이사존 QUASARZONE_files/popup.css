@@ -1,0 +1,706 @@
+
+#popUp{height:100%}
+#popUp .pop-head-wrap{height:44px;line-height:48px;background-color:#181818;position:relative;border-bottom:1px solid #525252}
+#popUp .pop-head-wrap i{position:absolute;left:14px;top:9px}
+#popUp .pop-head-wrap .tit{text-align:center;color:#e3e3e3;font-size:14px}
+#popUp .pop-head-wrap .tit span{color:#fb9306}
+#popUp .experience-wrap .experience-area{background-color:#202020;padding-bottom:23px}
+#popUp .experience-wrap .experience-area table th{text-align:center;padding:9px 0}
+#popUp .experience-wrap .experience-area table th span{color:#e3e3e3;font-size:11px}
+#popUp .experience-wrap .experience-area table td{text-align:center;padding:8px 0 8px}
+#popUp .experience-wrap .experience-area table td .exp{color:#e3e3e3;font-size:12px;font-weight:700}
+#popUp .experience-wrap .experience-area table td .con{color:#e3e3e3;font-size:12px;font-weight:700;display:block;text-align:left;position:relative;width:200px;padding-left:14px;text-overflow:ellipsis;white-space:nowrap;overflow:hidden;box-sizing:border-box}
+#popUp .experience-wrap .experience-area table td .con:before{position:absolute;left:0;top:0;width:1px;height:12px;background-color:#565656;content:""}
+#popUp .experience-wrap .experience-area table td .con .m-color{color:#92ffa4}
+#popUp .experience-wrap .experience-area table td .date{position:relative;font-size:0;display:block}
+#popUp .experience-wrap .experience-area table td .date:before{position:absolute;left:0;top:0;width:1px;height:12px;background-color:#565656;content:""}
+#popUp .experience-wrap .experience-area table td .date em{position:relative;color:#e3e3e3;font-size:12px;font-weight:700;margin-left:5px;padding-left:5px}
+#popUp .experience-wrap .experience-area table td .date em:before{position:absolute;top:50%;margin-top:-7px;left:0;width:1px;height:10px;background-color:#bfbfbf;content:""}
+#popUp .experience-wrap .experience-area table td .date em:first-child{margin-left:0;padding-left:0}
+#popUp .experience-wrap .experience-area table td .date em:first-child:before{display:none}
+#popUp .scrap-wrap .scrap-area{background-color:#202020;padding:0 14px 23px 14px}
+#popUp .scrap-wrap .scrap-area table th{text-align:center;padding:9px 0;border-bottom:1px solid #525252}
+#popUp .scrap-wrap .scrap-area table th span{color:#e3e3e3;font-size:11px}
+#popUp .scrap-wrap .scrap-area table td{text-align:center;padding:14px 0 11px;border-bottom:1px solid #525252}
+#popUp .scrap-wrap .scrap-area table td:first-child span:before{display:none}
+#popUp .scrap-wrap .scrap-area table td span{position:relative;display:block;font-size:12px;color:#e3e3e3}
+#popUp .scrap-wrap .scrap-area table td span a{color:#e3e3e3}
+#popUp .scrap-wrap .scrap-area table td span:before{position:absolute;left:0;top:0;width:1px;height:12px;background-color:#565656;content:""}
+#popUp .scrap-wrap .scrap-area table td span .delete-bt{display:inline-block;width:7px;height:7px;background:url(../../quasarzone/images/popup/delete_bt_icon.png) no-repeat;overflow:hidden;text-indent:-9999px}
+#popUp .scrap-wrap .scrap-area table td .con{color:#e3e3e3;font-size:12px;display:block;text-align:left;position:relative;width:160px;padding-left:14px;text-overflow:ellipsis;white-space:nowrap;overflow:hidden;box-sizing:border-box}
+#popUp .scrap-wrap .scrap-area table td .con a{color:#e3e3e3;font-size:12px}
+#popUp .post-wrap .post-area{background-color:#202020;padding:0 14px 23px 14px;box-sizing:border-box}
+#popUp .post-wrap .post-area table th{text-align:center;padding:9px 0;border-bottom:1px solid #525252}
+#popUp .post-wrap .post-area table th span{color:#e3e3e3;font-size:11px}
+#popUp .post-wrap .post-area table td{text-align:center;padding:14px 0 11px;border-bottom:1px solid #525252;line-height:16px;vertical-align:middle}
+#popUp .post-wrap .post-area table td .cate1{font-size:12px;font-weight:700;color:#e3e3e3}
+#popUp .post-wrap .post-area table td .cate2{font-size:12px;font-weight:700}
+#popUp .post-wrap .post-area table td .con{color:#e3e3e3;font-size:12px;height:32px;font-weight:700;display:block;text-align:left;position:relative;width:245px;padding-left:14px;overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;word-wrap:break-word;box-sizing:border-box}
+#popUp .post-wrap .post-area table td .con a{color:#e3e3e3;font-size:12px;font-weight:700}
+#popUp .post-wrap .post-area table td .con:before{position:absolute;left:0;top:50%;margin-top:-14px;width:1px;height:28px;background-color:#565656;content:""}
+#popUp .post-wrap .post-area table td span{font-size:12px;color:#e3e3e3;vertical-align:middle;position:relative;display:block}
+#popUp .post-wrap .post-area table td span:before{position:absolute;left:0;top:50%;margin-top:-14px;width:1px;height:28px;background-color:#565656;content:""}
+#popUp .notice-wrap .notice-area{background-color:#272727;height:524px}
+#popUp .notice-wrap .notice-area .top-noti{border-bottom:1px solid #525252;height:34px;line-height:34px;font-size:0;padding-left:12px;background-color:#202020;position:relative}
+#popUp .notice-wrap .notice-area .top-noti span{font-weight:700;font-size:12px}
+#popUp .notice-wrap .notice-area .top-noti span.noti-tp1{color:#ff9920;padding-left:17px;position:relative}
+#popUp .notice-wrap .notice-area .top-noti span.noti-tp1:before{position:absolute;left:0;top:2px;width:9px;height:9px;content:"";background:url(../../quasarzone/images/popup/noti_new_icon.png) no-repeat}
+#popUp .notice-wrap .notice-area .top-noti span.noti-tp2{color:#8a8a8a;margin-left:11px}
+#popUp .notice-wrap .notice-area .top-noti .bt{position:absolute;right:15px;font-size:0;top:6px}
+#popUp .notice-wrap .notice-area .top-noti .bt.sel-tp{right:102px}
+#popUp .notice-wrap .notice-area .top-noti .bt a{display:inline-block;font-size:12px;height:21px;vertical-align:top;border:1px solid #4c4c4c;background-color:#181818;padding:0 6px;line-height:21px;text-align:center;color:#e3e3e3;box-sizing:border-box;margin-left:9px}
+#popUp .notice-wrap .notice-area .top-noti .bt a:first-child{margin-left:0}
+#popUp .notice-wrap .notice-area .top-noti .cate-select-area{position:absolute;right:15px;top:6px;font-size:0}
+#popUp .notice-wrap .notice-area .top-noti .cate-select-area .cate-area.w-auto .cate-bt{display:inline-block;width:78px;vertical-align:top;font-size:12px;height:21px;line-height:21px;background-color:#181818;padding-left:10px;border:1px solid #525252;box-sizing:border-box;position:relative}
+#popUp .notice-wrap .notice-area .top-noti .cate-select-area .cate-area.w-auto .cate-bt:after{position:absolute;content:"";right:5px;top:50%;margin-top:-2px;width:7px;height:4px;background:url(../../quasarzone/images/popup/cate_arrow_icon2.png) no-repeat}
+#popUp .notice-wrap .notice-area .top-noti .cate-select-area .cate-area.w-auto .cate-bt span{font-size:12px;font-weight:700;color:#e3e3e3}
+#popUp .notice-wrap .notice-area .top-noti .cate-select-area .cate-area.w-auto .cate-bt.active{background-color:#181818}
+#popUp .notice-wrap .notice-area .top-noti .cate-select-area .cate-area.w-auto .hide-area{position:absolute;display:none;width:100%;top:20px;left:0;border:1px solid #525252;box-sizing:border-box}
+#popUp .notice-wrap .notice-area .top-noti .cate-select-area .cate-area.w-auto .hide-area ul{float:none;border-left:1px solid #525252}
+#popUp .notice-wrap .notice-area .top-noti .cate-select-area .cate-area.w-auto .hide-area ul:first-child{border-left:0}
+#popUp .notice-wrap .notice-area .top-noti .cate-select-area .cate-area.w-auto .hide-area ul li{border-top:1px solid #525252}
+#popUp .notice-wrap .notice-area .top-noti .cate-select-area .cate-area.w-auto .hide-area ul li:first-child{border-top:0}
+#popUp .notice-wrap .notice-area .top-noti .cate-select-area .cate-area.w-auto .hide-area ul li a{display:block;width:100%;box-sizing:border-box;background-color:#181818;line-height:21px;padding-left:10px;font-size:12px;font-weight:700;color:#e3e3e3;height:21px}
+#popUp .notice-wrap .notice-area .top-noti .cate-select-area .cate-area.w-auto .hide-area.active{display:block}
+#popUp .notice-wrap .notice-area .refresh-area{height:43px;text-align:center;background:url(../../quasarzone/images/popup/refresh_bg.png) repeat-x;display:table;width:100%;border-bottom:1px dashed #3f3f3f}
+#popUp .notice-wrap .notice-area .refresh-area span{display:table-cell;vertical-align:middle}
+#popUp .notice-wrap .notice-area .refresh-area span a{display:inline-block;color:#e3e3e3;font-size:11px;padding-right:17px;position:relative}
+#popUp .notice-wrap .notice-area .refresh-area span a:after{position:absolute;right:0;top:0;width:10px;height:10px;background:url(../../quasarzone/images/popup/refresh_icon.png) no-repeat;content:""}
+#popUp .notice-wrap .notice-area .list-area{padding:0 12px}
+#popUp .notice-wrap .notice-area .list-area ul li{padding:20px 30px 18px 0;box-sizing:border-box;position:relative;border-top:1px solid #565656}
+#popUp .notice-wrap .notice-area .list-area ul li:first-child{border-top:0}
+#popUp .notice-wrap .notice-area .list-area ul li:after{position:absolute;top:50%;margin-top:-8px;right:30px;width:1px;height:16px;content:"";background-color:#565656}
+#popUp .notice-wrap .notice-area .list-area ul li .con-area{display:block}
+#popUp .notice-wrap .notice-area .list-area ul li .con-area .tit{max-width:335px;font-size:12px;color:#e3e3e3;text-overflow:ellipsis;white-space:nowrap;overflow:hidden}
+#popUp .notice-wrap .notice-area .list-area ul li.new .con-area .tit{color:#fff}
+#popUp .notice-wrap .notice-area .list-area ul li .con-area .tit .label{margin-right:3px}
+#popUp .notice-wrap .notice-area .list-area ul li.new .con-area .tit .label{color:#fff}
+#popUp .notice-wrap .notice-area .list-area ul li .con-area .tit .label.tp2{color:#74ff77}
+#popUp .notice-wrap .notice-area .list-area ul li .con-area .util{padding-left:9px;margin-top:5px}
+#popUp .notice-wrap .notice-area .list-area ul li .con-area .util .txt{max-width:155px;font-size:12px;color:#b2b2b2;display:inline-block;vertical-align:top;text-overflow:ellipsis;white-space:nowrap;overflow:hidden}
+#popUp .notice-wrap .notice-area .list-area ul li.new .con-area .util .txt{color:#fff}
+#popUp .notice-wrap .notice-area .list-area ul li .con-area .util .cate{font-size:12px;color:#b2b2b2;display:inline-block;vertical-align:top;position:relative;padding-left:8px;margin-left:5px}
+#popUp .notice-wrap .notice-area .list-area ul li.new .con-area .util .cate{color:#fff}
+#popUp .notice-wrap .notice-area .list-area ul li .con-area .util .cate:before{position:absolute;left:0;top:0;width:1px;height:12px;background-color:#565656;content:""}
+#popUp .notice-wrap .notice-area .list-area ul li .con-area .util .date{font-size:12px;color:#b2b2b2;display:inline-block;vertical-align:top;position:relative;padding-left:8px;margin-left:5px}
+#popUp .notice-wrap .notice-area .list-area ul li.new .con-area .util .date{color:#fff}
+#popUp .notice-wrap .notice-area .list-area ul li .con-area .util .date:before{position:absolute;left:0;top:0;width:1px;height:12px;background-color:#565656;content:""}
+#popUp .notice-wrap .notice-area .list-area ul li .delete-bt{position:absolute;right:0;top:50%;margin-top:-6px;text-indent:-9999px;overflow:hidden;width:14px;height:13px;background:url(../../quasarzone/images/popup/delete_bt_icon2.png) no-repeat}
+#popUp .level-inst-wrap .level-inst-area{background-color:#272727;height:524px}
+#popUp .level-inst-wrap .level-inst-area .top-noti{border-bottom:1px solid #525252;height:34px;line-height:34px;font-size:0;padding-left:12px;background-color:#202020;position:relative}
+#popUp .level-inst-wrap .level-inst-area .top-noti span{font-weight:700;font-size:12px}
+#popUp .level-inst-wrap .level-inst-area .top-noti span.level-inst-tp1{color:#ff9920;padding-left:15px;position:relative}
+#popUp .level-inst-wrap .level-inst-area .top-noti span.level-inst-tp1:before{position:absolute;left:0;top:2px;width:8px;height:10px;content:"";background:url(../../quasarzone/images/popup/level_inst_icon.png) no-repeat}
+#popUp .level-inst-wrap .level-inst-area .top-noti .bt{position:absolute;right:15px;font-size:0;top:6px}
+#popUp .level-inst-wrap .level-inst-area .top-noti .bt.sel-tp{right:102px}
+#popUp .level-inst-wrap .level-inst-area .top-noti .bt a{display:inline-block;font-size:12px;height:21px;vertical-align:top;border:1px solid #4c4c4c;background-color:#181818;padding:0 6px;line-height:21px;text-align:center;font-weight:700;color:#e3e3e3;box-sizing:border-box;margin-left:9px}
+#popUp .level-inst-wrap .level-inst-area .top-noti .bt a:first-child{margin-left:0}
+#popUp .level-inst-wrap .level-inst-area .top-noti .cate-select-area{position:absolute;right:15px;top:6px;font-size:0}
+#popUp .level-inst-wrap .level-inst-area .top-noti .cate-select-area .cate-area.w-auto .cate-bt{display:inline-block;width:78px;vertical-align:top;font-size:12px;height:21px;line-height:21px;background-color:#181818;padding-left:10px;border:1px solid #525252;box-sizing:border-box;position:relative}
+#popUp .level-inst-wrap .level-inst-area .top-noti .cate-select-area .cate-area.w-auto .cate-bt:after{position:absolute;content:"";right:5px;top:50%;margin-top:-2px;width:7px;height:4px;background:url(../../quasarzone/images/popup/cate_arrow_icon2.png) no-repeat}
+#popUp .level-inst-wrap .level-inst-area .top-noti .cate-select-area .cate-area.w-auto .cate-bt span{font-size:12px;font-weight:700;color:#e3e3e3}
+#popUp .level-inst-wrap .level-inst-area .top-noti .cate-select-area .cate-area.w-auto .cate-bt.active{background-color:#181818}
+#popUp .level-inst-wrap .level-inst-area .top-noti .cate-select-area .cate-area.w-auto .hide-area{position:absolute;display:none;width:100%;top:20px;left:0;border:1px solid #525252;box-sizing:border-box}
+#popUp .level-inst-wrap .level-inst-area .top-noti .cate-select-area .cate-area.w-auto .hide-area ul{float:none;border-left:1px solid #525252}
+#popUp .level-inst-wrap .level-inst-area .top-noti .cate-select-area .cate-area.w-auto .hide-area ul:first-child{border-left:0}
+#popUp .level-inst-wrap .level-inst-area .top-noti .cate-select-area .cate-area.w-auto .hide-area ul li{border-top:1px solid #525252}
+#popUp .level-inst-wrap .level-inst-area .top-noti .cate-select-area .cate-area.w-auto .hide-area ul li:first-child{border-top:0}
+#popUp .level-inst-wrap .level-inst-area .top-noti .cate-select-area .cate-area.w-auto .hide-area ul li a{display:block;width:100%;box-sizing:border-box;background-color:#181818;line-height:21px;padding-left:10px;font-size:12px;font-weight:700;color:#e3e3e3;height:21px}
+#popUp .level-inst-wrap .level-inst-area .top-noti .cate-select-area .cate-area.w-auto .hide-area.active{display:block}
+#popUp .level-inst-wrap .level-inst-area .planet-list-wrap{text-align:center;padding-top:6px}
+#popUp .level-inst-wrap .level-inst-area .planet-list-wrap table th{text-align:center;height:53px;line-height:16px;font-size:12px;font-weight:700;color:#e3e3e3;vertical-align:middle}
+#popUp .level-inst-wrap .level-inst-area .planet-list-wrap table td{text-align:center;height:53px;line-height:16px;font-size:12px;font-weight:700;color:#e3e3e3;vertical-align:middle}
+#popUp .level-inst-wrap .level-inst-area .planet-list-wrap table td span em{color:#6f6f6f}
+#popUp .ranking-wrap .ranking-area{background-color:#272727;height:594px}
+#popUp .ranking-wrap .ranking-area .top-noti{border-bottom:1px solid #525252;height:34px;line-height:34px;font-size:0;padding-left:12px;background-color:#202020;position:relative}
+#popUp .ranking-wrap .ranking-area .top-noti span{font-weight:700;font-size:12px}
+#popUp .ranking-wrap .ranking-area .top-noti span.level-inst-tp1{color:#ff9920;padding-left:15px;position:relative}
+#popUp .ranking-wrap .ranking-area .top-noti span.level-inst-tp1:before{position:absolute;left:0;top:2px;width:8px;height:10px;content:"";background:url(../../quasarzone/images/popup/level_inst_icon.png) no-repeat}
+#popUp .ranking-wrap .ranking-area .top-noti .bt{position:absolute;right:15px;font-size:0;top:6px}
+#popUp .ranking-wrap .ranking-area .top-noti .bt.sel-tp{right:115px}
+#popUp .ranking-wrap .ranking-area .top-noti .bt a{display:inline-block;font-size:12px;height:21px;vertical-align:top;border:1px solid #4c4c4c;background-color:#181818;padding:0 6px;line-height:21px;text-align:center;color:#e3e3e3;box-sizing:border-box;margin-left:9px}
+#popUp .ranking-wrap .ranking-area .top-noti .bt a:first-child{margin-left:0}
+#popUp .ranking-wrap .ranking-area .top-noti .cate-select-area{position:absolute;right:10px;top:6px;font-size:0;z-index:20}
+#popUp .ranking-wrap .ranking-area .top-noti .cate-select-area .cate-area.w-auto .cate-bt{display:inline-block;width:97px;vertical-align:top;font-size:12px;height:21px;line-height:21px;background-color:#181818;padding-left:6px;border:1px solid #525252;box-sizing:border-box;font-weight:700;position:relative}
+#popUp .ranking-wrap .ranking-area .top-noti .cate-select-area .cate-area.w-auto .cate-bt:after{position:absolute;content:"";right:5px;top:50%;margin-top:-2px;width:7px;height:4px;background:url(../../quasarzone/images/popup/cate_arrow_icon2.png) no-repeat}
+#popUp .ranking-wrap .ranking-area .top-noti .cate-select-area .cate-area.w-auto .cate-bt span{font-size:12px;color:#e3e3e3}
+#popUp .ranking-wrap .ranking-area .top-noti .cate-select-area .cate-area.w-auto .cate-bt.active{background-color:#181818}
+#popUp .ranking-wrap .ranking-area .top-noti .cate-select-area .cate-area.w-auto .hide-area{position:absolute;display:none;width:100%;top:20px;left:0;border:1px solid #525252;box-sizing:border-box}
+#popUp .ranking-wrap .ranking-area .top-noti .cate-select-area .cate-area.w-auto .hide-area ul{float:none;border-left:1px solid #525252}
+#popUp .ranking-wrap .ranking-area .top-noti .cate-select-area .cate-area.w-auto .hide-area ul:first-child{border-left:0}
+#popUp .ranking-wrap .ranking-area .top-noti .cate-select-area .cate-area.w-auto .hide-area ul li{border-top:1px solid #525252}
+#popUp .ranking-wrap .ranking-area .top-noti .cate-select-area .cate-area.w-auto .hide-area ul li:first-child{border-top:0}
+#popUp .ranking-wrap .ranking-area .top-noti .cate-select-area .cate-area.w-auto .hide-area ul li a{display:block;width:100%;box-sizing:border-box;background-color:#181818;line-height:21px;padding-left:10px;font-size:12px;font-weight:700;color:#e3e3e3;height:21px}
+#popUp .ranking-wrap .ranking-area .top-noti .cate-select-area .cate-area.w-auto .hide-area ul li a em{color:#89ff8c}
+#popUp .ranking-wrap .ranking-area .top-noti .cate-select-area .cate-area.w-auto .hide-area.active{display:block}
+#popUp .ranking-wrap .ranking-area .top-noti .left-bt{font-size:0}
+#popUp .ranking-wrap .ranking-area .top-noti .left-bt a{display:inline-block;vertical-align:middle;font-size:12px;height:21px;border:1px solid #4c4c4c;background-color:#181818;padding:0 6px;line-height:21px;text-align:center;color:#e3e3e3;box-sizing:border-box;margin-left:9px}
+#popUp .ranking-wrap .ranking-area .top-noti .left-bt a:first-child{margin-left:0}
+#popUp .ranking-wrap .ranking-area .ranking-content{position:relative;background-color:#272727;height:559px;box-sizing:border-box;padding:43px 0 43px}
+#popUp .ranking-wrap .ranking-area .ranking-content .top-rank-chk{position:absolute;left:0;top:0;width:100%;height:43px;line-height:43px;text-align:center;background:url(../../quasarzone/images/popup/refresh_bg.png) repeat-x}
+#popUp .ranking-wrap .ranking-area .ranking-content .top-rank-chk a{display:inline-block;position:relative;color:#e3e3e3;font-weight:700;font-size:11px;padding-right:14px}
+#popUp .ranking-wrap .ranking-area .ranking-content .top-rank-chk a:after{position:absolute;right:0;content:"";top:50%;margin-top:-4px;width:7px;height:5px;background:url(../../quasarzone/images/popup/sort_up_icon.png) no-repeat}
+#popUp .ranking-wrap .ranking-area .ranking-content .board{width:374px;margin:0 auto;padding-top:4px}
+#popUp .ranking-wrap .ranking-area .ranking-content .board table th{text-align:center;height:42px;line-height:16px;font-size:12px;color:#e3e3e3;vertical-align:middle}
+#popUp .ranking-wrap .ranking-area .ranking-content .board table td{text-align:center;vertical-align:middle;height:59px}
+#popUp .ranking-wrap .ranking-area .ranking-content .board table td.con-wrap{text-align:left;padding-left:10px}
+#popUp .ranking-wrap .ranking-area .ranking-content .board table td .rank{color:#e3e3e3;font-size:12px}
+#popUp .ranking-wrap .ranking-area .ranking-content .board table td .pro-bt{display:inline-block;color:#e3e3e3;font-size:12px;width:42px;height:21px;border:1px solid #505050;background-color:#181818;line-height:21px;box-sizing:border-box}
+#popUp .ranking-wrap .ranking-area .ranking-content .board table td .con-area{display:inline-block;text-align:left;min-height:38px;padding-left:47px;box-sizing:border-box;position:relative}
+#popUp .ranking-wrap .ranking-area .ranking-content .board table td .con-area .thumb-area{position:absolute;left:0;top:0;width:38px;height:38px;display:inline-block;background-color:grey;-webkit-border-radius:100%;-moz-border-radius:100%;border-radius:100%;overflow:hidden}
+#popUp .ranking-wrap .ranking-area .ranking-content .board table td .con-area .thumb-area img{width:100%;height:100%;display:block}
+#popUp .ranking-wrap .ranking-area .ranking-content .board table td .con-area .txt-area{padding-top:5px;position:relative}
+#popUp .ranking-wrap .ranking-area .ranking-content .board table td .con-area .txt-area .id a{font-size:12px;color:#e3e3e3}
+#popUp .ranking-wrap .ranking-area .ranking-content .board table td .con-area .txt-area .id a img{margin-right:2px;vertical-align:middle}
+#popUp .ranking-wrap .ranking-area .ranking-content .board table td .con-area .txt-area .util{font-size:0;margin-top:7px;padding-left:21px}
+#popUp .ranking-wrap .ranking-area .ranking-content .board table td .con-area .txt-area .util span{font-size:11px;color:#b2b2b2;position:relative;margin-left:7px;padding-left:7px}
+#popUp .ranking-wrap .ranking-area .ranking-content .board table td .con-area .txt-area .util span:first-child{margin-left:0;padding-left:0}
+#popUp .ranking-wrap .ranking-area .ranking-content .board table td .con-area .txt-area .util span:first-child:before{display:none}
+#popUp .ranking-wrap .ranking-area .ranking-content .board table td .con-area .txt-area .util span em{color:#89ff8c}
+#popUp .ranking-wrap .ranking-area .ranking-content .board table td .con-area .txt-area .util span:before{position:absolute;left:0;top:0;width:1px;content:"";background-color:#b2b2b2;height:11px}
+#popUp .ranking-wrap .ranking-area .ranking-content .bot-rank-chk{position:absolute;left:0;bottom:0;width:100%;height:43px;line-height:43px;text-align:center;background:url(../../quasarzone/images/popup/refresh_bg.png) repeat-x}
+#popUp .ranking-wrap .ranking-area .ranking-content .bot-rank-chk a{display:inline-block;position:relative;color:#e3e3e3;font-weight:700;font-size:11px;padding-right:14px}
+#popUp .ranking-wrap .ranking-area .ranking-content .bot-rank-chk a:after{position:absolute;right:0;content:"";top:50%;margin-top:-4px;width:7px;height:5px;background:url(../../quasarzone/images/popup/sort_dw_icon.png) no-repeat}
+#popUp .messenger-wrap .messenger-area{background-color:#272727;height:720px;border-bottom:1px solid #565656}
+#popUp .messenger-wrap .messenger-area .top-noti{border-bottom:1px solid #525252;height:34px;line-height:34px;font-size:0;padding-left:12px;background-color:#202020;position:relative}
+#popUp .messenger-wrap .messenger-area .top-noti .mss-tp1{font-weight:700;font-size:12px;color:#699eff;position:relative;padding-left:19px}
+#popUp .messenger-wrap .messenger-area .top-noti .mss-tp1:before{position:absolute;left:0;top:0;width:15px;height:13px;content:"";background:url(../../quasarzone/images/popup/mss_icon1.png) no-repeat}
+#popUp .messenger-wrap .messenger-area .top-noti .mss-tp2{font-weight:700;font-size:12px;color:#e4cf1a;position:relative;padding-left:19px;margin-left:18px}
+#popUp .messenger-wrap .messenger-area .top-noti .mss-tp2:before{position:absolute;left:0;top:0;width:15px;height:13px;content:"";background:url(../../quasarzone/images/popup/mss_icon2.png) no-repeat}
+#popUp .messenger-wrap .messenger-area .top-noti .bt{position:absolute;right:15px;font-size:0;top:6px}
+#popUp .messenger-wrap .messenger-area .top-noti .bt a{display:inline-block;font-size:12px;height:21px;vertical-align:top;border:1px solid #4c4c4c;background-color:#181818;padding:0 6px;line-height:21px;text-align:center;font-weight:700;color:#e3e3e3;box-sizing:border-box;margin-left:9px}
+#popUp .messenger-wrap .messenger-area .top-noti .bt a:first-child{margin-left:0}
+#popUp .messenger-wrap .messenger-area .list-area ul li{padding:8px 60px 11px 15px;box-sizing:border-box;position:relative;border-top:1px solid #565656}
+#popUp .messenger-wrap .messenger-area .list-area ul li:first-child{border-top:0}
+#popUp .messenger-wrap .messenger-area .list-area ul li:after{position:absolute;top:50%;margin-top:-8px;right:60px;width:1px;height:16px;content:"";background-color:#565656}
+#popUp .messenger-wrap .messenger-area .list-area ul li .con-area{display:block;min-height:38px;padding-left:47px;box-sizing:border-box;position:relative}
+#popUp .messenger-wrap .messenger-area .list-area ul li .con-area.login:before{display:block}
+#popUp .messenger-wrap .messenger-area .list-area ul li .con-area:before{position:absolute;left:-3px;top:-3px;display:none;width:6px;height:6px;background-color:#5fed73;-webkit-border-radius:100%;-moz-border-radius:100%;border-radius:100%;content:""}
+#popUp .messenger-wrap .messenger-area .list-area ul li .con-area .thumb-area{position:absolute;left:0;top:50%;margin-top:-19px;width:38px;height:38px;display:inline-block;background-color:grey;-webkit-border-radius:100%;-moz-border-radius:100%;border-radius:100%;overflow:hidden}
+#popUp .messenger-wrap .messenger-area .list-area ul li .con-area .thumb-area img{width:100%;height:100%;display:block}
+#popUp .messenger-wrap .messenger-area .list-area ul li .con-area .txt-area{padding-top:5px;position:relative}
+#popUp .messenger-wrap .messenger-area .list-area ul li .con-area .txt-area .id a{font-size:12px;font-weight:700;color:silver}
+#popUp .messenger-wrap .messenger-area .list-area ul li .con-area .txt-area .id a img{margin-right:2px}
+#popUp .messenger-wrap .messenger-area .list-area ul li .con-area .txt-area .text{width:280px;text-overflow:ellipsis;white-space:nowrap;overflow:hidden;margin-top:6px}
+#popUp .messenger-wrap .messenger-area .list-area ul li .con-area .txt-area .text a{font-size:12px;color:silver;font-weight:700;display:inline-block;width:280px;text-overflow:ellipsis;white-space:nowrap;overflow:hidden}
+#popUp .messenger-wrap .messenger-area .list-area ul li .date{line-height:62px;height:60px;font-size:12px;color:silver;position:absolute;right:0;top:0;text-align:center;width:60px;display:inline-block}
+#popUp .friend-wrap .friend-area{background-color:#272727;height:840px;position:relative}
+#popUp .friend-wrap .friend-area .bot-noti{position:absolute;bottom:9px;right:11px;font-weight:700;color:#606060;font-size:10px}
+#popUp .friend-wrap .friend-area .top-noti{border-bottom:1px solid #525252;height:34px;line-height:34px;font-size:0;padding-left:12px;background-color:#202020;position:relative}
+#popUp .friend-wrap .friend-area .top-noti span{font-weight:700;font-size:12px}
+#popUp .friend-wrap .friend-area .top-noti span.frd-tp1{color:#5fed73;padding-left:15px;position:relative}
+#popUp .friend-wrap .friend-area .top-noti span.frd-tp1 a{color:#5fed73}
+#popUp .friend-wrap .friend-area .top-noti span.frd-tp1:before{position:absolute;left:0;top:2px;width:8px;height:10px;content:"";background:url(../../quasarzone/images/popup/frd_icon_1.png) no-repeat}
+#popUp .friend-wrap .friend-area .top-noti span.frd-tp2{color:#adadad;margin-left:11px}
+#popUp .friend-wrap .friend-area .top-noti span.frd-tp2 a{color:#adadad}
+#popUp .friend-wrap .friend-area .top-noti span.frd-tp3{color:#ff7c7c;padding-left:15px;position:relative;margin-left:15px}
+#popUp .friend-wrap .friend-area .top-noti span.frd-tp3 a{color:#ff7c7c}
+#popUp .friend-wrap .friend-area .top-noti span.frd-tp3:before{position:absolute;left:0;top:1px;width:10px;height:10px;content:"";background:url(../../quasarzone/images/popup/frd_icon_2.png) no-repeat}
+#popUp .friend-wrap .friend-area .top-noti .bt{position:absolute;right:15px;font-size:0;top:6px}
+#popUp .friend-wrap .friend-area .top-noti .bt a{display:inline-block;font-size:12px;height:21px;vertical-align:top;border:1px solid #4c4c4c;background-color:#181818;padding:0 6px;line-height:21px;text-align:center;color:#e3e3e3;box-sizing:border-box;margin-left:9px}
+#popUp .friend-wrap .friend-area .top-noti .bt a:first-child{margin-left:0}
+#popUp .friend-wrap .friend-area .refresh-area{height:43px;text-align:center;background:url(../../quasarzone/images/popup/refresh_bg.png) repeat-x;display:table;width:100%}
+#popUp .friend-wrap .friend-area .refresh-area span{display:table-cell;vertical-align:middle}
+#popUp .friend-wrap .friend-area .refresh-area span a{display:inline-block;color:#e3e3e3;font-size:11px;padding-right:17px;position:relative}
+#popUp .friend-wrap .friend-area .refresh-area span a:after{position:absolute;right:0;top:0;width:10px;height:10px;background:url(../../quasarzone/images/popup/refresh_icon.png) no-repeat;content:""}
+#popUp .friend-wrap .friend-area .list-area{padding:0 12px}
+#popUp .friend-wrap .friend-area .list-area ul li{padding:16px 30px 16px 0;box-sizing:border-box;position:relative;border-top:1px solid #565656}
+#popUp .friend-wrap .friend-area .list-area ul li:first-child{border-top:0}
+#popUp .friend-wrap .friend-area .list-area ul li:after{position:absolute;top:50%;margin-top:-8px;right:30px;width:1px;height:16px;content:"";background-color:#565656}
+#popUp .friend-wrap .friend-area .list-area ul li .con-area{display:block;min-height:38px;padding-left:47px;box-sizing:border-box;position:relative}
+#popUp .friend-wrap .friend-area .list-area ul li .con-area.login:before{display:block}
+#popUp .friend-wrap .friend-area .list-area ul li .con-area:before{position:absolute;left:-3px;top:-3px;display:none;width:6px;height:6px;background-color:#5fed73;-webkit-border-radius:100%;-moz-border-radius:100%;border-radius:100%;content:""}
+#popUp .friend-wrap .friend-area .list-area ul li .con-area .thumb-area{position:absolute;left:0;top:0;width:38px;height:38px;display:inline-block;background-color:grey;-webkit-border-radius:100%;-moz-border-radius:100%;border-radius:100%;overflow:hidden}
+#popUp .friend-wrap .friend-area .list-area ul li .con-area .thumb-area img{width:100%;height:100%;display:block}
+#popUp .friend-wrap .friend-area .list-area ul li .con-area .txt-area{padding-top:5px;position:relative}
+#popUp .friend-wrap .friend-area .list-area ul li .con-area .txt-area .msg-send-bt{position:absolute;right:15px;top:50%;margin-top:-10px;border:1px solid #505050;background-color:#181818;display:inline-block;font-size:12px;color:#e3e3e3;width:69px;height:21px;line-height:21px;text-align:center;box-sizing:border-box}
+#popUp .friend-wrap .friend-area .list-area ul li .con-area .txt-area .id a{font-size:12px;color:#e3e3e3}
+#popUp .friend-wrap .friend-area .list-area ul li .con-area .txt-area .id a img{margin-right:2px}
+#popUp .friend-wrap .friend-area .list-area ul li .con-area .txt-area .util{font-size:0;margin-top:7px}
+#popUp .friend-wrap .friend-area .list-area ul li .con-area .txt-area .utilAdd{padding-bottom:3px}
+#popUp .friend-wrap .friend-area .list-area ul li .con-area .txt-area .utilAdd span{font-size:14px;color:#ff9920;font-weight:700;position:relative;margin-left:7px;padding-left:8px}
+#popUp .friend-wrap .friend-area .list-area ul li .con-area .txt-area .utilAdd span:first-child{margin-left:0;padding-left:0}
+#popUp .friend-wrap .friend-area .list-area ul li .con-area .txt-area .utilAdd span:first-child:before{display:none}
+#popUp .friend-wrap .friend-area .list-area ul li .con-area .txt-area .utilAdd span:before{position:absolute;left:0;top:0;width:1px;content:"";background-color:#b2b2b2;height:11px}
+#popUp .friend-wrap .friend-area .list-area ul li .con-area .txt-area .util span{font-size:11px;color:#b2b2b2;font-weight:700;position:relative;margin-left:7px;padding-left:8px}
+#popUp .friend-wrap .friend-area .list-area ul li .con-area .txt-area .util span:first-child{margin-left:0;padding-left:0}
+#popUp .friend-wrap .friend-area .list-area ul li .con-area .txt-area .util span:first-child:before{display:none}
+#popUp .friend-wrap .friend-area .list-area ul li .con-area .txt-area .util span:before{position:absolute;left:0;top:0;width:1px;content:"";background-color:#b2b2b2;height:11px}
+#popUp .friend-wrap .friend-area .list-area ul li .delete-bt{position:absolute;right:0;top:50%;margin-top:-6px;text-indent:-9999px;overflow:hidden;width:14px;height:13px;background:url(../../quasarzone/images/popup/delete_bt_icon2.png) no-repeat}
+#popUp .friend-wrap .friend-area .list-area ul li .okay-bt{position:absolute;right:50px;top:50%;margin-top:-4px;text-indent:-9999px;overflow:hidden;width:10px;height:10px;background:url(../../quasarzone/images/main/unit_okay_icon.png) no-repeat}
+#popUp .friend-wrap .friend-area .list-area ul li .del-bt{position:absolute;right:15px;top:50%;margin-top:-4px;text-indent:-9999px;overflow:hidden;width:10px;height:10px;background:url(../../quasarzone/images/main/unit_delete_icon.png) no-repeat}
+#popUp .paging-wrap{margin-top:16px}
+#popUp .paging-wrap .paging-area{font-size:0;text-align:center;line-height:32px}
+#popUp .paging-wrap .page-jump{vertical-align:middle}
+#popUp .paging-wrap .paging-area .prev-bt{display:inline-block;width:7px;height:32px;background:url(../../quasarzone/images/popup/paging_prev_bt.png) no-repeat 0 50%;margin-right:16px}
+#popUp .paging-wrap .paging-area .next-bt{display:inline-block;width:7px;height:32px;background:url(../../quasarzone/images/popup/paging_next_bt.png) no-repeat 0 50%;margin-left:16px}
+#popUp .paging-wrap .paging-area .double{width:14px;background-repeat:repeat-x}
+#popUp .paging-wrap .paging-area ul{display:inline-block;vertical-align:middle;line-height:1}
+#popUp .paging-wrap .paging-area ul li{display:inline-block;margin-left:8px}
+#popUp .paging-wrap .paging-area ul li:first-child{margin-left:0}
+#popUp .paging-wrap .paging-area ul li a{font-size:14px;border:1px solid #525252;background-color:#272727;color:#e3e3e3;height:32px;line-height:32px;text-align:center;box-sizing:border-box;display:block;padding:0 7px}
+#popUp .paging-wrap .paging-area ul li a.active{background-color:#ff9920;color:#fff}
+#popUp .profile-wrap{background-color:#202020;height:100%}
+#popUp .profile-wrap .profile-area{padding:0 11px 0}
+#popUp .profile-wrap .profile-area .profile-top-area{height:167px;padding-left:112px;background-color:#202020;padding-top:28px;box-sizing:border-box;position:relative}
+#popUp .profile-wrap .profile-area .profile-top-area .my-info-area{position:absolute;left:19px;top:22px;width:80px;text-align:center}
+#popUp .profile-wrap .profile-area .profile-top-area .my-info-area .pic-thumb-area{display:block;position:relative;overflow:hidden;width:80px;height:80px;background-color:grey;-webkit-border-radius:100%;-moz-border-radius:100%;border-radius:100%}
+#popUp .profile-wrap .profile-area .profile-top-area .my-info-area .pic-thumb-area img{width:100%;display:block}
+#popUp .profile-wrap .profile-area .profile-top-area .my-info-area .pic-thumb-area:before{position:absolute;left:0;top:0;width:100%;height:100%;content:"";background:url(../../quasarzone/images/sub/thumb_pic_hover.png) no-repeat;-webkit-transition:all .3s ease;-moz-transition:all .3s ease;-o-transition:all .3s ease;-ms-transition:all .3s ease;opacity:0}
+#popUp .profile-wrap .profile-area .profile-top-area .my-info-area .pic-thumb-area:hover:before{opacity:1}
+#popUp .profile-wrap .profile-area .profile-top-area .my-info-area .my-info-view{display:inline-block;margin-top:10px;width:69px;height:21px;border:1px solid #505050;background-color:#181818;line-height:22px;text-align:center;font-size:12px;font-weight:700;color:#e3e3e3;box-sizing:border-box}
+#popUp .profile-wrap .profile-area .profile-top-area dl dt .id{font-weight:700;font-size:16px;color:#e3e3e3;line-height:22px;display:inline-block}
+#popUp .profile-wrap .profile-area .profile-top-area dl dt .id img{margin-right:1px}
+#popUp .profile-wrap .profile-area .profile-top-area dl dt .msg-send-bt{display:inline-block;width:16px;height:16px;background:url(../../quasarzone/images/popup/msg_send_bt.png) no-repeat;margin-left:6px;position:relative;top:3px}
+#popUp .profile-wrap .profile-area .profile-top-area dl dt .follow-bt{display:inline-block;width:17px;height:13px;background:url(../../quasarzone/images/popup/follow_bt.png) no-repeat;margin-left:10px;position:relative;top:1px}
+#popUp .profile-wrap .profile-area .profile-top-area dl dt .unfollow-bt{display:inline-block;width:17px;height:13px;background:url(../../quasarzone/images/popup/unfollow_bt.png) no-repeat;margin-left:10px;position:relative;top:1px}
+#popUp .profile-wrap .profile-area .profile-top-area dl dt .follow-state{position:relative;top:1px;padding-right:10px;margin-left:10px}
+#popUp .profile-wrap .profile-area .profile-top-area dl dt .follow-state:after{position:absolute;right:0;top:0;width:2px;height:12px;background-color:#656565;content:""}
+#popUp .profile-wrap .profile-area .profile-top-area dl dt .follow-state em{width:22px;height:13px;display:inline-block;background:url(../../quasarzone/images/popup/follow_state_icon.png) no-repeat}
+#popUp .profile-wrap .profile-area .profile-top-area dl dt .block-bt{position:relative;top:1px;padding-left:11px;margin-left:6px}
+#popUp .profile-wrap .profile-area .profile-top-area dl dt .block-bt:after{position:absolute;left:0;top:1px;width:2px;height:12px;background-color:#656565;content:""}
+#popUp .profile-wrap .profile-area .profile-top-area dl dt .block-bt a{display:inline-block;width:17px;height:13px;background:url(../../quasarzone/images/popup/unfollow_bt.png) no-repeat;position:relative;top:1px}
+#popUp .profile-wrap .profile-area .profile-top-area dl dd{margin-top:9px;padding-left:6px}
+#popUp .profile-wrap .profile-area .profile-top-area dl dd p{font-size:0;margin-top:7px}
+#popUp .profile-wrap .profile-area .profile-top-area dl dd p:first-child{margin-top:0}
+#popUp .profile-wrap .profile-area .profile-top-area dl dd p span{font-size:12px;color:#b5b5b5;margin-left:5px;padding-left:8px;position:relative;letter-spacing:-.5px}
+#popUp .profile-wrap .profile-area .profile-top-area dl dd p span:before{position:absolute;left:0;top:0;content:"";width:1px;height:12px;background-color:#b5b5b5}
+#popUp .profile-wrap .profile-area .profile-top-area dl dd p span:first-child{padding-left:0;margin-left:0}
+#popUp .profile-wrap .profile-area .profile-top-area dl dd p span:first-child:before{display:none}
+#popUp .profile-wrap .profile-area .profile-top-area dl dd p span a{font-weight:700;font-size:12px;color:#e3e3e3;text-decoration:underline}
+#popUp .profile-wrap .profile-area .profile-mid-area .con-none{text-align:center;font-size:12px;padding:30px 0}
+#popUp .profile-wrap .profile-area .profile-mid-area{height:119px;border:1px solid #515151;background-color:#171717;box-sizing:border-box;padding:10px 0}
+#popUp .profile-wrap .profile-area .profile-mid-area .lately-get-planet{float:left;padding-left:14px;width:50%;padding-top:6px;box-sizing:border-box}
+#popUp .profile-wrap .profile-area .profile-mid-area .lately-get-planet .l-tit{font-size:14px;font-weight:700;color:#e3e3e3}
+#popUp .profile-wrap .profile-area .profile-mid-area .lately-get-planet .con{position:relative;box-sizing:border-box;padding-left:78px;margin-top:13px}
+#popUp .profile-wrap .profile-area .profile-mid-area .lately-get-planet .con .planet-img{position:absolute;left:0;top:0}
+#popUp .profile-wrap .profile-area .profile-mid-area .lately-get-planet .con .planet-img img{width:100%}
+#popUp .profile-wrap .profile-area .profile-mid-area .lately-get-planet .con .info .tit{font-size:12px;font-weight:700;color:#e3e3e3}
+#popUp .profile-wrap .profile-area .profile-mid-area .lately-get-planet .con .info .txt{font-size:10px;color:#b5b5b5;line-height:13px;margin-top:3px}
+#popUp .profile-wrap .profile-area .profile-mid-area .lately-get-planet .con .info .date{font-size:10px;color:#b5b5b5;margin-top:6px}
+#popUp .profile-wrap .profile-area .profile-mid-area .lately-get-planet .con .info .date a{text-decoration:underline;font-weight:700;font-size:10px;color:#b5b5b5}
+#popUp .profile-wrap .profile-area .profile-mid-area .lately-post{float:left;width:50%;height:98px;padding-top:6px;padding-right:11px;box-sizing:border-box;padding-left:12px;border-left:1px solid #4d4d4d}
+#popUp .profile-wrap .profile-area .profile-mid-area .lately-post .l-tit{font-size:14px;font-weight:700;color:#e3e3e3}
+#popUp .profile-wrap .profile-area .profile-mid-area .lately-post .con{margin-top:9px}
+#popUp .profile-wrap .profile-area .profile-mid-area .lately-post .con ul li{position:relative;padding-right:35px}
+#popUp .profile-wrap .profile-area .profile-mid-area .lately-post .con ul li .tit{width:100%;text-overflow:ellipsis;white-space:nowrap;overflow:hidden}
+#popUp .profile-wrap .profile-area .profile-mid-area .lately-post .con ul li .tit a{font-size:10px;color:#e3e3e3}
+#popUp .profile-wrap .profile-area .profile-mid-area .lately-post .con ul li .date{position:absolute;right:0;top:0;font-size:10px;color:#b5b5b5}
+#popUp .profile-wrap .profile-area .profile-bot-area{height:auto;padding-left:0;padding-top:15px;position:relative;border:1px solid #515151;background-color:#171717;box-sizing:border-box;margin-top:10px}
+#popUp .profile-wrap .profile-area .profile-bot-area .l-tit{color:#e3e3e3;font-weight:700;font-size:14px;display:inline-block;border-bottom:1px solid #ff9400;padding-bottom:3px;margin-left:14px;margin-bottom:15px}
+#popUp .profile-wrap .profile-area .profile-bot-area .intro-area{height:auto;width:100%;padding:8px;box-sizing:border-box}
+#popUp .profile-wrap .profile-area .sanc-list-bt{text-align:right;margin-top:7px}
+#popUp .profile-wrap .profile-area .sanc-list-bt a{display:inline-block;border:1px solid #505050;background-color:#181818;width:69px;height:21px;line-height:21px;text-align:center;font-weight:700;font-size:12px;color:#e3e3e3;box-sizing:border-box}
+#popUp .profile-wrap .profile-area .sanc-list-area{border:1px solid #4e4e4e;display:none;background-color:#171717;height:93px;margin-top:8px;padding-top:19px;padding-left:17px;box-sizing:border-box}
+#popUp .profile-wrap .profile-area .sanc-list-area.active{display:block}
+#popUp .profile-wrap .profile-area .sanc-list-area ul li{font-size:12px;color:#e3e3e3;line-height:18px}
+#popUp .level-content-wrap{background-color:#202020}
+#popUp .level-content-wrap .level-top-area{position:relative;padding:13px 11px 0}
+#popUp .level-content-wrap .level-top-area .text{color:#e3e3e3;line-height:19px}
+#popUp .level-content-wrap .level-top-area .text .c-pink{font-weight:700;color:#e98686}
+#popUp .level-content-wrap .level-top-area .point-list{position:absolute;right:11px;top:20px;background-color:#181818;width:95px;height:21px;line-height:21px;border:1px solid #505050;text-align:center;color:#e3e3e3;font-weight:700;font-size:12px;box-sizing:border-box}
+#popUp .level-content-wrap .level-top-area .gauge-bar-wrap{height:27px;margin-top:5px;padding-top:2px;box-sizing:border-box;position:relative}
+#popUp .level-content-wrap .level-top-area .gauge-bar-wrap:before{position:absolute;left:0;z-index:1;top:0;width:24px;height:27px;content:"";background:url(../../quasarzone/images/popup/bar_logo.png) no-repeat}
+#popUp .level-content-wrap .level-top-area .gauge-bar-wrap .gauge-bar-area{-moz-border-radius:9px;-webkit-border-radius:9px;border-radius:9px;-moz-background-clip:padding;-webkit-background-clip:padding-box;background-clip:padding-box;background-color:#181818;border:1px solid #565656;height:21px;box-sizing:border-box}
+#popUp .level-content-wrap .level-top-area .gauge-bar-wrap .gauge-bar-area .gauge-bar{padding-left:24px;text-align:center;height:19px;line-height:19px;position:relative;box-sizing:border-box;-moz-border-radius:9px;-webkit-border-radius:9px;border-radius:9px;-moz-background-clip:padding;-webkit-background-clip:padding-box;background-clip:padding-box;background-color:#ff9300;-moz-box-shadow:inset 0 0 6px rgba(25,15,0,.72);-webkit-box-shadow:inset 0 0 6px rgba(25,15,0,.72);box-shadow:inset 0 0 6px rgba(25,15,0,.72)}
+#popUp .level-content-wrap .level-top-area .gauge-bar-wrap .gauge-bar-area .gauge-bar span{font-weight:700;line-height:22px;font-size:12px;color:#fff}
+#popUp .level-content-wrap .level-top-area .gauge-bar-wrap .gauge-bar-area .gauge-bar.small-size span{position:absolute;right:-90px;top:0;z-index:1}
+#popUp .level-content-wrap .level-top-area .noti{text-align:right;margin-top:7px;font-weight:700;color:#888;font-size:10px}
+#popUp .level-content-wrap .now-planet-area{padding:0 8px;margin-top:15px}
+#popUp .level-content-wrap .now-planet-area .now-planet-inner{border:1px solid #525252;background-color:#171717;padding:14px 10px 14px 14px;height:203px;box-sizing:border-box}
+#popUp .level-content-wrap .now-planet-area .now-planet-inner .title{font-weight:700;color:#e3e3e3;font-size:14px;border-bottom:1px solid #ff7d7d;display:inline-block;padding-bottom:5px}
+#popUp .level-content-wrap .now-planet-area .now-planet-inner .now-planet{position:relative;box-sizing:border-box;padding-left:144px;margin-top:21px}
+#popUp .level-content-wrap .now-planet-area .now-planet-inner .now-planet .planet-img{position:absolute;left:9px;top:0}
+#popUp .level-content-wrap .now-planet-area .now-planet-inner .now-planet .text-area .tit1{color:#ff7d7d;font-weight:700;font-size:16px}
+#popUp .level-content-wrap .now-planet-area .now-planet-inner .now-planet .text-area .tit2{font-size:12px;color:#e3e3e3;font-weight:700;margin-top:7px}
+#popUp .level-content-wrap .now-planet-area .now-planet-inner .now-planet .text-area .txt{font-size:12px;color:#767676;letter-spacing:0;line-height:15px;margin-top:11px}
+#popUp .level-content-wrap .now-planet-area .now-planet-inner .now-planet .text-area .exam{margin-top:14px}
+#popUp .level-content-wrap .now-planet-area .now-planet-inner .now-planet .text-area .exam .tit{font-size:14px;font-weight:700;color:#ff7d7d}
+#popUp .level-content-wrap .now-planet-area .now-planet-inner .now-planet .text-area .exam .tit em{text-decoration:underline}
+#popUp .level-content-wrap .now-planet-area .now-planet-inner .now-planet .text-area .exam img{position:relative;top:2px;margin-right:3px}
+#popUp .level-content-wrap .now-planet-area .now-planet-inner .now-planet .text-area .exam .id{font-size:14px;color:silver}
+#popUp .level-content-wrap .another-planet-area{margin-top:9px;padding:0 8px;position:relative}
+#popUp .level-content-wrap .another-planet-area .another-planet-inner{border:1px solid #525252;background-color:#171717;padding:14px 10px 14px 14px;height:322px;box-sizing:border-box}
+#popUp .level-content-wrap .another-planet-area .another-planet-inner .title{font-weight:700;color:#e3e3e3;font-size:14px;border-bottom:1px solid #ff7d7d;display:inline-block;padding-bottom:5px}
+#popUp .level-content-wrap .another-planet-area .another-planet-inner .sort-area{position:absolute;right:19px;top:11px}
+#popUp .level-content-wrap .another-planet-area .another-planet-inner .sort-area .pu-color{color:#bb9dff!important}
+#popUp .level-content-wrap .another-planet-area .another-planet-inner .sort-area .pi-color{color:#ff8c8c!important}
+#popUp .level-content-wrap .another-planet-area .another-planet-inner .sort-area .sort-bt{display:inline-block;width:73px;background-color:#272727;height:21px;line-height:19px;padding-left:6px;border:1px solid #525252;box-sizing:border-box;position:relative}
+#popUp .level-content-wrap .another-planet-area .another-planet-inner .sort-area .sort-bt:after{position:absolute;-webkit-transform:rotate(180deg);-moz-transform:rotate(180deg);-ms-transform:rotate(180deg);-o-transform:rotate(180deg);transform:rotate(180deg);content:"";right:6px;top:50%;margin-top:-2px;width:7px;height:4px;background:url(../../quasarzone/images/sub/sort_arrow_icon.png) no-repeat}
+#popUp .level-content-wrap .another-planet-area .another-planet-inner .sort-area .sort-bt span{font-size:12px;font-weight:700;color:#e3e3e3}
+#popUp .level-content-wrap .another-planet-area .another-planet-inner .sort-area .sort-bt.active{background-color:#181818}
+#popUp .level-content-wrap .another-planet-area .another-planet-inner .sort-area .hide-area{position:absolute;z-index:1;display:none;width:100%;top:21px;left:0;border-bottom:1px solid #525252;border-left:1px solid #525252;border-right:1px solid #525252;box-sizing:border-box}
+#popUp .level-content-wrap .another-planet-area .another-planet-inner .sort-area .hide-area li{border-top:1px solid #525252}
+#popUp .level-content-wrap .another-planet-area .another-planet-inner .sort-area .hide-area li:first-child{border-top:0}
+#popUp .level-content-wrap .another-planet-area .another-planet-inner .sort-area .hide-area li a{display:block;background-color:#181818;height:21px;line-height:21px;padding-left:6px;font-size:12px;font-weight:700;color:#e3e3e3}
+#popUp .level-content-wrap .another-planet-area .another-planet-inner .sort-area .hide-area.active{display:block}
+#popUp .level-content-wrap .another-planet-area .another-planet-inner .planet-list{height:184px;padding-top:10px;box-sizing:border-box}
+#popUp .level-content-wrap .another-planet-area .another-planet-inner .planet-list ul{font-size:0}
+#popUp .level-content-wrap .another-planet-area .another-planet-inner .planet-list ul li{display:inline-block;width:20%;float:left;text-align:center;margin:5px 0}
+#popUp .level-content-wrap .another-planet-area .another-planet-inner .planet-list ul li a img{width:54px;height:54px}
+#popUp .level-content-wrap .another-planet-area .another-planet-inner .planet-list ul li a span{font-size:10px;padding-top:4px;display:block}
+#popUp .level-content-wrap .another-planet-area .another-planet-inner .planet-list ul li a span.red{color:#ff8181}
+#popUp .level-content-wrap .another-planet-area .another-planet-inner .planet-list ul li a span.per{color:#cc9fff}
+#popUp .level-content-wrap .another-planet-area .another-planet-inner .planet-list ul li a span.wht{color:#fff}
+#popUp .level-content-wrap .another-planet-area .another-planet-inner .paging-area{font-size:0;text-align:center;line-height:32px}
+#popUp .level-content-wrap .another-planet-area .another-planet-inner .paging-area .prev-bt{display:inline-block;width:7px;height:13px;vertical-align:middle;background:url(../../quasarzone/images/popup/paging_prev_bt.png) no-repeat;margin-right:16px}
+#popUp .level-content-wrap .another-planet-area .another-planet-inner .paging-area .next-bt{display:inline-block;width:7px;height:13px;vertical-align:middle;background:url(../../quasarzone/images/popup/paging_next_bt.png) no-repeat;margin-left:16px}
+#popUp .level-content-wrap .another-planet-area .another-planet-inner .paging-area ul{display:inline-block}
+#popUp .level-content-wrap .another-planet-area .another-planet-inner .paging-area ul li{display:inline-block;margin-left:8px}
+#popUp .level-content-wrap .another-planet-area .another-planet-inner .paging-area ul li:first-child{margin-left:0}
+#popUp .level-content-wrap .another-planet-area .another-planet-inner .paging-area ul li a{font-size:14px;border:1px solid #525252;background-color:#272727;color:#e3e3e3;height:32px;line-height:32px;text-align:center;box-sizing:border-box;display:inline-block;vertical-align:top;padding:0 10px}
+#popUp .level-content-wrap .another-planet-area .another-planet-inner .paging-area ul li a.active{background-color:#ff9920;color:#fff}
+#popUp .level-content-wrap .another-planet-area .another-planet-inner .btn-area{font-size:0;text-align:center;position:relative;margin-top:23px}
+#popUp .level-content-wrap .another-planet-area .another-planet-inner .btn-area a{display:inline-block;width:48px;height:24px;font-size:11px;color:#fff;margin-left:8px;line-height:24px;text-align:center;border:1px solid #525252;background-color:#202020;box-sizing:border-box}
+#popUp .level-content-wrap .another-planet-area .another-planet-inner .btn-area a:first-child{margin-left:0}
+#popUp .level-content-wrap .another-planet-area .another-planet-inner .btn-area a.active,#popUp .level-content-wrap .another-planet-area .another-planet-inner .btn-area a:hover{background-color:#ff7d7d}
+#popUp .level-content-wrap .another-planet-area .another-planet-inner .btn-area span{font-size:10px;font-weight:700;color:#ff7d7d;position:absolute;right:24px;line-height:24px}
+#popUp .inner-layer-popup{position:absolute;display:none;left:0;top:0;width:100%;height:100%;background-color:#fff;z-index:10;padding-top:45px;box-sizing:border-box}
+#popUp .inner-layer-popup.active{display:block}
+#popUp .inner-layer-popup .pop-head-wrap{position:absolute;left:0;top:0;width:100%;border-bottom:1px solid #525252}
+#popUp .inner-layer-popup .pop-head-wrap .inner-pop-close{position:absolute;right:16px;top:15px}
+#popUp .pop-head-wrap .close-btn{position:absolute;right:16px;top:15px}
+#popUp .inner-layer-popup .inner-popup-content{position:relative;height:100%;background-color:#202020}
+#popUp .inner-layer-popup .inner-popup-content .post-tab-wrap .tab-bt-wrap{position:relative;padding-left:64px;background-color:#202020;box-sizing:border-box;border-bottom:1px solid #525252}
+#popUp .inner-layer-popup .inner-popup-content .post-tab-wrap .tab-bt-wrap .back-bt{width:64px;border-right:1px solid #525252;box-sizing:border-box;position:absolute;left:0;top:0;height:34px;line-height:34px;background:url(../../quasarzone/images/popup/back_bt_arrow.png) 50% 50% no-repeat;display:inline-block;text-indent:-9999px;overflow:hidden}
+#popUp .inner-layer-popup .inner-popup-content .post-tab-wrap .tab-bt-wrap .tab-bt-area{overflow:hidden}
+#popUp .inner-layer-popup .inner-popup-content .post-tab-wrap .tab-bt-wrap .tab-bt-area .tab-bt{width:50%;float:left;border-left:1px solid #525252;text-align:center;height:34px;line-height:34px;display:inline-block;font-weight:700;font-size:12px;color:#b5b5b5;box-sizing:border-box}
+#popUp .inner-layer-popup .inner-popup-content .post-tab-wrap .tab-bt-wrap .tab-bt-area .tab-bt:first-child{border-left:0}
+#popUp .inner-layer-popup .inner-popup-content .post-tab-wrap .tab-bt-wrap .tab-bt-area .tab-bt.active{color:#ff9920}
+#popUp .inner-layer-popup .inner-popup-content .post-tab-wrap .tab-con-wrap{padding:0 15px}
+#popUp .inner-layer-popup .inner-popup-content .post-tab-wrap .tab-con-wrap .tab-con-area{display:none}
+#popUp .inner-layer-popup .inner-popup-content .post-tab-wrap .tab-con-wrap .tab-con-area.active{display:block}
+#popUp .inner-layer-popup .inner-popup-content .post-tab-wrap .tab-con-wrap .tab-con-area table th{text-align:center;font-size:11px;color:#e3e3e3;vertical-align:middle;padding:10px 0 7px;border-bottom:1px solid #565656}
+#popUp .inner-layer-popup .inner-popup-content .post-tab-wrap .tab-con-wrap .tab-con-area table td{vertical-align:middle;padding:12px 0 11px;border-bottom:1px solid #565656;text-align:center;font-size:12px;color:#e3e3e3}
+#popUp .inner-layer-popup .inner-popup-content .post-tab-wrap .tab-con-wrap .tab-con-area table td .tit{text-align:left;padding:0 8px;box-sizing:border-box}
+#popUp .inner-layer-popup .inner-popup-content .post-tab-wrap .tab-con-wrap .tab-con-area table td .tit a{display:block;overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;word-wrap:break-word;font-size:12px;color:#e3e3e3;line-height:18px}
+#popUp .inner-layer-popup .inner-popup-content .add-friend-wrap .top-bt-wrap{position:relative;padding-left:64px;background-color:#202020;box-sizing:border-box;border-bottom:1px solid #525252}
+#popUp .inner-layer-popup .inner-popup-content .add-friend-wrap .top-bt-wrap.type2{padding-left:70px}
+#popUp .inner-layer-popup .inner-popup-content .add-friend-wrap .top-bt-wrap.type2 .back-bt{width:70px;height:100%}
+#popUp .inner-layer-popup .inner-popup-content .add-friend-wrap .top-bt-wrap .back-bt{width:64px;border-right:1px solid #525252;box-sizing:border-box;position:absolute;left:0;top:0;height:34px;line-height:34px;background:url(../../quasarzone/images/popup/back_bt_arrow.png) 50% 50% no-repeat;display:inline-block;text-indent:-9999px;overflow:hidden}
+#popUp .inner-layer-popup .inner-popup-content .add-friend-wrap .top-bt-wrap .input{position:relative;padding-right:45px;box-sizing:border-box}
+#popUp .inner-layer-popup .inner-popup-content .add-friend-wrap .top-bt-wrap .input input{width:100%;height:34px;background-color:#202020;color:#e3e3e3;font-weight:700;font-size:12px;box-sizing:border-box;padding-left:12px}
+#popUp .inner-layer-popup .inner-popup-content .add-friend-wrap .top-bt-wrap .input input::-webkit-input-placeholder{color:#767676;font-weight:700}
+#popUp .inner-layer-popup .inner-popup-content .add-friend-wrap .top-bt-wrap .input input::-moz-placeholder{color:#767676;font-weight:700}
+#popUp .inner-layer-popup .inner-popup-content .add-friend-wrap .top-bt-wrap .input input:-ms-input-placeholder{color:#767676;font-weight:700}
+#popUp .inner-layer-popup .inner-popup-content .add-friend-wrap .top-bt-wrap .input input:-moz-placeholder{color:#767676;font-weight:700}
+#popUp .inner-layer-popup .inner-popup-content .add-friend-wrap .top-bt-wrap .input a{position:absolute;right:0;top:0;width:40px;height:34px;text-indent:-9999px;overflow:hidden;background:url(../../quasarzone/images/popup/frd_srch_bt.png) no-repeat}
+#popUp .inner-layer-popup .inner-popup-content .add-friend-wrap .top-bt-wrap .s-tit-type{line-height:34px;height:34px}
+#popUp .inner-layer-popup .inner-popup-content .add-friend-wrap .top-bt-wrap .s-tit-type span{font-weight:700;font-size:12px;color:#e4cf1a;position:relative;padding-left:19px;margin-left:18px}
+#popUp .inner-layer-popup .inner-popup-content .add-friend-wrap .top-bt-wrap .s-tit-type span:before{position:absolute;left:0;top:0;width:13px;height:13px;content:"";background:url(../../quasarzone/images/popup/mss_icon2.png) no-repeat}
+#popUp .inner-layer-popup .inner-popup-content .add-friend-wrap .top-bt-wrap .msg-top-wrap{height:60px;padding-left:16px;padding-top:8px;box-sizing:border-box}
+#popUp .inner-layer-popup .inner-popup-content .add-friend-wrap .top-bt-wrap .msg-top-wrap .con-area{display:block;min-height:38px;padding-left:47px;box-sizing:border-box;position:relative}
+#popUp .inner-layer-popup .inner-popup-content .add-friend-wrap .top-bt-wrap .msg-top-wrap .con-area.login:before{display:block}
+#popUp .inner-layer-popup .inner-popup-content .add-friend-wrap .top-bt-wrap .msg-top-wrap .con-area:before{position:absolute;left:-3px;top:-3px;display:none;width:6px;height:6px;background-color:#5fed73;-webkit-border-radius:100%;-moz-border-radius:100%;border-radius:100%;content:""}
+#popUp .inner-layer-popup .inner-popup-content .add-friend-wrap .top-bt-wrap .msg-top-wrap .con-area .thumb-area{position:absolute;left:0;top:50%;margin-top:-19px;width:38px;height:38px;display:inline-block;background-color:grey;-webkit-border-radius:100%;-moz-border-radius:100%;border-radius:100%;overflow:hidden}
+#popUp .inner-layer-popup .inner-popup-content .add-friend-wrap .top-bt-wrap .msg-top-wrap .con-area .thumb-area img{width:100%;height:100%;display:block}
+#popUp .inner-layer-popup .inner-popup-content .add-friend-wrap .top-bt-wrap .msg-top-wrap .con-area .txt-area{padding-top:5px;position:relative}
+#popUp .inner-layer-popup .inner-popup-content .add-friend-wrap .top-bt-wrap .msg-top-wrap .con-area .txt-area .id a{font-size:12px;font-weight:700;color:silver}
+#popUp .inner-layer-popup .inner-popup-content .add-friend-wrap .top-bt-wrap .msg-top-wrap .con-area .txt-area .id a img{margin-right:2px}
+#popUp .inner-layer-popup .inner-popup-content .add-friend-wrap .top-bt-wrap .msg-top-wrap .con-area .txt-area .util{font-size:0;margin-top:8px}
+#popUp .inner-layer-popup .inner-popup-content .add-friend-wrap .top-bt-wrap .msg-top-wrap .con-area .txt-area .util span{position:relative;display:inline-block;margin-left:6px;padding-left:6px}
+#popUp .inner-layer-popup .inner-popup-content .add-friend-wrap .top-bt-wrap .msg-top-wrap .con-area .txt-area .util span:before{position:absolute;left:0;top:0;width:1px;height:10px;content:"";background:#afafaf}
+#popUp .inner-layer-popup .inner-popup-content .add-friend-wrap .top-bt-wrap .msg-top-wrap .con-area .txt-area .util span:first-child{margin-left:0;padding-left:0}
+#popUp .inner-layer-popup .inner-popup-content .add-friend-wrap .top-bt-wrap .msg-top-wrap .con-area .txt-area .util span:first-child:before{display:none}
+#popUp .inner-layer-popup .inner-popup-content .add-friend-wrap .top-bt-wrap .msg-top-wrap .con-area .txt-area .util span a{font-size:12px;font-weight:700;color:#afafaf}
+#popUp .inner-layer-popup .inner-popup-content .add-friend-wrap .top-bt-wrap .msg-top-wrap .con-area .txt-area .msg-out{display:inline-block;position:absolute;top:50%;margin-top:-10px;background-color:#181818;font-size:12px;color:#e3e3e3;border:1px solid #505050;text-align:center;right:18px;width:84px;height:21px;line-height:21px;box-sizing:border-box}
+#popUp .inner-layer-popup .inner-popup-content .add-friend-wrap .top-bt-wrap .msg-top-wrap .con-area .txt-area .msg-out:hover{color:#ff9400}
+#popUp .inner-layer-popup .inner-popup-content .add-friend-wrap .mid-con-wrap{padding:0 0;border-bottom:1px solid #525252}
+#popUp .inner-layer-popup .inner-popup-content .add-friend-wrap .mid-con-wrap ul li{position:relative;padding:5px 0 5px 62px;box-sizing:border-box;min-height:49px;border-top:1px solid #525252}
+#popUp .inner-layer-popup .inner-popup-content .add-friend-wrap .mid-con-wrap ul li:first-child{border-top:0}
+#popUp .inner-layer-popup .inner-popup-content .add-friend-wrap .mid-con-wrap ul li .thumb-area{position:absolute;left:15px;top:50%;margin-top:-19px;width:38px;height:38px;-webkit-border-radius:100%;-moz-border-radius:100%;border-radius:100%;overflow:hidden;display:inline-block}
+#popUp .inner-layer-popup .inner-popup-content .add-friend-wrap .mid-con-wrap ul li .thumb-area img{width:100%;height:100%;display:block}
+#popUp .inner-layer-popup .inner-popup-content .add-friend-wrap .mid-con-wrap ul li a{font-size:12px;color:#e3e3e3;font-weight:700;position:relative;top:12px}
+#popUp .inner-layer-popup .inner-popup-content .add-friend-wrap .mid-con-wrap ul li a img{margin-right:2px}
+#popUp .inner-layer-popup .inner-popup-content .add-friend-wrap .mss-con-wrap{padding:0 0;border-bottom:1px solid #525252}
+#popUp .inner-layer-popup .inner-popup-content .add-friend-wrap .mss-con-wrap ul li{padding:8px 60px 11px 15px;box-sizing:border-box;position:relative;border-top:1px solid #565656}
+#popUp .inner-layer-popup .inner-popup-content .add-friend-wrap .mss-con-wrap ul li:first-child{border-top:0}
+#popUp .inner-layer-popup .inner-popup-content .add-friend-wrap .mss-con-wrap ul li:after{position:absolute;top:50%;margin-top:-8px;right:60px;width:1px;height:16px;content:"";background-color:#565656}
+#popUp .inner-layer-popup .inner-popup-content .add-friend-wrap .mss-con-wrap ul li .con-area{display:block;min-height:38px;padding-left:47px;box-sizing:border-box;position:relative}
+#popUp .inner-layer-popup .inner-popup-content .add-friend-wrap .mss-con-wrap ul li .con-area.login:before{display:block}
+#popUp .inner-layer-popup .inner-popup-content .add-friend-wrap .mss-con-wrap ul li .con-area:before{position:absolute;left:-3px;top:-3px;display:none;width:6px;height:6px;background-color:#5fed73;-webkit-border-radius:100%;-moz-border-radius:100%;border-radius:100%;content:""}
+#popUp .inner-layer-popup .inner-popup-content .add-friend-wrap .mss-con-wrap ul li .con-area .thumb-area{position:absolute;left:0;top:50%;margin-top:-19px;width:38px;height:38px;display:inline-block;background-color:grey;-webkit-border-radius:100%;-moz-border-radius:100%;border-radius:100%;overflow:hidden}
+#popUp .inner-layer-popup .inner-popup-content .add-friend-wrap .mss-con-wrap ul li .con-area .thumb-area img{width:100%;height:100%;display:block}
+#popUp .inner-layer-popup .inner-popup-content .add-friend-wrap .mss-con-wrap ul li .con-area .txt-area{padding-top:5px;position:relative}
+#popUp .inner-layer-popup .inner-popup-content .add-friend-wrap .mss-con-wrap ul li .con-area .txt-area .id a{font-size:12px;font-weight:700;color:silver}
+#popUp .inner-layer-popup .inner-popup-content .add-friend-wrap .mss-con-wrap ul li .con-area .txt-area .id a img{margin-right:2px}
+#popUp .inner-layer-popup .inner-popup-content .add-friend-wrap .mss-con-wrap ul li .con-area .txt-area .id .bookmark{display:inline-block;vertical-align:top;padding-left:2px;width:13px;height:13px;background:url(../../quasarzone/images/popup/mss_icon2.png) no-repeat}
+#popUp .inner-layer-popup .inner-popup-content .add-friend-wrap .mss-con-wrap ul li .con-area .txt-area .id .bookmark:hover{background:url(../../quasarzone/images/popup/mss_icon2_hover.png) no-repeat}
+#popUp .inner-layer-popup .inner-popup-content .add-friend-wrap .mss-con-wrap ul li .con-area .txt-area .text{width:280px;text-overflow:ellipsis;white-space:nowrap;overflow:hidden;margin-top:6px}
+#popUp .inner-layer-popup .inner-popup-content .add-friend-wrap .mss-con-wrap ul li .con-area .txt-area .text a{font-size:12px;color:silver;font-weight:700;text-overflow:ellipsis;white-space:nowrap;overflow:hidden;width:280px;display:inline-block}
+#popUp .inner-layer-popup .inner-popup-content .add-friend-wrap .mss-con-wrap ul li .date{line-height:62px;height:60px;font-size:12px;color:silver;position:absolute;right:0;top:0;text-align:center;width:60px;display:inline-block}
+#popUp .inner-layer-popup .inner-popup-content .add-friend-wrap .mid-msg-wrap{height:492px;padding:34px 10px;position:relative;box-sizing:border-box;background-color:#272727;overflow-y:auto}
+#popUp .inner-layer-popup .inner-popup-content .add-friend-wrap .mid-msg-wrap .prev-msg-area{position:absolute;display:block;top:0;left:0;width:100%;height:34px;text-align:center;line-height:34px;background:url(../../quasarzone/images/popup/refresh_bg2.gif) repeat-x}
+#popUp .inner-layer-popup .inner-popup-content .add-friend-wrap .mid-msg-wrap .prev-msg-area a{position:relative;padding-right:14px;font-size:11px;color:#e3e3e3}
+#popUp .inner-layer-popup .inner-popup-content .add-friend-wrap .mid-msg-wrap .prev-msg-area a:after{position:absolute;right:0;top:3px;width:7px;height:4px;content:"";background:url(../../quasarzone/images/popup/prev_msg_icon.png) no-repeat}
+#popUp .inner-layer-popup .inner-popup-content .add-friend-wrap .mid-msg-wrap .msg-list-area{padding-top:16px}
+#popUp .inner-layer-popup .inner-popup-content .add-friend-wrap .mid-msg-wrap .msg-list-area .msg-sendA{overflow:hidden;width:100%;padding:11px 0 12px}
+#popUp .inner-layer-popup .inner-popup-content .add-friend-wrap .mid-msg-wrap .msg-list-area .msg-sendB{overflow:hidden;width:100%;padding:11px 0 12px}
+#popUp .inner-layer-popup .inner-popup-content .add-friend-wrap .mid-msg-wrap .msg-list-area div:first-child{margin-top:0}
+#popUp .inner-layer-popup .inner-popup-content .add-friend-wrap .mid-msg-wrap .msg-list-area .msg-type1{float:left;margin-top:25px;max-width:297px;padding:11px 8px 25px;border:1px solid #565656;background-color:#373432;box-sizing:border-box;position:relative;min-width:161px}
+#popUp .inner-layer-popup .inner-popup-content .add-friend-wrap .mid-msg-wrap .msg-list-area .msg-type1:before{position:absolute;bottom:-13px;left:-1px;width:13px;height:13px;content:"";background:url(../../quasarzone/images/popup/word_left_tit.png) no-repeat}
+#popUp .inner-layer-popup .inner-popup-content .add-friend-wrap .mid-msg-wrap .msg-list-area .msg-type1 .msg-con{font-size:12px;color:#e3e3e3;line-height:15px;word-break:break-all}
+#popUp .inner-layer-popup .inner-popup-content .add-friend-wrap .mid-msg-wrap .msg-list-area .msg-type1 .util{position:absolute;right:8px;bottom:8px}
+#popUp .inner-layer-popup .inner-popup-content .add-friend-wrap .mid-msg-wrap .msg-list-area .msg-type1 .util .date{font-size:10px;color:#e3e3e3;padding-left:14px;position:relative}
+#popUp .inner-layer-popup .inner-popup-content .add-friend-wrap .mid-msg-wrap .msg-list-area .msg-type1 .util .date:before{position:absolute;left:0;top:2px;width:10px;height:8px;content:"";background:url(../../quasarzone/images/popup/msg_no_open.png) no-repeat;background-size:10px 8px}
+#popUp .inner-layer-popup .inner-popup-content .add-friend-wrap .mid-msg-wrap .msg-list-area .msg-type1 .util .date.active:before{position:absolute;left:0;top:0;width:10px;height:10px;content:"";background:url(../../quasarzone/images/popup/msg_open.png) no-repeat;background-size:10px 10px}
+#popUp .inner-layer-popup .inner-popup-content .add-friend-wrap .mid-msg-wrap .msg-list-area .msg-type1 .util .delete-bt{width:12px;height:12px;display:inline-block;background:url(../../quasarzone/images/popup/msg_delete_bt.png) no-repeat;vertical-align:middle}
+#popUp .inner-layer-popup .inner-popup-content .add-friend-wrap .mid-msg-wrap .msg-list-area .msg-type1 .star-icon{position:absolute;right:-14px;top:0;width:8px;height:7px;background:url(../../quasarzone/images/popup/star_icon_d.png) no-repeat;display:inline-block}
+#popUp .inner-layer-popup .inner-popup-content .add-friend-wrap .mid-msg-wrap .msg-list-area .msg-type1 .star-icon:hover{background:url(../../quasarzone/images/popup/star_icon_a.png) no-repeat}
+#popUp .inner-layer-popup .inner-popup-content .add-friend-wrap .mid-msg-wrap .msg-list-area .msg-type1 .star-icon.active{background:url(../../quasarzone/images/popup/star_icon_a.png) no-repeat}
+#popUp .inner-layer-popup .inner-popup-content .add-friend-wrap .mid-msg-wrap .msg-list-area .msg-type1 .state{width:5px;height:5px;position:absolute;right:-13px;bottom:3px;display:inline-block;background-color:#ff9400;-webkit-border-radius:100%;-moz-border-radius:100%;border-radius:100%}
+#popUp .inner-layer-popup .inner-popup-content .add-friend-wrap .mid-msg-wrap .msg-list-area .msg-type1 .state.active{background-color:silver}
+#popUp .inner-layer-popup .inner-popup-content .add-friend-wrap .mid-msg-wrap .msg-list-area .msg-type2{float:right;margin-top:25px;max-width:297px;padding:11px 8px 25px;border:1px solid #565656;background-color:#202020;box-sizing:border-box;position:relative;min-width:161px}
+#popUp .inner-layer-popup .inner-popup-content .add-friend-wrap .mid-msg-wrap .msg-list-area .msg-type2:before{position:absolute;bottom:-13px;right:-1px;width:13px;height:13px;content:"";background:url(../../quasarzone/images/popup/word_right_tit.png) no-repeat}
+#popUp .inner-layer-popup .inner-popup-content .add-friend-wrap .mid-msg-wrap .msg-list-area .msg-type2 .msg-con{font-size:12px;color:#e3e3e3;line-height:15px;word-break:break-all}
+#popUp .inner-layer-popup .inner-popup-content .add-friend-wrap .mid-msg-wrap .msg-list-area .msg-type2 .util{position:absolute;right:8px;bottom:8px}
+#popUp .inner-layer-popup .inner-popup-content .add-friend-wrap .mid-msg-wrap .msg-list-area .msg-type2 .util .date{font-size:10px;color:#e3e3e3;padding-left:14px;position:relative}
+#popUp .inner-layer-popup .inner-popup-content .add-friend-wrap .mid-msg-wrap .msg-list-area .msg-type2 .util .date:before{position:absolute;left:0;top:1px;width:10px;height:8px;content:"";background:url(../../quasarzone/images/popup/msg_icon.png) no-repeat}
+#popUp .inner-layer-popup .inner-popup-content .add-friend-wrap .mid-msg-wrap .msg-list-area .msg-type2 .util .date.active:before{position:absolute;left:0;top:0;width:10px;height:10px;content:"";background:url(../../quasarzone/images/popup/msg_open.png) no-repeat;background-size:10px 10px}
+#popUp .inner-layer-popup .inner-popup-content .add-friend-wrap .mid-msg-wrap .msg-list-area .msg-type2 .util .delete-bt{width:12px;height:12px;display:inline-block;background:url(../../quasarzone/images/popup/msg_delete_bt.png) no-repeat;vertical-align:middle}
+#popUp .inner-layer-popup .inner-popup-content .add-friend-wrap .refresh-msg-area{position:relative;display:block;bottom:0;left:0;width:100%;height:34px;text-align:center;line-height:34px;background:url(../../quasarzone/images/popup/refresh_bg2.gif) repeat-x}
+#popUp .inner-layer-popup .inner-popup-content .add-friend-wrap .refresh-msg-area a{position:relative;padding-right:18px;font-size:11px;font-weight:700;color:#e3e3e3}
+#popUp .inner-layer-popup .inner-popup-content .add-friend-wrap .refresh-msg-area a:after{position:absolute;right:0;top:0;width:11px;height:11px;content:"";background:url(../../quasarzone/images/popup/refresh_icon2.png) no-repeat}
+#popUp .inner-layer-popup .inner-popup-content .add-friend-wrap .bot-msg-wrap{border-top:1px solid #515151;padding:8px 10px 0;background-color:#181818;height:130px;box-sizing:border-box}
+#popUp .inner-layer-popup .inner-popup-content .add-friend-wrap .bot-msg-wrap .text-area{position:relative;box-sizing:border-box;height:75px;padding-right:30px}
+#popUp .inner-layer-popup .inner-popup-content .add-friend-wrap .bot-msg-wrap .text-area textarea{width:100%;box-sizing:border-box;color:#e3e3e3;font-size:14px;padding:6px;background-color:#272727;border:1px solid #505050;height:75px;overflow:hidden}
+#popUp .inner-layer-popup .inner-popup-content .add-friend-wrap .bot-msg-wrap .text-area textarea::-webkit-input-placeholder{color:#767676}
+#popUp .inner-layer-popup .inner-popup-content .add-friend-wrap .bot-msg-wrap .text-area textarea::-moz-placeholder{color:#767676}
+#popUp .inner-layer-popup .inner-popup-content .add-friend-wrap .bot-msg-wrap .text-area textarea:-ms-input-placeholder{color:#767676}
+#popUp .inner-layer-popup .inner-popup-content .add-friend-wrap .bot-msg-wrap .text-area textarea:-moz-placeholder{color:#767676}
+#popUp .inner-layer-popup .inner-popup-content .add-friend-wrap .bot-msg-wrap .text-area .send-bt-list{position:absolute;right:7px;top:5px;font-size:0}
+#popUp .inner-layer-popup .inner-popup-content .add-friend-wrap .bot-msg-wrap .text-area .send-bt-list .send-bt2{margin-top:16px}
+#popUp .inner-layer-popup .inner-popup-content .add-friend-wrap .bot-msg-wrap .text-area .send-bt-list .send-bt3{margin-top:19px}
+#popUp .inner-layer-popup .inner-popup-content .add-friend-wrap .bot-msg-wrap .send-bt{text-align:center;margin-top:7px}
+#popUp .inner-layer-popup .inner-popup-content .add-friend-wrap .bot-msg-wrap .send-bt a{display:block;background-color:#ff9400;font-size:14px;color:#fff;font-weight:700;border:1px solid #865723;height:32px;line-height:32px;box-sizing:border-box}
+#popUp .inner-layer-popup .inner-popup-content .hidden-detail-wrap{width:100%;display:none;position:absolute;left:0;top:0;height:525px;box-sizing:border-box;background-color:#272727}
+#popUp .inner-layer-popup .inner-popup-content .hidden-detail-wrap.active{display:block;overflow:auto;height:100%}
+#popUp .inner-layer-popup .inner-popup-content .hidden-detail-wrap .top-bt-wrap{position:relative;padding-left:64px;background-color:#202020;box-sizing:border-box;border-bottom:1px solid #525252}
+#popUp .inner-layer-popup .inner-popup-content .hidden-detail-wrap .top-bt-wrap .back-bt{width:64px;border-right:1px solid #525252;box-sizing:border-box;position:absolute;left:0;top:0;height:34px;line-height:34px;background:url(../../quasarzone/images/popup/back_bt_arrow.png) 50% 50% no-repeat;display:inline-block;text-indent:-9999px;overflow:hidden}
+#popUp .inner-layer-popup .inner-popup-content .hidden-detail-wrap .top-bt-wrap .input{position:relative;padding-right:45px;box-sizing:border-box}
+#popUp .inner-layer-popup .inner-popup-content .hidden-detail-wrap .top-bt-wrap .input input{width:100%;height:34px;background-color:#202020;color:#e3e3e3;font-weight:700;font-size:12px;box-sizing:border-box;padding-left:12px}
+#popUp .inner-layer-popup .inner-popup-content .hidden-detail-wrap .top-bt-wrap .input input::-webkit-input-placeholder{color:#767676;font-weight:700}
+#popUp .inner-layer-popup .inner-popup-content .hidden-detail-wrap .top-bt-wrap .input input::-moz-placeholder{color:#767676;font-weight:700}
+#popUp .inner-layer-popup .inner-popup-content .hidden-detail-wrap .top-bt-wrap .input input:-ms-input-placeholder{color:#767676;font-weight:700}
+#popUp .inner-layer-popup .inner-popup-content .hidden-detail-wrap .top-bt-wrap .input input:-moz-placeholder{color:#767676;font-weight:700}
+#popUp .inner-layer-popup .inner-popup-content .hidden-detail-wrap .top-bt-wrap .input a{position:absolute;right:0;top:0;width:40px;height:34px;text-indent:-9999px;overflow:hidden;background:url(../../quasarzone/images/popup/frd_srch_bt.png) no-repeat}
+#popUp .inner-layer-popup .inner-popup-content .hidden-detail-wrap .mid-con-wrap{padding:0 12px}
+#popUp .inner-layer-popup .inner-popup-content .hidden-detail-wrap .mid-con-wrap ul li{padding:16px 30px 16px 0;box-sizing:border-box;position:relative;border-top:1px solid #565656}
+#popUp .inner-layer-popup .inner-popup-content .hidden-detail-wrap .mid-con-wrap ul li:nth-last-of-type(1){border-bottom:1px solid #565656}
+#popUp .inner-layer-popup .inner-popup-content .hidden-detail-wrap .mid-con-wrap ul li:first-child{border-top:0}
+#popUp .inner-layer-popup .inner-popup-content .hidden-detail-wrap .mid-con-wrap ul li:after{position:absolute;top:50%;margin-top:-8px;right:30px;width:1px;height:16px;content:"";background-color:#565656}
+#popUp .inner-layer-popup .inner-popup-content .hidden-detail-wrap .mid-con-wrap ul li .con-area{display:block;min-height:38px;padding-left:47px;box-sizing:border-box;position:relative}
+#popUp .inner-layer-popup .inner-popup-content .hidden-detail-wrap .mid-con-wrap ul li .con-area .thumb-area{position:absolute;left:0;top:0;width:38px;height:38px;display:inline-block;background-color:grey;-webkit-border-radius:100%;-moz-border-radius:100%;border-radius:100%;overflow:hidden}
+#popUp .inner-layer-popup .inner-popup-content .hidden-detail-wrap .mid-con-wrap ul li .con-area .thumb-area img{width:100%;height:100%;display:block}
+#popUp .inner-layer-popup .inner-popup-content .hidden-detail-wrap .mid-con-wrap ul li .con-area .txt-area{padding-top:5px;position:relative}
+#popUp .inner-layer-popup .inner-popup-content .hidden-detail-wrap .mid-con-wrap ul li .con-area .txt-area .id a{font-size:12px;font-weight:700;color:#e3e3e3}
+#popUp .inner-layer-popup .inner-popup-content .hidden-detail-wrap .mid-con-wrap ul li .con-area .txt-area .id a img{margin-right:2px}
+#popUp .inner-layer-popup .inner-popup-content .hidden-detail-wrap .mid-con-wrap ul li .con-area .txt-area .util{font-size:0;margin-top:7px;padding-left:20px}
+#popUp .inner-layer-popup .inner-popup-content .hidden-detail-wrap .mid-con-wrap ul li .con-area .txt-area .util span{font-size:11px;color:#b2b2b2;font-weight:700;position:relative;margin-left:7px;padding-left:8px}
+#popUp .inner-layer-popup .inner-popup-content .hidden-detail-wrap .mid-con-wrap ul li .con-area .txt-area .util span:first-child{margin-left:0;padding-left:0}
+#popUp .inner-layer-popup .inner-popup-content .hidden-detail-wrap .mid-con-wrap ul li .con-area .txt-area .util span:first-child:before{display:none}
+#popUp .inner-layer-popup .inner-popup-content .hidden-detail-wrap .mid-con-wrap ul li .con-area .txt-area .util span:before{position:absolute;left:0;top:0;width:1px;content:"";background-color:#b2b2b2;height:11px}
+#popUp .inner-layer-popup .inner-popup-content .hidden-detail-wrap .mid-con-wrap ul li .delete-bt{position:absolute;right:0;top:50%;margin-top:-6px;text-indent:-9999px;overflow:hidden;width:14px;height:13px;background:url(../../quasarzone/images/popup/delete_bt_icon2.png) no-repeat}
+#popUp .inner-layer-popup .inner-popup-content .paging-area{font-size:0;text-align:center;padding:15px 0 20px;background-color:#181818;line-height:32px;position:absolute;bottom:0;left:0;width:100%}
+#popUp .emoti-reci-wrap .top-bt-wrap{position:relative;padding-left:64px;background-color:#202020;box-sizing:border-box;border-bottom:1px solid #525252}
+#popUp .emoti-reci-wrap .top-bt-wrap .back-bt{width:64px;border-right:1px solid #525252;box-sizing:border-box;position:absolute;left:0;top:0;height:34px;line-height:34px;background:url(../../quasarzone/images/popup/back_bt_arrow.png) 50% 50% no-repeat;display:inline-block;text-indent:-9999px;overflow:hidden}
+#popUp .emoti-reci-wrap .top-bt-wrap .input{position:relative;padding-right:45px;box-sizing:border-box}
+#popUp .emoti-reci-wrap .top-bt-wrap .input input{width:100%;height:34px;background-color:#202020;color:#e3e3e3;font-weight:700;font-size:12px;box-sizing:border-box;padding-left:12px}
+#popUp .emoti-reci-wrap .top-bt-wrap .input input::-webkit-input-placeholder{color:#767676;font-weight:700}
+#popUp .emoti-reci-wrap .top-bt-wrap .input input::-moz-placeholder{color:#767676;font-weight:700}
+#popUp .emoti-reci-wrap .top-bt-wrap .input input:-ms-input-placeholder{color:#767676;font-weight:700}
+#popUp .emoti-reci-wrap .top-bt-wrap .input input:-moz-placeholder{color:#767676;font-weight:700}
+#popUp .emoti-reci-wrap .top-bt-wrap .input a{position:absolute;right:0;top:0;width:40px;height:34px;text-indent:-9999px;overflow:hidden;background:url(../../quasarzone/images/popup/frd_srch_bt.png) no-repeat}
+#popUp .emoti-reci-wrap .friend-area{background-color:#272727;height:488px;position:relative}
+#popUp .emoti-reci-wrap .friend-area .bot-noti{position:absolute;bottom:9px;right:11px;font-weight:700;color:#606060;font-size:10px}
+#popUp .emoti-reci-wrap .friend-area .top-noti{border-bottom:1px solid #525252;height:34px;line-height:34px;font-size:0;padding-left:12px;background-color:#202020;position:relative}
+#popUp .emoti-reci-wrap .friend-area .top-noti span{font-weight:700;font-size:12px}
+#popUp .emoti-reci-wrap .friend-area .top-noti span.frd-tp1{color:#5fed73;padding-left:15px;position:relative}
+#popUp .emoti-reci-wrap .friend-area .top-noti span.frd-tp1 a{color:#5fed73}
+#popUp .emoti-reci-wrap .friend-area .top-noti span.frd-tp1:before{position:absolute;left:0;top:2px;width:8px;height:10px;content:"";background:url(../../quasarzone/images/popup/frd_icon_1.png) no-repeat}
+#popUp .emoti-reci-wrap .friend-area .top-noti span.frd-tp2{color:#adadad;margin-left:11px}
+#popUp .emoti-reci-wrap .friend-area .top-noti span.frd-tp2 a{color:#adadad}
+#popUp .emoti-reci-wrap .friend-area .top-noti span.frd-tp3{color:#ff7c7c;padding-left:15px;position:relative;margin-left:15px}
+#popUp .emoti-reci-wrap .friend-area .top-noti span.frd-tp3 a{color:#ff7c7c}
+#popUp .emoti-reci-wrap .friend-area .top-noti span.frd-tp3:before{position:absolute;left:0;top:1px;width:10px;height:10px;content:"";background:url(../../quasarzone/images/popup/frd_icon_2.png) no-repeat}
+#popUp .emoti-reci-wrap .friend-area .top-noti .bt{position:absolute;right:15px;font-size:0;top:6px}
+#popUp .emoti-reci-wrap .friend-area .top-noti .bt a{display:inline-block;font-size:12px;height:21px;vertical-align:top;border:1px solid #4c4c4c;background-color:#181818;padding:0 6px;line-height:21px;text-align:center;font-weight:700;color:#e3e3e3;box-sizing:border-box;margin-left:9px}
+#popUp .emoti-reci-wrap .friend-area .top-noti .bt a:first-child{margin-left:0}
+#popUp .emoti-reci-wrap .friend-area .refresh-area{height:43px;text-align:center;background:url(../../quasarzone/images/popup/refresh_bg.png) repeat-x;display:table;width:100%}
+#popUp .emoti-reci-wrap .friend-area .refresh-area span{display:table-cell;vertical-align:middle}
+#popUp .emoti-reci-wrap .friend-area .refresh-area span a{display:inline-block;color:#e3e3e3;font-size:11px;font-weight:700;padding-right:17px;position:relative}
+#popUp .emoti-reci-wrap .friend-area .refresh-area span a:after{position:absolute;right:0;top:0;width:10px;height:10px;background:url(../../quasarzone/images/popup/refresh_icon.png) no-repeat;content:""}
+#popUp .emoti-reci-wrap .friend-area .list-area{padding:0 0}
+#popUp .emoti-reci-wrap .friend-area .list-area ul li{padding:5px 43px 5px 15px;box-sizing:border-box;position:relative;border-bottom:1px solid #565656}
+#popUp .emoti-reci-wrap .friend-area .list-area ul li:first-child{border-top:0}
+#popUp .emoti-reci-wrap .friend-area .list-area ul li:after{position:absolute;top:50%;margin-top:-8px;right:43px;width:1px;height:16px;content:"";background-color:#565656}
+#popUp .emoti-reci-wrap .friend-area .list-area ul li .con-area{display:block;min-height:38px;padding-left:47px;box-sizing:border-box;position:relative}
+#popUp .emoti-reci-wrap .friend-area .list-area ul li .con-area .thumb-area{position:absolute;left:0;top:0;width:38px;height:38px;display:inline-block;background-color:grey;-webkit-border-radius:100%;-moz-border-radius:100%;border-radius:100%;overflow:hidden}
+#popUp .emoti-reci-wrap .friend-area .list-area ul li .con-area .thumb-area img{width:100%;height:100%;display:block}
+#popUp .emoti-reci-wrap .friend-area .list-area ul li .con-area .txt-area{padding-top:12px;position:relative}
+#popUp .emoti-reci-wrap .friend-area .list-area ul li .con-area .txt-area .msg-send-bt{position:absolute;right:15px;top:50%;margin-top:-10px;border:1px solid #505050;background-color:#181818;display:inline-block;font-size:12px;font-weight:700;color:#e3e3e3;width:69px;height:21px;line-height:21px;text-align:center;box-sizing:border-box}
+#popUp .emoti-reci-wrap .friend-area .list-area ul li .con-area .txt-area .id a{font-size:12px;font-weight:700;color:#e3e3e3}
+#popUp .emoti-reci-wrap .friend-area .list-area ul li .con-area .txt-area .id a img{margin-right:2px}
+#popUp .emoti-reci-wrap .friend-area .list-area ul li .con-area .txt-area .util{font-size:0;margin-top:7px}
+#popUp .emoti-reci-wrap .friend-area .list-area ul li .con-area .txt-area .util span{font-size:11px;color:#b2b2b2;font-weight:700;position:relative;margin-left:7px;padding-left:8px}
+#popUp .emoti-reci-wrap .friend-area .list-area ul li .con-area .txt-area .util span:first-child{margin-left:0;padding-left:0}
+#popUp .emoti-reci-wrap .friend-area .list-area ul li .con-area .txt-area .util span:first-child:before{display:none}
+#popUp .emoti-reci-wrap .friend-area .list-area ul li .con-area .txt-area .util span:before{position:absolute;left:0;top:0;width:1px;content:"";background-color:#b2b2b2;height:11px}
+#popUp .emoti-reci-wrap .friend-area .list-area ul li .delete-bt{position:absolute;right:16px;top:50%;margin-top:-6px;text-indent:-9999px;overflow:hidden;width:14px;height:13px;background:url(../../quasarzone/images/popup/delete_bt_icon2.png) no-repeat}
+#popUp .emoti-bt-area{text-align:center;font-size:0;margin-top:24px}
+#popUp .emoti-bt-area a{display:inline-block;width:116px;height:32px;line-height:32px;margin:0 2px;background-color:#272727;border:1px solid #525252}
+#popUp .emoti-bt-area a.active{background-color:#ff9920}
+#popUp .emoti-bt-area a span{font-size:12px;color:#e3e3e3;font-weight:700}
+#popUp .inner-layer-popup .inner-popup-content .hidden-detail-wrap .top-bt-wrap:after{content:'';clear:both;display:block}
+#popUp .ranking-wrap{height: calc(100% - 45px);overflow: hidden}
+#popUp .ranking-wrap .ranking-area{height: 100%}
+#popUp .ranking-wrap .ranking-area .ranking-content .board{width: 100%}
+#popUp .ranking-wrap .ranking-area .ranking-content{height: calc(100% - 100px);overflow: hidden;padding: 43px 0}
+#popUp .ranking-wrap .ranking-area .ranking-content .board:not(.week-ranking-wrap){height: 100%;overflow: auto;}
+#popUp .ranking-wrap .ranking-area .ranking-content .l-year-month ~ .board{padding: 0;margin-top: 63px;height: calc(100% - 63px)}
+#popUp .ranking-wrap .ranking-area .ranking-content .week-ranking-wrap ~ .board{padding: 0;margin-top: 63px;height: calc(100% - 63px)}
+
+#popUp .notice-wrap .notice-area .list-area ul li .con-area .tit{padding-left: 7px}
+#popUp .notice-wrap .notice-area .list-area ul li:after {position: absolute;left: 0;top: 31px;width: 5px;height: 5px;background-color: #ff9920;content: "";-webkit-border-radius: 100%;-moz-border-radius: 100%;border-radius: 100%;display: none;}
+#popUp .notice-wrap .notice-area .list-area ul li.new:after {display:block}
+#popUp .ranking-wrap .ranking-area .ranking-content .week-ranking-wrap{position: absolute;top: 0;width: 100%;left: 0;padding:0 !important;}
+#popUp .ranking-wrap .ranking-area .ranking-content .week-ranking-wrap + .top-rank-chk{top: 63px}
+#popUp .ranking-wrap .ranking-area .ranking-content .l-year-month{position: absolute;top: 0;width: 100%;left: 0;color: #fff;display: flex;align-items: center;padding: 20px;box-sizing: border-box}
+#popUp .ranking-wrap .ranking-area .ranking-content .l-year-month .prev-year-bt{font-size: 14px;color: #ddd;flex: 1 1 0%}
+#popUp .ranking-wrap .ranking-area .ranking-content .l-year-month .next-year-bt{font-size: 14px;color: #ddd;flex: 1 1 0%;text-align: right}
+#popUp .ranking-wrap .ranking-area .ranking-content .l-year-month #select-month{font-size: 24px;font-weight: 500;display: inline-block}
+#popUp .ranking-wrap .ranking-area .ranking-content .l-year-month .prev-month-bt{width: 10px;height: 15px;position: relative;top: -1px;background: url("../../quasarzone/images/sub/calender_prev_bt.png") no-repeat;margin-right: 18px;overflow: hidden;text-indent: -9999px}
+#popUp .ranking-wrap .ranking-area .ranking-content .l-year-month .next-month-bt{width: 10px;height: 15px;position: relative;top: -1px;background: url("../../quasarzone/images/sub/calender_next_bt.png") no-repeat;margin-left: 18px;overflow: hidden;text-indent: -9999px}
+#popUp .ranking-wrap .ranking-area .ranking-content .l-year-month + .top-rank-chk{top: 63px}
+
+#popUp .ranking-wrap .ranking-area  .ranking-content{padding:  40px 0px 50px;height: auto}
+#popUp .ranking-wrap .ranking-area  .ranking-content .week-ranking-wrap ~ .board{padding: 63px 0 0}
+#popUp .ranking-wrap .ranking-area  .ranking-content .l-year-month ~ .board{padding: 63px 0 0}
+#popUp .ranking-wrap .ranking-area .ranking-content .board{padding: 0}
+#popUp .profile-wrap .profile-area .profile-top-area dl dd p span a{text-decoration: none}
+
+.gif-popup-wrap{height: calc(100% - 44px);overflow:auto}
+.gif-popup-wrap .container{display:flex; flex-wrap: wrap;}
+.gif-popup-wrap .container .col{width: 210px;padding: 10px}
+.gif-popup-wrap .container .col a{display:block;padding-bottom: 70%;border-radius: 8px;position: relative;overflow: hidden;background-size: cover;background-repeat: no-repeat}
+.gif-popup-wrap .container .col .cate-text{position: absolute;left: 0;top:0;right: 0;bottom: 0;background: rgba(0,0,0,0.4);color: #fff;display: flex;align-items: center;justify-content: center;font-size: 16px;transition: all 0.3s}
+.gif-popup-wrap .container .col .cate-text:hover{background: rgba(255,153,32,0.5)}
+
+.popup-header-back-bt {width:48px;box-sizing: border-box;position: absolute;left: 0;top: 0;height: 44px;line-height: 48px;background: url("../images/popup/back_bt_arrow.png") 50% 50% no-repeat;background-size:11px 20px;text-indent: -9999px;overflow: hidden}
+
+.gif-popup-wrap .search-wrap {margin: 20px 10px 10px;border:  1px solid #525252;border-radius: 8px;overflow: hidden;background-color: #202020}
+.gif-popup-wrap .search-wrap .input{position:relative;padding-right:45px;box-sizing:border-box}
+.gif-popup-wrap .search-wrap .input input{width:100%;height:34px;background-color:#202020;color:#e3e3e3;font-weight:700;font-size:12px;box-sizing:border-box;padding-left:12px}
+.gif-popup-wrap .search-wrap .input input::-webkit-input-placeholder{color:#767676;font-weight:700}
+.gif-popup-wrap .search-wrap .input input::-moz-placeholder{color:#767676;font-weight:700}
+.gif-popup-wrap .search-wrap .input input:-ms-input-placeholder{color:#767676;font-weight:700}
+.gif-popup-wrap .search-wrap .input input:-moz-placeholder{color:#767676;font-weight:700}
+.gif-popup-wrap .search-wrap .input a{position:absolute;right:0;top:0;width:40px;height:34px;text-indent:-9999px;overflow:hidden;background:url(../../quasarzone/images/popup/frd_srch_bt.png) no-repeat}
+
+
+#popUp .inner-layer-popup .inner-popup-content .hidden-detail-wrap .top-bt-wrap{border-bottom:1px solid #525252;height:34px;line-height:34px;font-size:0;padding-left:12px;background-color:#202020;position:relative}
+#popUp .inner-layer-popup .inner-popup-content .hidden-detail-wrap .top-bt-wrap span{font-weight:700;font-size:12px}
+#popUp .inner-layer-popup .inner-popup-content .hidden-detail-wrap .top-bt-wrap span.frd-tp3{color:#ff7c7c;padding-left:15px;position:relative;margin-left:15px}
+#popUp .inner-layer-popup .inner-popup-content .hidden-detail-wrap .top-bt-wrap span.frd-tp3 a{color:#ff7c7c}
+#popUp .inner-layer-popup .inner-popup-content .hidden-detail-wrap .top-bt-wrap span.frd-tp3:before{position:absolute;left:0;top:1px;width:10px;height:10px;content:"";background:url(../../quasarzone/images/popup/frd_icon_2.png) no-repeat}
+#popUp .inner-layer-popup .inner-popup-content .hidden-detail-wrap .top-bt-wrap .bt{position:absolute;right:15px;font-size:0;top:0px}
+#popUp .inner-layer-popup .inner-popup-content .hidden-detail-wrap .top-bt-wrap .bt a{display:inline-block;font-size:12px;height:21px;vertical-align:top;border:1px solid #4c4c4c;background-color:#181818;padding:0 6px;line-height:21px;text-align:center;color:#e3e3e3;box-sizing:border-box;margin-left:9px}
+#popUp .inner-layer-popup .inner-popup-content .hidden-detail-wrap .top-bt-wrap .bt a:first-child{margin-left:0}
+
+.image-popup {
+    position:fixed;
+    top:0;
+    left:0;
+    width:100%;
+    height:100%;
+    z-index: 10000;
+    background-color: rgba(0,0,0,0.5);
+    display: none;
+}
+.image-popup .popup {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 300px;
+    padding: 15px 30px;
+    text-align: center;
+    box-sizing: border-box;
+    border: 1px solid #565656;
+    background-color: #181818;
+}
+.image-popup .popup img {
+    width: 100px;
+    height: 100px;
+}
+.image-popup .popup .title {
+    margin-top: 12px;
+    color: #fff;
+    font-size: 13px;
+    line-height: 1.7;
+    font-weight: 700;
+}
+.image-popup .popup .title b {
+    color: #e66700;
+}
+.image-popup .popup button {
+    width: 48px;
+    height: 24px;
+    margin-top: 12px;
+    color: #fff;
+    font-size: 13px;
+    line-height: 24px;
+    font-weight: 700;
+    text-align: center;
+    border: 1px solid #525252;
+    background-color: #202020;
+}
+
+.popup-wrap {
+    height: 100vh;
+    width: 100vw;
+}
+
+.popup-wrap .pop-head-wrap .tit-ad {
+    text-align: center;
+    color: #ccc;
+    font-size: 16px;
+    font-weight: bold;
+    letter-spacing: 1px;
+    line-height: 45px;
+}
+
+.popup-wrap .pop-head-wrap i.ad {
+    position: absolute;
+    left: 14px;
+    top: 6px !important;
+}
+
+.popup-wrap .cooperate-wrap {
+    background-color: #272727;
+    padding: 30px 30px 75px;
+    float: left;
+    width: calc(100% - 60px);
+}
+
+.popup-wrap .cooperate-wrap .tit {
+    text-align: center;
+    font-size: 15px;
+    line-height: 25px;
+    color: #ccc;
+}
+
+.popup-wrap .cooperate-wrap .info {
+    text-align: center;
+    margin-top: 20px;
+    font-size: 14px;
+    line-height: 28px;
+    color: #ccc;
+}
+
+.popup-wrap .cooperate-wrap .info > span {
+    color: #ff9400;
+    font-size: 14px;
+    line-height: 28px;
+}
+

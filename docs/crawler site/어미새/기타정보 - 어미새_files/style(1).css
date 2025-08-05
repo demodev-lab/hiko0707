@@ -1,0 +1,53 @@
+.nsmk {
+    display: inline-block;
+    box-sizing: border-box;
+	position: relative;
+	width: 280px;
+	padding: 10px;
+	top: 10px;
+}
+
+.nsmk div {
+	display: block;
+	margin-bottom: 0px;
+	padding: 0 15px;
+	line-height: 30px;
+	vertical-align: middle;
+	background: #EEE;
+	border-left: 2px solid #BBB;
+	font-size: 12px;
+	cursor: pointer;
+	clear: both;
+	opacity: 0.6;
+}
+
+.nsmk div:first-child {
+	position: relative;
+	top: 7px;
+}
+
+.nsmk div.active {
+	border-left: 2px solid #333;
+	opacity: 1;
+}
+
+.nsmk a {
+	color: #111;
+}
+
+.nsmk div span {
+	display: inline-block;
+	width: 100%;
+}
+
+.nsmk div b {
+	float: right;
+	position: relative;
+	top: -22px;
+	margin-right: 5px;
+	display: inline-block;
+	width: 14px;
+	height: 14px;
+	border-radius: 100%;
+	border: 1px solid #aaaaaa;
+}

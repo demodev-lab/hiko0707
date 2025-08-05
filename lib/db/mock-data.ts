@@ -56,18 +56,32 @@ function getImageUrl(deal: any, index: number): string {
 
 // 기존 HotDeal mock 데이터 (날짜 변환 및 이미지 URL 수정)
 const baseMockHotDeals: HotDeal[] = hotDealMockData.map((deal, index) => {
-  // Convert the mock data to HotDeal format
+  // Convert the mock data to HotDeal format with snake_case fields
   const hotDeal: HotDeal = {
     id: (deal as any).id || `mock-${index}`,
     title: (deal as any).title || '',
-    price: (deal as any).price || 0,
-    originalUrl: (deal as any).originalUrl || '',
-    seller: (deal as any).seller || '',
+    sale_price: (deal as any).price || 0,
+    original_price: (deal as any).price || 0,
+    discount_rate: 0,
+    original_url: (deal as any).originalUrl || '',
+    seller: (deal as any).seller || null,
     source: (deal as any).source || 'ppomppu',
-    sourcePostId: (deal as any).sourcePostId || `mock-${index}`,
-    crawledAt: new Date((deal as any).crawledAt || Date.now()),
+    source_id: (deal as any).sourcePostId || `mock-${index}`,
+    created_at: new Date((deal as any).crawledAt || Date.now()).toISOString(),
+    updated_at: new Date().toISOString(),
     status: (deal as any).status || 'active',
-    imageUrl: getImageUrl(deal, index)
+    image_url: getImageUrl(deal, index),
+    thumbnail_url: getImageUrl(deal, index),
+    category: 'general',
+    description: null,
+    end_date: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+    views: Math.floor(Math.random() * 1000),
+    comment_count: Math.floor(Math.random() * 50),
+    like_count: Math.floor(Math.random() * 100),
+    author_name: 'Mock User',
+    shopping_comment: '',
+    is_free_shipping: false,
+    deleted_at: null
   }
   return hotDeal
 })

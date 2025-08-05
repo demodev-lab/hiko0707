@@ -96,7 +96,6 @@ NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_dG9nZXRoZXItdmlwZXItNTkuY2xlcmsuYWNjb3
 CLERK_SECRET_KEY=sk_test_m9vBfuG3DKCxC8VxBR4Fyr3Wx3vEasaLNMX0S7DPDv
 
 # 기타 설정
-USE_SUPABASE=true
 NEXT_PUBLIC_KAKAO_API_KEY=your_kakao_api_key_here
 ```
 
@@ -235,7 +234,6 @@ HiKo is a platform helping foreigners shop online in Korea:
 - **Repository Pattern**: Enables easy database transition
 - **Server Components**: For SEO-critical pages (hot deals list, detail pages)
 - **Image Optimization**: Next.js Image with external domain support and 7-day caching
-- **USE_SUPABASE Flag**: 임시 플래그 - 마이그레이션 완료 후 제거 예정 (`docs/supabase-migration-optimized.md` 참조)
 
 ## Development Guidelines
 

@@ -90,7 +90,7 @@ export default function HotDealManagerPage() {
     total: hotdeals.length,
     active: hotdeals.filter(h => h.status === 'active').length,
     today: hotdeals.filter(h => 
-      new Date(h.crawledAt).toDateString() === new Date().toDateString()
+      new Date(h.created_at).toDateString() === new Date().toDateString()
     ).length,
     sources: [...new Set(hotdeals.map(h => h.source))].length,
   }

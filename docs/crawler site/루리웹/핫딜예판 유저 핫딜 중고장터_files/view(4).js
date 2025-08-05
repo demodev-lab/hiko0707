@@ -1,0 +1,3 @@
+document.write("<div style=\"width:1020px;height:90px\"><script type=\"text/javascript\" src=\"https://api.linkprice.com/ci/coupang/search/A100217094/%EB%8B%8C%ED%85%90%EB%8F%84%EC%8A%A4%EC%9C%84%EC%B9%982/script/\"> </script></div>"  + "\n");
+document.write("<div style='position: absolute; left: 0px; top: 0px; visibility: hidden;'><img src='//image.ruliweb.com/view/log.htm?benid=28&clid=1&m=0&zoneid=15' width='0' height='0'  alt='Banner' style='width: 0px; height: 0px;'></div>");
+// check

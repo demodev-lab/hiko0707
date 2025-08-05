@@ -1,0 +1,20 @@
+#wrap.main aside.logo-area {
+    position: absolute;
+    min-width: 300px;
+    width: fit-content;
+    min-height: 100px;
+}
+#wrap.main aside.left {
+    top: 0;
+    left: 50%;
+    margin-left: -920px;
+}
+#wrap.main aside.right {
+    left: 50%;
+    top: 0;
+    margin-left: 620px;
+}
+#wrap.main aside.fixed {
+    position: fixed;
+    top: 60px;
+}

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { Search, Filter, X, TrendingUp, Clock } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -29,11 +29,21 @@ export default function SearchPage() {
   const pageSize = 20
 
   // Get filter params from URL
-  const categories = searchParams.get('categories')?.split(',').filter(Boolean) || []
+  const categories = useMemo(() => 
+    searchParams.get('categories')?.split(',').filter(Boolean) || []
+  , [searchParams])
+  
   const priceMin = searchParams.get('priceMin') || ''
   const priceMax = searchParams.get('priceMax') || ''
-  const communitySources = searchParams.get('communitySources')?.split(',').filter(Boolean) || []
-  const shoppingSources = searchParams.get('shoppingSources')?.split(',').filter(Boolean) || []
+  
+  const communitySources = useMemo(() => 
+    searchParams.get('communitySources')?.split(',').filter(Boolean) || []
+  , [searchParams])
+  
+  const shoppingSources = useMemo(() => 
+    searchParams.get('shoppingSources')?.split(',').filter(Boolean) || []
+  , [searchParams])
+  
   const sortBy = (searchParams.get('sort') || 'latest') as SortOption
   const freeShipping = searchParams.get('freeShipping') === 'true'
   const todayOnly = searchParams.get('todayOnly') === 'true'
@@ -42,9 +52,9 @@ export default function SearchPage() {
   const getSupabaseSortBy = (sort: SortOption) => {
     switch (sort) {
       case 'latest': return 'created_at'
-      case 'price_low': return 'price'
-      case 'price_high': return 'price'
-      case 'popular': return 'view_count'
+      case 'price_low': return 'sale_price'
+      case 'price_high': return 'sale_price'
+      case 'popular': return 'views'
       default: return 'created_at'
     }
   }
@@ -86,7 +96,7 @@ export default function SearchPage() {
     if (query !== searchQuery) {
       setSearchQuery(query)
     }
-  }, [searchParams])
+  }, [searchParams, searchQuery])
 
   return (
     <div className="container mx-auto px-4 py-8">

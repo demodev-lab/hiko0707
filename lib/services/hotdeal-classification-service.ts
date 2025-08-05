@@ -242,7 +242,7 @@ export class HotDealClassificationService {
    * 핫딜을 자동으로 분류합니다
    */
   static classifyHotDeal(hotdeal: HotDeal): ClassificationResult {
-    const text = `${hotdeal.title} ${hotdeal.productComment || ''}`.toLowerCase()
+    const text = `${hotdeal.title} ${hotdeal.description || ''}`.toLowerCase()
     
     let bestMatch: ClassificationResult = {
       category: '기타',

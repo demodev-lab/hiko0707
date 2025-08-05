@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -77,11 +77,7 @@ export function PointsHistory({
   const [page, setPage] = useState(1)
   const [hasMore, setHasMore] = useState(true)
 
-  useEffect(() => {
-    loadTransactions()
-  }, [userId, filter, period, page])
-
-  const loadTransactions = async () => {
+  const loadTransactions = useCallback(async () => {
     setLoading(true)
     
     // API 호출 시뮬레이션
@@ -109,7 +105,7 @@ export function PointsHistory({
     setTransactions(prev => page === 1 ? mockTransactions : [...prev, ...mockTransactions])
     setHasMore(page < 5)
     setLoading(false)
-  }
+  }, [limit, page])
 
   const getRandomDescription = (type: PointTransaction['type']): string => {
     const descriptions = {

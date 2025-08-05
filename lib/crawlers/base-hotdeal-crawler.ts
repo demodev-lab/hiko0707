@@ -252,10 +252,10 @@ export abstract class BaseHotdealCrawler {
       endedDeals: this.results.filter(deal => deal.status === 'ended').length,
       categoryCounts: {},
       storeCounts: {},
-      freeShippingCount: this.results.filter(deal => deal.shipping?.isFree).length,
-      popularCount: this.results.filter(deal => deal.isPopular).length,
-      imagesCount: this.results.filter(deal => deal.imageUrl || deal.thumbnailImageUrl || deal.originalImageUrl).length,
-      contentCount: this.results.filter(deal => deal.productComment && deal.productComment.length > 0).length
+      freeShippingCount: 0, // shipping 정보는 현재 스키마에 없음
+      popularCount: this.results.filter(deal => (deal.views || 0) > 10000).length, // 조회수 기준으로 인기도 판단
+      imagesCount: this.results.filter(deal => deal.image_url || deal.thumbnail_url || deal.original_url).length,
+      contentCount: this.results.filter(deal => deal.description && deal.description.length > 0).length
     }
 
     // Count by category

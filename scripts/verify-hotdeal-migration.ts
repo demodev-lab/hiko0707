@@ -9,7 +9,6 @@
 
 import { db } from '@/lib/db/database-service'
 import { SupabaseHotDealService } from '@/lib/services/supabase-hotdeal-service'
-import { transformSupabaseToLocal } from '@/lib/utils/hotdeal-transformers'
 import type { HotDeal } from '@/types/hotdeal'
 
 // 색상 코드
@@ -78,14 +77,13 @@ async function compareDataSources(): Promise<ValidationResult> {
     const supabaseMap = new Map<string, HotDeal>()
     
     localDeals.forEach(deal => {
-      const key = `${deal.source}-${deal.sourcePostId}`
+      const key = `${deal.source}-${deal.source_id}`
       localMap.set(key, deal)
     })
     
     supabaseResult.data.forEach(deal => {
       const key = `${deal.source}-${deal.source_id}`
-      const localFormat = transformSupabaseToLocal(deal)
-      supabaseMap.set(key, localFormat)
+      supabaseMap.set(key, deal)
     })
     
     // 비교 검증
@@ -102,9 +100,9 @@ async function compareDataSources(): Promise<ValidationResult> {
         // 주요 필드 비교
         const fieldsMatch = 
           localDeal.title === supabaseDeal.title &&
-          localDeal.price === supabaseDeal.price &&
+          localDeal.sale_price === supabaseDeal.sale_price &&
           localDeal.source === supabaseDeal.source &&
-          localDeal.sourcePostId === supabaseDeal.sourcePostId
+          localDeal.source_id === supabaseDeal.source_id
         
         if (fieldsMatch) {
           result.matchedDeals++
@@ -117,9 +115,9 @@ async function compareDataSources(): Promise<ValidationResult> {
               `제목 불일치 [${key}]: Local="${localDeal.title}" vs Supabase="${supabaseDeal.title}"`
             )
           }
-          if (localDeal.price !== supabaseDeal.price) {
+          if (localDeal.sale_price !== supabaseDeal.sale_price) {
             result.dataIntegrityIssues.push(
-              `가격 불일치 [${key}]: Local=${localDeal.price} vs Supabase=${supabaseDeal.price}`
+              `가격 불일치 [${key}]: Local=${localDeal.sale_price} vs Supabase=${supabaseDeal.sale_price}`
             )
           }
         }

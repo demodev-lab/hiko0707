@@ -13,42 +13,42 @@ export function transformLocalToSupabase(local: HotDeal): HotDealInsert {
     // 기본 정보
     title: local.title,
     
-    // 가격 정보 - HotDeal은 단일 price 필드만 가짐
-    original_price: local.price,
-    sale_price: local.price,
+    // 가격 정보 - HotDeal은 단일 sale_price 필드만 가짐
+    original_price: local.sale_price,
+    sale_price: local.sale_price,
     discount_rate: 0, // HotDeal에는 할인율 정보가 없음
     
     // 이미지
-    thumbnail_url: local.thumbnailImageUrl || local.imageUrl || '',
-    image_url: local.originalImageUrl || local.imageUrl || '',
+    thumbnail_url: local.thumbnail_url || local.image_url || '',
+    image_url: local.image_url || '',
     
     // URL
-    original_url: local.originalUrl,
+    original_url: local.original_url,
     
     // 카테고리 및 소스
     category: local.category || 'general',
     source: local.source,
-    source_id: local.sourcePostId,
+    source_id: local.source_id,
     
     // 판매자 정보
     seller: local.seller,
-    is_free_shipping: local.shipping?.isFree || false,
+    is_free_shipping: local.is_free_shipping || false,
     
     // 상태 관리
     status: local.status === 'ended' ? 'expired' : 'active',
-    end_date: local.crawledAt ? new Date(new Date(local.crawledAt).getTime() + 7 * 24 * 60 * 60 * 1000).toISOString() : new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+    end_date: local.created_at ? new Date(new Date(local.created_at).getTime() + 7 * 24 * 60 * 60 * 1000).toISOString() : new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
     
     // 통계
-    views: local.viewCount || 0,
-    comment_count: local.communityCommentCount || 0,
-    like_count: local.communityRecommendCount || 0,
+    views: local.views || 0,
+    comment_count: local.comment_count || 0,
+    like_count: local.like_count || 0,
     
     // 추가 정보
-    author_name: local.userId || 'Unknown',
-    shopping_comment: local.productComment || '',
+    author_name: local.author_name || 'Unknown',
+    shopping_comment: local.shopping_comment || '',
     
     // 타임스탬프
-    created_at: local.crawledAt instanceof Date ? local.crawledAt.toISOString() : (local.crawledAt || new Date().toISOString()),
+    created_at: local.created_at && typeof local.created_at === 'string' ? local.created_at : new Date().toISOString(),
     updated_at: new Date().toISOString()
   }
 }
@@ -57,56 +57,8 @@ export function transformLocalToSupabase(local: HotDeal): HotDealInsert {
  * Supabase 형식을 LocalStorage 형식으로 변환
  */
 export function transformSupabaseToLocal(supabase: HotDealRow): HotDeal {
-  return {
-    id: supabase.id,
-    
-    // 기본 정보
-    title: supabase.title,
-    
-    // 가격 정보 - HotDeal은 단일 price 필드만 가짐
-    price: supabase.sale_price,
-    
-    // 이미지
-    imageUrl: supabase.image_url,
-    thumbnailImageUrl: supabase.thumbnail_url,
-    originalImageUrl: supabase.image_url,
-    
-    // URL
-    originalUrl: supabase.original_url,
-    
-    // 카테고리 및 소스
-    category: supabase.category,
-    source: supabase.source as HotDealSource,
-    sourcePostId: supabase.source_id,
-    
-    // 판매자 정보
-    seller: supabase.seller || '',
-    shipping: {
-      isFree: supabase.is_free_shipping || false
-    },
-    
-    // 상태 관리
-    isHot: false,
-    isPopular: supabase.like_count > 100,
-    ranking: undefined,
-    
-    // 날짜
-    crawledAt: new Date(supabase.created_at),
-    
-    // 통계
-    viewCount: supabase.views,
-    communityRecommendCount: supabase.like_count,
-    communityCommentCount: supabase.comment_count,
-    commentCount: supabase.comment_count,
-    likeCount: supabase.like_count,
-    
-    // 상태
-    status: supabase.status === 'expired' ? 'ended' : 'active',
-    
-    // 추가 필드
-    userId: supabase.author_name,
-    productComment: supabase.shopping_comment || undefined
-  }
+  // UI에서 직접 Supabase 타입을 사용하므로 변환 없이 그대로 반환
+  return supabase as HotDeal
 }
 
 /**

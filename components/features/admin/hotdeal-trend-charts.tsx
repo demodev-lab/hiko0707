@@ -53,7 +53,7 @@ export function HotDealTrendCharts({ refreshKey }: TrendChartsProps) {
     }
     
     return data
-  }, [refreshKey])
+  }, [])
 
   // 카테고리별 분포 데이터
   const categoryData = useMemo(() => {
@@ -105,7 +105,7 @@ export function HotDealTrendCharts({ refreshKey }: TrendChartsProps) {
     }
     
     return data
-  }, [refreshKey])
+  }, [])
 
   const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {

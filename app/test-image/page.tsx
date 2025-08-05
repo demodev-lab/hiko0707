@@ -60,6 +60,7 @@ export default function TestImagePage() {
             <div className="mb-4">
               <h3 className="text-md font-medium mb-2">일반 img 태그</h3>
               <div className="w-64 h-48 bg-gray-100">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={src}
                   alt={`Test image ${index + 1}`}

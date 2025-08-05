@@ -1,43 +1,18 @@
 // HotDeal 관련 타입 정의
+import type { Database } from '@/database.types'
 
-export interface HotDeal {
-  id: string;
-  
-  // 크롤링 가능 정보
-  title: string; // 상품명
-  price: number; // 가격 (0: 프로모션, -1: 가격다양)
-  imageUrl?: string; // 기본 이미지 (고해상도 우선)
-  thumbnailImageUrl?: string; // 썸네일용 저해상도 이미지
-  originalImageUrl?: string; // 상세 페이지용 고해상도 이미지
-  originalUrl: string; // 원본 링크
-  seller: string; // 쇼핑몰 이름
-  source: HotDealSource; // 커뮤니티 이름
-  sourcePostId: string; // 원본 게시글 ID (중복 체크용)
-  crawledAt: Date; // 커뮤니티 업로드 시간
-  userId?: string; // 커뮤니티 작성자 ID
-  communityCommentCount?: number; // 커뮤니티 댓글수
-  communityRecommendCount?: number; // 커뮤니티 추천수
-  isPopular?: boolean; // 인기 게시물 여부 (커뮤니티에서 표시하는 인기 라벨)
-  isHot?: boolean; // 핫 게시물 여부 (HOT 라벨)
-  ranking?: number; // 핫딜 순위 (있을 경우)
-  shipping?: ShippingInfo; // 배송 정보
-  productComment?: string; // 원 게시자가 작성한 상품 설명 텍스트
-  category?: string; // 카테고리 정보
-  
-  // 상태
-  status: 'active' | 'ended';
-  
-  // 우리 사이트 고유 기능
-  viewCount?: number; // 우리 사이트 조회수
-  likeCount?: number; // 찜 수
-  commentCount?: number; // 우리 사이트 댓글수
-  
-  // 번역 필드
-  translatedTitle?: string;
-  translatedProductComment?: string;
-  translationStatus?: 'pending' | 'translating' | 'completed' | 'failed';
-  translatedAt?: Date;
-}
+// Supabase 타입 정의 - 이제 이것을 직접 사용
+type Tables = Database['public']['Tables']
+export type HotDeal = Tables['hot_deals']['Row']  // UI에서 직접 사용할 타입
+export type HotDealInsert = Tables['hot_deals']['Insert']
+export type HotDealUpdate = Tables['hot_deals']['Update']
+
+// 레거시 타입들 (호환성을 위해 임시 유지, 점진적으로 제거 예정)
+export type SupabaseHotDeal = Tables['hot_deals']['Row']
+export type SupabaseHotDealInsert = Tables['hot_deals']['Insert'] 
+export type SupabaseHotDealUpdate = Tables['hot_deals']['Update']
+
+// 레거시 UI 인터페이스 (더 이상 사용하지 않음 - 제거 예정)
 
 export type HotDealCategory = 
   | 'electronics' // 전자/IT

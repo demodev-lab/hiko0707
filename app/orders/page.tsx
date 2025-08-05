@@ -11,6 +11,7 @@ import Link from 'next/link'
 import { SupabaseOrderService } from '@/lib/services/supabase-order-service'
 import { formatDate } from '@/lib/utils'
 import { ServiceJsonLd } from '@/components/seo/json-ld'
+import { getCurrentUser } from '@/lib/server-auth'
 
 export const metadata: Metadata = {
   title: '주문 내역 - HiKo',
@@ -18,9 +19,14 @@ export const metadata: Metadata = {
 }
 
 async function OrderStats() {
-  // Supabase에서 사용자의 주문 내역을 가져옴 (현재 사용자 ID가 필요)
-  // TODO: 현재 사용자 ID 가져오기 로직 필요
-  const orders = await SupabaseOrderService.getOrdersByUser('temp-user-id') // 임시
+  // 현재 로그인한 사용자 정보 가져오기
+  const user = await getCurrentUser()
+  
+  if (!user) {
+    return null
+  }
+  
+  const orders = await SupabaseOrderService.getOrdersByUser(user.id)
   
   const stats = [
     {
@@ -75,9 +81,18 @@ async function OrderStats() {
 }
 
 async function OrderList() {
-  // Supabase에서 사용자의 주문 내역을 가져옴 (현재 사용자 ID가 필요)
-  // TODO: 현재 사용자 ID 가져오기 로직 필요
-  const orders = await SupabaseOrderService.getOrdersByUser('temp-user-id') // 임시
+  // 현재 로그인한 사용자 정보 가져오기
+  const user = await getCurrentUser()
+  
+  if (!user) {
+    return (
+      <div className="text-center py-12">
+        <p className="text-gray-500">로그인이 필요합니다.</p>
+      </div>
+    )
+  }
+  
+  const orders = await SupabaseOrderService.getOrdersByUser(user.id)
   const sortedOrders = orders.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
 
   if (orders.length === 0) {

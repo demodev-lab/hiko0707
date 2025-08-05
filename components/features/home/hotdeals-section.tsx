@@ -27,12 +27,12 @@ export function HotDealsSection() {
   const topDeals = rankedHotdeals
     .filter(deal => {
       // 오늘 크롤링된 핫딜만 필터링
-      const crawledDate = new Date(deal.crawledAt)
+      const crawledDate = new Date(deal.created_at)
       return crawledDate.toDateString() === todayStr
     })
     .sort((a, b) => {
-      // 커뮤니티 조회수(viewCount) 내림차순 정렬
-      return (b.viewCount || 0) - (a.viewCount || 0)
+      // 커뮤니티 조회수(views) 내림차순 정렬
+      return (b.views || 0) - (a.views || 0)
     })
     .slice(0, 6) // 상위 6개만 선택
 
@@ -40,11 +40,11 @@ export function HotDealsSection() {
   console.log('HotDealsSection:', { 
     totalHotdeals: hotdeals.length,
     todayDeals: hotdeals.filter(deal => {
-      const crawledDate = new Date(deal.crawledAt)
+      const crawledDate = new Date(deal.created_at)
       return crawledDate.toDateString() === todayStr
     }).length,
     topDealsCount: topDeals.length,
-    topViewCounts: topDeals.map(deal => ({ id: deal.id, viewCount: deal.viewCount })),
+    topViewCounts: topDeals.map(deal => ({ id: deal.id, viewCount: deal.views })),
     loading, 
     error
   })
@@ -95,7 +95,7 @@ export function HotDealsSection() {
           <p>오늘 업로드된 핫딜이 없습니다.</p>
           <p className="text-sm mt-2">전체 핫딜 개수: {hotdeals.length}개</p>
           <p className="text-sm">오늘 업로드된 핫딜: {hotdeals.filter(deal => {
-            const crawledDate = new Date(deal.crawledAt)
+            const crawledDate = new Date(deal.created_at)
             return crawledDate.toDateString() === todayStr
           }).length}개</p>
         </div>

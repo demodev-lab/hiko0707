@@ -14,7 +14,7 @@ export function useSupabaseProfile(userId: string | null) {
   const { data: profile, isLoading: profileLoading, error: profileError } = useQuery({
     queryKey: ['supabase-profile', userId],
     queryFn: () => userId ? SupabaseProfileService.getProfile(userId) : null,
-    enabled: !!userId && process.env.NEXT_PUBLIC_USE_SUPABASE === 'true',
+    enabled: !!userId,
     staleTime: 20 * 60 * 1000, // 20 minutes - 프로필 정보는 자주 변경되지 않음
     gcTime: 30 * 60 * 1000, // 30 minutes
   })
@@ -23,7 +23,7 @@ export function useSupabaseProfile(userId: string | null) {
   const { data: addresses = [], isLoading: addressesLoading, error: addressesError } = useQuery({
     queryKey: ['supabase-addresses', userId],
     queryFn: () => userId ? SupabaseProfileService.getAddresses(userId) : [],
-    enabled: !!userId && process.env.NEXT_PUBLIC_USE_SUPABASE === 'true',
+    enabled: !!userId,
     staleTime: 15 * 60 * 1000, // 15 minutes - 주소 정보도 비교적 자주 변경되지 않음
     gcTime: 25 * 60 * 1000, // 25 minutes
   })

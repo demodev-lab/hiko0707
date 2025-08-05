@@ -18,7 +18,7 @@ interface UseHotDealsOptions {
   seller?: string
   limit?: number
   offset?: number
-  sortBy?: 'created_at' | 'price' | 'like_count' | 'view_count' | 'comment_count'
+  sortBy?: 'created_at' | 'sale_price' | 'like_count' | 'views' | 'comment_count'
   sortOrder?: 'asc' | 'desc'
   searchTerm?: string
   language?: string

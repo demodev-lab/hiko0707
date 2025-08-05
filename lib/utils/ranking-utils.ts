@@ -10,13 +10,13 @@ export function calculateTodayRankings(hotdeals: HotDeal[]): HotDeal[] {
   
   // 오늘 크롤링된 핫딜만 필터링
   const todayDeals = hotdeals.filter(deal => {
-    const crawledDate = new Date(deal.crawledAt)
+    const crawledDate = new Date(deal.created_at)
     return crawledDate.toDateString() === todayStr
   })
   
   // 조회수 기준 정렬
   const sortedDeals = [...todayDeals].sort((a, b) => {
-    return (b.viewCount || 0) - (a.viewCount || 0)
+    return (b.views || 0) - (a.views || 0)
   })
   
   // 상위 10개에만 순위 부여

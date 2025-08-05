@@ -153,28 +153,28 @@ function generateRealHotDeals(): HotDeal[] {
     return {
       id: `real-${index + 1}`,
       title: product.title,
-      price: product.price,
-      originalPrice: product.original,
-      discountRate,
+      sale_price: product.price,
+      original_price: product.original,
+      discount_rate: discountRate,
       category: mapCategory(product.category),
-      brand: product.brand,
-      imageUrl: getImageUrl(product.category, product.brand, index),
-      originalUrl: `https://example-shop.com/product/${index + 1}`,
+      image_url: getImageUrl(product.category, product.brand, index),
+      thumbnail_url: getImageUrl(product.category, product.brand, index),
+      original_url: `https://example-shop.com/product/${index + 1}`,
       source: source as any,
-      viewCount: Math.floor(Math.random() * 50000) + 1000,
-      likeCount: Math.floor(Math.random() * 1000) + 10,
-      commentCount: Math.floor(Math.random() * 500) + 5,
-      crawledAt: createdAt,
-      updatedAt: createdAt,
-      endDate: Math.random() > 0.7 ? new Date(now.getTime() + Math.random() * 7 * 24 * 60 * 60 * 1000) : undefined,
-      shipping: {
-        isFree: Math.random() > 0.3,
-        cost: Math.random() > 0.3 ? 0 : Math.floor(Math.random() * 3000) + 2500,
-        method: Math.random() > 0.5 ? '무료배송' : '일반배송'
-      },
-      seller: product.brand, // Use brand as seller
-      sourcePostId: `real-${index + 1}-${source}`, // Generate unique sourcePostId
+      source_id: `real-${index + 1}-${source}`,
+      views: Math.floor(Math.random() * 50000) + 1000,
+      like_count: Math.floor(Math.random() * 1000) + 10,
+      comment_count: Math.floor(Math.random() * 500) + 5,
+      created_at: createdAt.toISOString(),
+      updated_at: createdAt.toISOString(),
+      end_date: Math.random() > 0.7 ? new Date(now.getTime() + Math.random() * 7 * 24 * 60 * 60 * 1000).toISOString() : new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+      is_free_shipping: Math.random() > 0.3,
+      seller: product.brand,
       status: Math.random() > 0.1 ? 'active' : 'ended',
+      description: null,
+      author_name: 'Extended Real Data',
+      shopping_comment: '',
+      deleted_at: null
     } as HotDeal
   })
 }
@@ -238,5 +238,5 @@ console.log('카테고리별 분포:', categoryStats)
 // 첫 3개 핫딜의 이미지 URL 확인
 console.log('📸 샘플 이미지 URLs:')
 extendedRealHotDeals.slice(0, 3).forEach((deal, i) => {
-  console.log(`${i + 1}. ${deal.title}: ${deal.imageUrl}`)
+  console.log(`${i + 1}. ${deal.title}: ${deal.image_url}`)
 })

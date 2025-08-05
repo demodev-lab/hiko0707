@@ -399,7 +399,7 @@ export default function ProfilePage() {
                     <div key={deal.id} className="border rounded-lg p-4">
                       <h4 className="font-medium line-clamp-1">{deal.title}</h4>
                       <p className="text-sm text-gray-600 mt-1">
-                        ₩{deal.price.toLocaleString()}
+                        ₩{deal.sale_price.toLocaleString()}
                       </p>
                       <div className="flex gap-2 mt-3">
                         <Button size="sm" variant="outline" asChild>

@@ -10,14 +10,7 @@ config({ path: '.env' })
 
 async function quickTest() {
   console.log(chalk.blue('🚀 Quick Supabase 크롤러 테스트'))
-  
-  const useSupabase = process.env.USE_SUPABASE === 'true'
-  console.log(`- Supabase 사용: ${useSupabase ? '✅' : '❌'}`)
-  
-  if (!useSupabase) {
-    console.log(chalk.red('USE_SUPABASE가 true가 아닙니다.'))
-    return
-  }
+  console.log('- Supabase 사용: ✅')
   
   try {
     // 크롤러 매니저 생성 (1페이지만)

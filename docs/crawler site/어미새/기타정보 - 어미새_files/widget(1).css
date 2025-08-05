@@ -1,0 +1,109 @@
+@charset "utf-8";
+.color-red {color:#F44336;}
+.table-table {display:table;width:100%;}
+.table-row {display:table-row;}
+.table-cell {display:table-cell;}
+#mario-ranking {color:#4a4a4a;font-size:12px; font-family: sans-serif !important;}
+/*#mario-ranking .voted-count {color:#ff1a1a;}*/
+#mario-ranking a{color:#363636; text-decoration:none; font-size: 13px;}
+#mario-ranking a:hover,
+#mario-ranking a:active,
+#mario-ranking a:focus{ color:inherit;text-decoration:none;}
+#mario-ranking img{ border:0;}
+#mario-ranking em{ position:relative; line-height:1; display:inline-block; margin:-5px 0; *padding:0 1px; font-style:normal;}
+#mario-ranking form{ margin:0; padding:0;}
+#mario-ranking fieldset{ border:0; margin:0; padding:0;}
+#mario-ranking ul {margin:0;padding:0;list-style:none;}
+/*order color*/
+#mario-ranking .no {display:inline-block;min-width:18px;text-align:center;background-color: #fff; color: #606060; font-size: 15px; font-weight: 600;}
+#mario-ranking .no.order_red-1 {background-color: rgba(255,0,0,1); color:white;}
+#mario-ranking .no.order_red-2 {background-color:rgba(255,0,0,.6);color:white}
+#mario-ranking .no.order_red-3 {background-color:rgba(255,0,0,.3);color:white}
+#mario-ranking .no.order_blue-1 {background-color:rgba(0,0,255,1); color:white;}
+#mario-ranking .no.order_blue-2 {background-color:rgba(0,0,255,.6);color:white}
+#mario-ranking .no.order_blue-3 {background-color:rgba(0,0,255,.3);color:white}
+#mario-ranking .no.order_green-1 {background-color:rgba(0,255,0,1); color:white;}
+#mario-ranking .no.order_green-2 {background-color:rgba(0,255,0,.6);color:white}
+#mario-ranking .no.order_green-3 {background-color:rgba(0,255,0,.3);color:white}
+#mario-ranking .no.order_green-1 {background-color:#fff; color:#606060; font-size: 15px; font-weight: 600;}
+#mario-ranking .no.order_green-2 {background-color:#fff; color:#606060; font-size: 15px; font-weight: 600}
+#mario-ranking .no.order_green-3 {background-color:#fff; color:#606060; font-size: 15px; font-weight: 600}
+#mario-ranking .no.order_rbb-1 {background-color: red; color:white;}
+#mario-ranking .no.order_rbb-2 {background-color:blue;color:white}
+#mario-ranking .no.order_rbb-3 {background-color:brown;color:white}
+
+/*normal table*/
+#mario-ranking table.widget-table {margin:0;width:100%;font-size:inherit; font-family: inherit; position:relative; border:0;border-collapse:collapse;border-spacing:0;}
+#mario-ranking table.widget-table { width:100%; }
+#mario-ranking table.widget-table td{ border:0; white-space:nowrap; vertical-align:top; padding:1px 5px 1px 5px;}
+#mario-ranking table.widget-table td.title{ width:100%; white-space:normal;}
+#mario-ranking table.widget-table tr:hover { background-color: whitesmoke;}
+
+#mario-ranking table.widget-table td .replyNum a{ color:#ff1a1a;}
+#mario-ranking table.widget-table td.time{}
+/*normal-list*/
+#mario-ranking ul.widget-list { margin:0; padding:0;list-style:none; }
+#mario-ranking ul.widget-list li { margin:0; padding:5px 5px; list-style:none; }
+#mario-ranking ul.widget-list li:hover { background-color: #fff; font-weight: 600;}
+#mario-ranking ul.widget-list .date,
+#mario-ranking ul.widget-list .author,
+#mario-ranking ul.widget-list .readed-count,
+#mario-ranking ul.widget-list .voted-count {
+  padding-right:2px;
+}
+#mario-ranking .replyNum a{ color:#ff1a1a;}
+/*zine*/
+#mario-ranking .zine-ranking .tab_container .tab_content ul li {
+  padding:0;
+  list-style:none
+}
+#mario-ranking .zine-ranking .ranking-image.table-cell{vertical-align:middle;}
+#mario-ranking .zine-ranking .table-cell{vertical-align:top;}
+#mario-ranking .zine-ranking .table-table{border-bottom:1px solid #e0e0e0;}
+#mario-ranking .zine-ranking .image-wrap {margin-left:12px;}
+#mario-ranking .zine-ranking .no {position:absolute;top:12px;left:5px}
+#mario-ranking .zine-ranking .order-col{width:40px;}
+#mario-ranking .zine-ranking{
+  position:relative;
+  margin:0;
+  padding:0;
+  list-style: none;
+  background-color: #fff;
+  }
+.padding-bottom-reset {padding-bottom:0!important;}
+.border-bottom-reset {border-bottom:none!important;}
+#mario-ranking .ranking-item{position:relative;margin:0;padding:12px 0;width:100%;}
+#mario-ranking .ranking-header {padding-bottom:4px}
+#mario-ranking .ranking-header a:first-child:before {
+    display: none;
+}
+#mario-ranking .ranking-header a:before {
+  content: "/\00a0";
+  padding: 0 5px;
+  color: #4a4a4a;
+}
+@media all and (max-width: 640px) {
+  #mario-ranking .ranking-image {max-width:90px;}
+}
+#mario-ranking .ranking-image.left {float:left;margin-right:12px;}
+#mario-ranking .ranking-image.right {float:right;margin-left:12px;}
+#mario-ranking .ranking-image a, #mario-ranking .ranking-image img {display:block;}
+#mario-ranking .ranking-content {}
+#mario-ranking h2.ranking-content-title {margin:0;font-size:14px;color:#363636;font-weight:bold;}
+#mario-ranking .ranking-content-text {padding-top:8px}
+#mario-ranking .ranking-content-text p {margin:0}
+#mario-ranking .ranking-content-footer {margin-top:8px}
+#mario-ranking .ranking-content-footer:after {content:" ";display:table;clear:both;}
+#mario-ranking .ranking-content-view {}
+/*new tab*/
+#mario-ranking .widget-tab-wrapper {}
+#mario-ranking .widget-tab-wrapper .open{ display:block !important;}
+#mario-ranking .widget-tab{ position:relative; margin:0; padding:0;height:34px;line-height:34px; *zoom:1; border:1px solid #dedede; border-bottom: white; box-sizing: border-box; background-color: #fff;}
+#mario-ranking .widget-tab:after{ content:" "; display:table; clear:both;}
+#mario-ranking .widget-tab li{ position:relative; display:block; margin-top:-1px;padding:6px 20px; height:inherit; line-height:inherit; float:left;list-style:none;}
+#mario-ranking .widget-tab li a{ display:block; height:inherit; line-height:inherit; color:inherit; letter-spacing:-1px; text-decoration:none; color: #444; font-size: 15px; font-weight: 600;}
+#mario-ranking .widget-tab li.active {height:inherit; line-height:inherit;}
+#mario-ranking dl.widget-divider{ margin:0;padding:10px 10px; border: 1px solid #dedede; border-top: white; background-color: #fff;}
+#mario-ranking dl.widget-divider dt{ position:absolute; width:0; height:0; overflow:hidden; font-size:0; line-height:0;}
+#mario-ranking dl.widget-divider dd{ display:none; margin:0;}
+#mario-ranking .widget-title {margin-bottom:1em;font-size:1.2em;}

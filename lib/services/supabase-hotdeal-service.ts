@@ -1,10 +1,12 @@
 import { supabase, supabaseAdmin } from '@/lib/supabase/client'
 import type { Database } from '@/database.types'
+import { 
+  type HotDeal,
+  type HotDealInsert,
+  type HotDealUpdate
+} from '@/types/hotdeal'
 
 type Tables = Database['public']['Tables']
-type HotDealRow = Tables['hot_deals']['Row']
-type HotDealInsert = Tables['hot_deals']['Insert']
-type HotDealUpdate = Tables['hot_deals']['Update']
 type TranslationRow = Tables['hotdeal_translations']['Row']
 type TranslationInsert = Tables['hotdeal_translations']['Insert']
 
@@ -18,12 +20,12 @@ export interface HotDealQueryOptions {
   seller?: string
   minPrice?: number
   maxPrice?: number
-  sortBy?: 'created_at' | 'sale_price' | 'discount_rate' | 'end_date' | 'price' | 'like_count' | 'view_count' | 'comment_count'
+  sortBy?: 'created_at' | 'sale_price' | 'discount_rate' | 'end_date' | 'like_count' | 'views' | 'comment_count'
   sortOrder?: 'asc' | 'desc'
   searchTerm?: string
 }
 
-export interface HotDealWithTranslation extends HotDealRow {
+export interface HotDealWithTranslation extends HotDeal {
   translations?: TranslationRow[]
 }
 
@@ -33,7 +35,7 @@ export class SupabaseHotDealService {
   /**
    * 새로운 핫딜 생성
    */
-  static async createHotDeal(data: HotDealInsert): Promise<HotDealRow | null> {
+  static async createHotDeal(data: HotDealInsert): Promise<HotDeal | null> {
     try {
       const supabase = supabaseAdmin()
       if (!supabase) {
@@ -61,9 +63,10 @@ export class SupabaseHotDealService {
 
   /**
    * 핫딜 목록 조회 (페이지네이션, 필터링, 정렬 지원)
+   * UI 호환 버전 - HotDeal 타입으로 반환
    */
   static async getHotDeals(options: HotDealQueryOptions = {}): Promise<{
-    data: HotDealRow[]
+    data: HotDeal[]
     count: number
     error?: string
   }> {
@@ -99,9 +102,7 @@ export class SupabaseHotDealService {
 
       // 정렬 - 컬럼명 매핑
       let actualSortBy = sortBy
-      if (sortBy === 'price') {
-        actualSortBy = 'sale_price'
-      } else if (['like_count', 'view_count', 'comment_count'].includes(sortBy)) {
+      if (['like_count', 'views', 'comment_count'].includes(sortBy)) {
         // 이 컬럼들이 실제 테이블에 없다면 created_at로 fallback
         actualSortBy = 'created_at'
       }
@@ -118,6 +119,7 @@ export class SupabaseHotDealService {
         return { data: [], count: 0, error: error.message }
       }
 
+      // 이제 변환 없이 직접 반환
       return { data: data || [], count: count || 0 }
     } catch (error) {
       console.error('핫딜 목록 조회 중 예외 발생:', error)
@@ -126,9 +128,9 @@ export class SupabaseHotDealService {
   }
 
   /**
-   * 특정 핫딜 조회
+   * 특정 핫딜 조회 - UI 호환 버전
    */
-  static async getHotDealById(id: string): Promise<HotDealRow | null> {
+  static async getHotDealById(id: string): Promise<HotDeal | null> {
     try {
       const { data, error } = await supabase()
         .from('hot_deals')
@@ -142,7 +144,8 @@ export class SupabaseHotDealService {
         return null
       }
 
-      return data
+      // 이제 변환 없이 직접 반환
+      return data || null
     } catch (error) {
       console.error('핫딜 조회 중 예외 발생:', error)
       return null
@@ -446,9 +449,7 @@ export class SupabaseHotDealService {
 
       // 정렬 - 컬럼명 매핑
       let actualSortBy = sortBy
-      if (sortBy === 'price') {
-        actualSortBy = 'sale_price'
-      } else if (['like_count', 'view_count', 'comment_count'].includes(sortBy)) {
+      if (['like_count', 'views', 'comment_count'].includes(sortBy)) {
         // 이 컬럼들이 실제 테이블에 없다면 created_at로 fallback
         actualSortBy = 'created_at'
       }
@@ -570,7 +571,7 @@ export class SupabaseHotDealService {
       prioritizeToday?: boolean
       minViews?: number
     }
-  ): Promise<HotDealRow[]> {
+  ): Promise<HotDeal[]> {
     try {
       const { prioritizeToday = true, minViews = 0 } = options || {}
       
@@ -632,7 +633,7 @@ export class SupabaseHotDealService {
   /**
    * 만료 예정 핫딜 조회
    */
-  static async getExpiringHotDeals(): Promise<HotDealRow[]> {
+  static async getExpiringHotDeals(): Promise<HotDeal[]> {
     try {
       const tomorrow = new Date()
       tomorrow.setDate(tomorrow.getDate() + 1)
@@ -693,7 +694,7 @@ export class SupabaseHotDealService {
   /**
    * 활성 핫딜 조회
    */
-  static async getActiveDeals(): Promise<HotDealRow[]> {
+  static async getActiveDeals(): Promise<HotDeal[]> {
     try {
       const { data, error } = await supabase()
         .from('hot_deals')
@@ -817,7 +818,7 @@ export class SupabaseHotDealService {
   /**
    * 사용자 즐겨찾기 목록 조회
    */
-  static async getUserFavorites(userId: string): Promise<HotDealRow[]> {
+  static async getUserFavorites(userId: string): Promise<HotDeal[]> {
     try {
       const { data, error } = await supabase()
         .from('user_favorite_hotdeals')
@@ -883,7 +884,7 @@ export class SupabaseHotDealService {
   /**
    * 핫딜 검색
    */
-  static async searchHotDeals(searchTerm: string, options: HotDealQueryOptions = {}): Promise<{ data: HotDealRow[], count: number }> {
+  static async searchHotDeals(searchTerm: string, options: HotDealQueryOptions = {}): Promise<{ data: HotDeal[], count: number }> {
     try {
       let query = supabase()
         .from('hot_deals')
@@ -900,8 +901,8 @@ export class SupabaseHotDealService {
       if (options.status) query = query.eq('status', options.status)
       if (options.category) query = query.eq('category', options.category)
       if (options.seller) query = query.eq('seller', options.seller)
-      if (options.minPrice !== undefined) query = query.gte('price', options.minPrice)
-      if (options.maxPrice !== undefined) query = query.lte('price', options.maxPrice)
+      if (options.minPrice !== undefined) query = query.gte('sale_price', options.minPrice)
+      if (options.maxPrice !== undefined) query = query.lte('sale_price', options.maxPrice)
 
       // 정렬
       const sortBy = options.sortBy || 'created_at'
@@ -1017,7 +1018,7 @@ export class SupabaseHotDealService {
    * 핫딜 및 번역 조합 조회
    */
   static async getHotDealWithTranslation(id: string, language: string): Promise<{
-    hotdeal: HotDealRow
+    hotdeal: HotDeal
     translation: TranslationRow | null
   } | null> {
     const hotdeal = await this.getHotDealById(id)
@@ -1057,7 +1058,7 @@ export class SupabaseHotDealService {
         hotdeal_id: hotdealId,
         language: language as TranslationInsert['language'],
         title: hotdeal.title,  // 임시로 원본 제목 사용
-        description: hotdeal.description,  // 임시로 원본 설명 사용
+        description: hotdeal.shopping_comment,  // Supabase 필드명 사용
         is_auto_translated: false,
         translated_at: new Date().toISOString(),
         created_at: new Date().toISOString(),
@@ -1096,7 +1097,7 @@ export class SupabaseHotDealService {
     limit?: number
     status?: string
     includeInactive?: boolean
-  }): Promise<HotDealRow[]> {
+  }): Promise<HotDeal[]> {
     try {
       const { 
         limit = 1000, // 기본값을 1000으로 제한
@@ -1131,8 +1132,8 @@ export class SupabaseHotDealService {
     hourlyTrend: Array<{ hour: string; deals: number; views: number; likes: number }>
     categoryDistribution: Array<{ category: string; count: number; percentage: number }>
     sourcePerformance: Array<{ source: string; deals: number; avgViews: number; successRate: number }>
-    topPerformers: HotDealRow[]
-    expiringDeals: HotDealRow[]
+    topPerformers: HotDeal[]
+    expiringDeals: HotDeal[]
   }> {
     try {
       // 기본 통계

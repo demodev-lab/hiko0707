@@ -26,11 +26,11 @@ interface HotDealCardProps {
 export function HotDealCard({ deal }: HotDealCardProps) {
   const { t, language } = useLanguage()
   const { data: translation } = useHotDealTranslation(deal.id)
-  const isHot = ((deal.communityRecommendCount || 0) > 1000) || ((deal.viewCount || 0) > 10000)
+  const isHot = (deal.views || 0) > 10000
   
   // 오늘 날짜 확인 (크롤링된 날짜가 오늘인지)
-  const isToday = deal.crawledAt ? 
-    new Date(deal.crawledAt).toDateString() === new Date().toDateString() : 
+  const isToday = deal.created_at ? 
+    new Date(deal.created_at).toDateString() === new Date().toDateString() : 
     false
   
   const sourceLabels: Record<string, string> = {
@@ -58,8 +58,8 @@ export function HotDealCard({ deal }: HotDealCardProps) {
         <ShareIconButton
           url={`${typeof window !== 'undefined' ? window.location.origin : ''}/hotdeals/${deal.id}`}
           title={deal.title.replace(/\s*\([^)]*원[^)]*\)\s*$/, '').trim()}
-          description={`${formatCurrency(deal.price || 0, language)}`}
-          imageUrl={deal.originalImageUrl}
+          description={`${formatCurrency(deal.sale_price || 0, language)}`}
+          imageUrl={deal.image_url}
           hashtags={['핫딜', '하이코', sourceLabels[deal.source] || deal.source]}
           className="bg-white/90 backdrop-blur-sm shadow-md hover:bg-white w-8 h-8"
         />
@@ -68,8 +68,8 @@ export function HotDealCard({ deal }: HotDealCardProps) {
           itemType="hotdeal"
           metadata={{
             title: deal.title.replace(/\s*\([^)]*원[^)]*\)\s*$/, '').trim(),
-            image: deal.originalImageUrl,
-            price: deal.price
+            image: deal.image_url,
+            price: deal.sale_price
           }}
           variant="icon"
           size="sm"
@@ -81,7 +81,7 @@ export function HotDealCard({ deal }: HotDealCardProps) {
       <Link href={`/hotdeals/${deal.id}`} className="block">
         <div className="relative overflow-hidden bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800 w-full h-48 sm:h-52 lg:h-56 xl:h-60">
           <OptimizedImage
-            src={deal.originalImageUrl || undefined}
+            src={deal.image_url || undefined}
             alt={deal.title}
             width={400}
             height={320}
@@ -92,17 +92,17 @@ export function HotDealCard({ deal }: HotDealCardProps) {
             showLoader={true}
             showFallbackIcon={true}
             fallbackText={deal.seller || '상품 이미지'}
-            communitySource={deal.source}
+            communitySource={deal.source as any}
             preload={isHot}
             monitorPerformance={true}
-            onLoadComplete={() => console.log('🖼️ HotDeal image loaded:', deal.title, deal.originalImageUrl)}
-            onError={() => console.log('🚫 HotDeal image failed:', deal.title, deal.originalImageUrl)}
+            onLoadComplete={() => console.log('🖼️ HotDeal image loaded:', deal.title, deal.image_url)}
+            onError={() => console.log('🚫 HotDeal image failed:', deal.title, deal.image_url)}
           />
           
           {/* 디버그: imageUrl 정보 표시 (개발용) - 비활성화됨 */}
           {false && process.env.NODE_ENV === 'development' && (
             <div className="absolute bottom-0 left-0 right-0 bg-black/80 text-white text-xs p-1 truncate">
-              ID: {deal.id} | {deal.originalImageUrl || 'No image URL'}
+              ID: {deal.id} | {deal.image_url || 'No image URL'}
             </div>
           )}
         
@@ -129,20 +129,10 @@ export function HotDealCard({ deal }: HotDealCardProps) {
               📍 {sourceLabels[deal.source] || deal.source}
             </Badge>
             
-            {/* 라벨들 - HOT, 인기, 순위 순서 */}
-            {deal.isHot && (
+            {/* HOT 라벨 - 조회수 기반 */}
+            {isHot && (
               <Badge className="text-xs bg-gradient-to-r from-orange-400 to-orange-500 text-white border-0 shrink-0 shadow-sm">
                 🔥 HOT
-              </Badge>
-            )}
-            {deal.isPopular && (
-              <Badge className="text-xs bg-gradient-to-r from-red-400 to-pink-500 text-white border-0 shrink-0 shadow-sm">
-                ⭐ 인기
-              </Badge>
-            )}
-            {deal.ranking && isToday && (
-              <Badge className="text-xs bg-gradient-to-r from-yellow-400 to-amber-500 text-black border-0 shrink-0 shadow-sm font-semibold">
-                🏆 {deal.ranking}위
               </Badge>
             )}
             {/* 번역 상태 표시 */}
@@ -190,21 +180,21 @@ export function HotDealCard({ deal }: HotDealCardProps) {
               <div className="flex flex-col items-end gap-1">
                 {/* 가격 정보 */}
                 <div className="text-right">
-                  {(deal.price === 0 && /다양/i.test(deal.title)) ? (
+                  {(deal.sale_price === 0 && /다양/i.test(deal.title)) ? (
                     <span className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
                       가격 다양
                     </span>
-                  ) : deal.price === 0 ? (
+                  ) : deal.sale_price === 0 ? (
                     <span className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
                       프로모션
                     </span>
-                  ) : deal.price === -1 ? (
+                  ) : deal.sale_price === -1 ? (
                     <span className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
                       가격 다양
                     </span>
-                  ) : deal.price > 0 ? (
+                  ) : deal.sale_price > 0 ? (
                     <PriceDisplay 
-                      price={deal.price} 
+                      price={deal.sale_price} 
                       originalCurrency="KRW"
                       className="text-2xl font-bold text-red-500 dark:text-red-400"
                     />
@@ -213,13 +203,7 @@ export function HotDealCard({ deal }: HotDealCardProps) {
                   )}
                 </div>
                 
-                {/* 배송비 정보 - 가격 다양이거나 일반 가격일 때만 표시 */}
-                {(deal.price === -1 || deal.price > 0 || (deal.price === 0 && /다양/i.test(deal.title))) && deal.shipping?.isFree && (
-                  <div className="flex items-center gap-1 text-xs text-green-600 dark:text-green-400">
-                    <Truck className="w-3 h-3" />
-                    <span className="font-medium">무료배송</span>
-                  </div>
-                )}
+                {/* 배송비 정보는 현재 스키마에 없어서 제거 */}
               </div>
             </div>
           </Link>
@@ -229,29 +213,17 @@ export function HotDealCard({ deal }: HotDealCardProps) {
             <div className="flex items-center gap-3">
               <span className="flex items-center gap-1 text-xs text-gray-600 dark:text-gray-400">
                 <Eye className="w-3.5 h-3.5" />
-                <span className="font-medium">{(deal.viewCount || 0) > 999 ? `${Math.floor((deal.viewCount || 0) / 1000)}k` : (deal.viewCount || 0).toLocaleString()}</span>
-              </span>
-              <span className="flex items-center gap-1 text-xs text-blue-600 dark:text-blue-400">
-                <ThumbsUp className="w-3.5 h-3.5" />
-                <span className="font-medium">{(deal.communityRecommendCount || 0).toLocaleString()}</span>
+                <span className="font-medium">{(deal.views || 0) > 999 ? `${Math.floor((deal.views || 0) / 1000)}k` : (deal.views || 0).toLocaleString()}</span>
               </span>
               <span className="flex items-center gap-1 text-xs text-green-600 dark:text-green-400">
                 <MessageSquare className="w-3.5 h-3.5" />
-                <span className="font-medium">{deal.commentCount || 0}</span>
+                <span className="font-medium">{deal.comment_count || 0}</span>
               </span>
-              {/* 게시자 정보 - 모바일 1열 또는 태블릿 2열일 때 표시 */}
-              {deal.userId && (
-                <span className="flex lg:hidden items-center gap-1 text-xs text-gray-500 dark:text-gray-400">
-                  <span className="text-gray-400">•</span>
-                  <User className="w-3 h-3" />
-                  <span className="font-medium truncate max-w-[80px]">{deal.userId}</span>
-                </span>
-              )}
             </div>
             
             {/* 시간 정보 */}
             <span className="text-xs text-gray-500 dark:text-gray-400 font-medium">
-              {getRelativeTimeKorean(deal.crawledAt || new Date())}
+              {getRelativeTimeKorean(deal.created_at || new Date())}
             </span>
           </div>
         
@@ -262,10 +234,10 @@ export function HotDealCard({ deal }: HotDealCardProps) {
               hotdeal={{
                 id: deal.id,
                 title: deal.title.replace(/\s*\([^)]*원[^)]*\)\s*$/, '').trim(),
-                price: (deal.price || 0).toString(),
-                imageUrl: deal.originalImageUrl,
-                productUrl: deal.originalUrl || '',
-                seller: deal.seller,
+                price: (deal.sale_price || 0).toString(),
+                imageUrl: deal.image_url || '',
+                productUrl: deal.original_url || '',
+                seller: deal.seller || undefined,
               }}
               variant="default"
               size="sm"
@@ -274,7 +246,7 @@ export function HotDealCard({ deal }: HotDealCardProps) {
             
             {/* 원글 링크 버튼 - 보조 액션 */}
             <Link 
-              href={deal.originalUrl || '#'} 
+              href={deal.original_url || '#'} 
               target="_blank" 
               rel="noopener noreferrer"
               className="block"

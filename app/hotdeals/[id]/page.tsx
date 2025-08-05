@@ -19,7 +19,6 @@ import { ProductComment } from '@/components/features/comments/product-comment'
 import { ProductJsonLd, BreadcrumbJsonLd } from '@/components/seo/json-ld'
 import { HotDeal } from '@/types/hotdeal'
 import { useHotDeal, useHotDeals } from '@/hooks/use-supabase-hotdeals'
-import { transformSupabaseToLocal } from '@/lib/utils/hotdeal-transformers'
 import { OptimizedImage } from '@/components/ui/optimized-image'
 import { Loading } from '@/components/ui/loading'
 import { PriceDisplay } from '@/components/features/price-display'
@@ -48,9 +47,8 @@ export default function HotDealDetailPage() {
 
   useEffect(() => {
     if (!loading && supabaseDeal) {
-      // Supabase 데이터를 LocalStorage 형식으로 변환
-      const transformedDeal = transformSupabaseToLocal(supabaseDeal)
-      setDeal(transformedDeal)
+      // Supabase 데이터를 직접 사용
+      setDeal(supabaseDeal)
     }
   }, [loading, supabaseDeal])
 
@@ -59,7 +57,6 @@ export default function HotDealDetailPage() {
       // 최신 핫딜 4개 찾기 (현재 상품 제외)
       const similar = allHotDeals.data
         .filter(d => d.id !== id)
-        .map(transformSupabaseToLocal)
         .slice(0, 4)
       setSimilarDeals(similar)
     }
@@ -94,14 +91,14 @@ export default function HotDealDetailPage() {
         id={deal.id}
         name={deal.title.replace(/\s*\([^)]*원[^)]*\)\s*$/, '').trim()}
         description={deal.title.replace(/\s*\([^)]*원[^)]*\)\s*$/, '').trim()}
-        image={deal.originalImageUrl}
-        price={deal.price}
+        image={deal.image_url || ''}
+        price={deal.sale_price}
         originalPrice={undefined}
         availability={deal.status === 'active' ? 'InStock' : 'SoldOut'}
-        seller={deal.seller}
+        seller={deal.seller || ''}
         brand={undefined}
         category={undefined}
-        url={deal.originalUrl}
+        url={deal.original_url || ''}
       />
       <BreadcrumbJsonLd
         items={[
@@ -132,7 +129,7 @@ export default function HotDealDetailPage() {
         {/* 이미지 영역 */}
         <div className="relative aspect-[4/3] bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800 rounded-2xl overflow-hidden shadow-xl">
           <OptimizedImage
-            src={deal.originalImageUrl || ''}
+            src={deal.image_url || ''}
             alt={deal.title}
             width={800}
             height={600}
@@ -142,25 +139,9 @@ export default function HotDealDetailPage() {
             showLoader={true}
             quality={90}
             showFallbackIcon={true}
-            fallbackText={`${deal.seller} 상품`}
+            fallbackText={`${deal.seller || ''} 상품`}
           />
-          {deal.ranking && isToday(deal.crawledAt) && (
-            <div className="absolute top-4 left-4 bg-gradient-to-r from-yellow-400 to-amber-500 text-black px-4 py-2.5 rounded-xl font-bold text-xl flex items-center gap-2 shadow-lg">
-              🏆 {deal.ranking}위
-            </div>
-          )}
-          {/* 인기 게시물 뱃지 - 이미지 위 */}
-          {deal.isPopular && (
-            <div className={`absolute ${deal.ranking && isToday(deal.crawledAt) ? 'top-20' : 'top-4'} left-4 bg-gradient-to-r from-red-500 to-pink-500 text-white px-4 py-2.5 rounded-xl font-bold flex items-center gap-1 shadow-lg`}>
-              ⭐ 인기
-            </div>
-          )}
-          {/* 핫 게시물 뱃지 - 이미지 위 */}
-          {deal.isHot && (
-            <div className={`absolute ${deal.ranking && isToday(deal.crawledAt) && deal.isPopular ? 'top-36' : deal.ranking && isToday(deal.crawledAt) || deal.isPopular ? 'top-20' : 'top-4'} left-4 bg-gradient-to-r from-orange-500 to-red-500 text-white px-4 py-2.5 rounded-xl font-bold flex items-center gap-1 shadow-lg`}>
-              🔥 HOT
-            </div>
-          )}
+          {/* 랭킹, 인기, HOT 뱃지들은 현재 스키마에 없어서 제거 */}
         </div>
         
         {/* 공유 버튼 */}
@@ -176,7 +157,7 @@ export default function HotDealDetailPage() {
             {/* 쇼핑몰과 커뮤니티 정보 */}
             <div className="flex items-center gap-2 mb-4">
               <Badge variant="secondary" className="bg-gradient-to-r from-blue-50 to-blue-100 dark:from-blue-900/30 dark:to-blue-800/30 text-blue-700 dark:text-blue-300 border-0 px-3 py-1.5 font-medium shadow-sm">
-                🛒 {deal.seller}
+                🛒 {deal.seller || ''}
               </Badge>
               <Badge variant="outline" className="bg-gray-50 dark:bg-gray-800/50 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 px-3 py-1.5">
                 📍 {sourceLabel}
@@ -201,26 +182,16 @@ export default function HotDealDetailPage() {
               <span className="flex items-center gap-1.5">
                 <Eye className="w-4 h-4" />
                 <span className="font-medium">
-                  {(deal.viewCount || 0) > 999 ? `${Math.floor((deal.viewCount || 0) / 1000)}k` : (deal.viewCount || 0).toLocaleString()}
+                  {(deal.views || 0) > 999 ? `${Math.floor((deal.views || 0) / 1000)}k` : (deal.views || 0).toLocaleString()}
                 </span>
-              </span>
-              <span className="flex items-center gap-1.5 text-blue-600 dark:text-blue-400">
-                <ThumbsUp className="w-4 h-4" />
-                <span className="font-medium">{(deal.communityRecommendCount || 0).toLocaleString()}</span>
               </span>
               <span className="flex items-center gap-1.5 text-green-600 dark:text-green-400">
                 <MessageSquare className="w-4 h-4" />
-                <span className="font-medium">{deal.commentCount || 0}</span>
+                <span className="font-medium">{deal.comment_count || 0}</span>
               </span>
-              {deal.userId && (
-                <span className="flex items-center gap-1.5 text-gray-500 dark:text-gray-400">
-                  <User className="w-4 h-4" />
-                  <span className="text-xs font-medium">{deal.userId}</span>
-                </span>
-              )}
               <span className="flex items-center gap-1.5 text-gray-500 dark:text-gray-400 ml-auto">
                 <Clock className="w-4 h-4" />
-                <span className="text-xs">{getRelativeTimeKorean(deal.crawledAt)}</span>
+                <span className="text-xs">{getRelativeTimeKorean(new Date(deal.created_at))}</span>
               </span>
             </div>
           </div>
@@ -231,21 +202,21 @@ export default function HotDealDetailPage() {
               {/* 가격 영역 */}
               <div className="flex items-center justify-between">
                 <span className="text-xs text-gray-500 dark:text-gray-400">판매가</span>
-                {(deal.price === 0 && /다양/i.test(deal.title)) ? (
+                {(deal.sale_price === 0 && /다양/i.test(deal.title)) ? (
                   <span className="text-3xl font-bold text-gray-900 dark:text-gray-100">
                     가격 다양
                   </span>
-                ) : deal.price === 0 ? (
+                ) : deal.sale_price === 0 ? (
                   <span className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
                     프로모션
                   </span>
-                ) : deal.price === -1 ? (
+                ) : deal.sale_price === -1 ? (
                   <span className="text-3xl font-bold text-gray-900 dark:text-gray-100">
                     가격 다양
                   </span>
-                ) : deal.price > 0 ? (
+                ) : deal.sale_price > 0 ? (
                   <PriceDisplay 
-                    price={deal.price} 
+                    price={deal.sale_price} 
                     originalCurrency="KRW"
                     className="text-3xl font-bold text-red-600 dark:text-red-500"
                   />
@@ -254,22 +225,7 @@ export default function HotDealDetailPage() {
                 )}
               </div>
               
-              {/* 배송비 정보 - 가격 다양이거나 일반 가격일 때만 표시 */}
-              {(deal.price === -1 || deal.price > 0 || (deal.price === 0 && /다양/i.test(deal.title))) && deal.shipping && (
-                <div className="pt-3 border-t border-gray-100 dark:border-gray-700">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-600 dark:text-gray-400">배송비</span>
-                    {deal.shipping.isFree ? (
-                      <div className="flex items-center gap-1.5 text-green-600 dark:text-green-400">
-                        <Truck className="w-4 h-4" />
-                        <span className="text-sm font-medium">무료배송</span>
-                      </div>
-                    ) : (
-                      <span className="text-sm text-gray-600 dark:text-gray-400">배송비 별도</span>
-                    )}
-                  </div>
-                </div>
-              )}
+              {/* 배송비 정보는 현재 스키마에 없어서 제거 */}
             </div>
           </div>
           
@@ -289,10 +245,10 @@ export default function HotDealDetailPage() {
               hotdeal={{
                 id: deal.id,
                 title: deal.title.replace(/\s*\([^)]*원[^)]*\)\s*$/, '').trim(),
-                price: deal.price ? deal.price.toString() : '0',
-                imageUrl: deal.originalImageUrl,
-                productUrl: deal.originalUrl,
-                seller: deal.seller,
+                price: deal.sale_price ? deal.sale_price.toString() : '0',
+                imageUrl: deal.image_url || '',
+                productUrl: deal.original_url,
+                seller: deal.seller || '',
               }}
               variant="default"
               size="lg"
@@ -301,7 +257,7 @@ export default function HotDealDetailPage() {
             
             {/* 원글 링크 버튼 - 보조 액션 */}
             <Link 
-              href={deal.originalUrl || '#'}
+              href={deal.original_url || '#'}
               target="_blank"
               rel="noopener noreferrer"
               className="block"
@@ -330,7 +286,7 @@ export default function HotDealDetailPage() {
           <div className="lg:col-span-2 flex flex-col">
             <div className="relative aspect-[4/3] bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800 rounded-2xl overflow-hidden shadow-xl">
             <OptimizedImage
-              src={deal.originalImageUrl || ''}
+              src={deal.image_url || ''}
               alt={deal.title}
               width={800}
               height={600}
@@ -340,25 +296,9 @@ export default function HotDealDetailPage() {
               showLoader={true}
               quality={90}
               showFallbackIcon={true}
-              fallbackText={`${deal.seller} 상품`}
+              fallbackText={`${deal.seller || ''} 상품`}
             />
-            {deal.ranking && isToday(deal.crawledAt) && (
-              <div className="absolute top-4 left-4 bg-yellow-500 text-black px-3 py-2 rounded-lg font-bold text-xl flex items-center gap-2">
-                🏆 {deal.ranking}위
-              </div>
-            )}
-            {/* 인기 게시물 뱃지 - 이미지 위 */}
-            {deal.isPopular && (
-              <div className={`absolute ${deal.ranking && isToday(deal.crawledAt) ? 'top-16' : 'top-4'} left-4 bg-red-500 text-white px-3 py-2 rounded-lg font-bold flex items-center gap-1`}>
-                🔥 인기
-              </div>
-            )}
-            {/* 핫 게시물 뱃지 - 이미지 위 */}
-            {deal.isHot && (
-              <div className={`absolute ${deal.ranking && isToday(deal.crawledAt) && deal.isPopular ? 'top-28' : deal.ranking && isToday(deal.crawledAt) || deal.isPopular ? 'top-16' : 'top-4'} left-4 bg-orange-500 text-white px-3 py-2 rounded-lg font-bold flex items-center gap-1`}>
-                🔥 HOT
-              </div>
-            )}
+            {/* 랭킹, 인기, HOT 뱃지들은 현재 스키마에 없어서 제거 */}
           </div>
           
             {/* 공유 버튼 (클라이언트 컴포넌트) */}
@@ -377,7 +317,7 @@ export default function HotDealDetailPage() {
             {/* 쇼핑몰과 커뮤니티 정보 */}
             <div className="flex items-center gap-2 mb-4">
               <Badge variant="secondary" className="bg-gradient-to-r from-blue-50 to-blue-100 dark:from-blue-900/30 dark:to-blue-800/30 text-blue-700 dark:text-blue-300 border-0 px-3 py-1.5 font-medium shadow-sm">
-                🛒 {deal.seller}
+                🛒 {deal.seller || ''}
               </Badge>
               <Badge variant="outline" className="bg-gray-50 dark:bg-gray-800/50 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 px-3 py-1.5">
                 📍 {sourceLabel}
@@ -404,31 +344,20 @@ export default function HotDealDetailPage() {
                   <Eye className="w-3 h-3 sm:w-4 sm:h-4" />
                   <span className="font-medium">조회</span>
                   <span className="text-gray-900 font-semibold">
-                    {(deal.viewCount || 0) > 999 ? `${Math.floor((deal.viewCount || 0) / 1000)}k` : (deal.viewCount || 0).toLocaleString()}
+                    {(deal.views || 0) > 999 ? `${Math.floor((deal.views || 0) / 1000)}k` : (deal.views || 0).toLocaleString()}
                   </span>
-                </span>
-                <span className="flex items-center gap-1.5 bg-blue-50 dark:bg-blue-900/20 px-3 py-2 rounded-lg shadow-sm border border-blue-200 dark:border-blue-800">
-                  <ThumbsUp className="w-3 h-3 sm:w-4 sm:h-4 text-blue-600" />
-                  <span className="font-medium">추천</span>
-                  <span className="text-blue-900 font-semibold">{(deal.communityRecommendCount || 0).toLocaleString()}</span>
                 </span>
                 <span className="flex items-center gap-1.5 bg-green-50 dark:bg-green-900/20 px-3 py-2 rounded-lg shadow-sm border border-green-200 dark:border-green-800">
                   <MessageSquare className="w-3 h-3 sm:w-4 sm:h-4 text-green-600" />
                   <span className="font-medium">댓글</span>
-                  <span className="text-green-900 font-semibold">{deal.commentCount || 0}</span>
+                  <span className="text-green-900 font-semibold">{deal.comment_count || 0}</span>
                 </span>
-                {deal.userId && (
-                  <span className="flex items-center gap-1.5 text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-800 px-3 py-2 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
-                    <User className="w-3 h-3 sm:w-4 sm:h-4" />
-                    <span className="font-medium">{deal.userId}</span>
-                  </span>
-                )}
               </div>
               
               <div className="flex flex-wrap items-center gap-2 text-xs sm:text-sm text-gray-600 mt-1">
                 <span className="flex items-center gap-1">
                   <Clock className="w-3 h-3 sm:w-4 sm:h-4" />
-                  {getRelativeTimeKorean(deal.crawledAt)}
+                  {getRelativeTimeKorean(new Date(deal.created_at))}
                 </span>
               </div>
             </div>
@@ -441,21 +370,21 @@ export default function HotDealDetailPage() {
               {/* 가격 영역 */}
               <div className="flex items-center justify-between">
                 <span className="text-sm text-gray-500 dark:text-gray-400">판매가</span>
-                {(deal.price === 0 && /다양/i.test(deal.title)) ? (
+                {(deal.sale_price === 0 && /다양/i.test(deal.title)) ? (
                   <span className="text-4xl font-bold text-gray-900 dark:text-gray-100">
                     가격 다양
                   </span>
-                ) : deal.price === 0 ? (
+                ) : deal.sale_price === 0 ? (
                   <span className="text-4xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
                     프로모션
                   </span>
-                ) : deal.price === -1 ? (
+                ) : deal.sale_price === -1 ? (
                   <span className="text-4xl font-bold text-gray-900 dark:text-gray-100">
                     가격 다양
                   </span>
-                ) : deal.price > 0 ? (
+                ) : deal.sale_price > 0 ? (
                   <PriceDisplay 
-                    price={deal.price} 
+                    price={deal.sale_price} 
                     originalCurrency="KRW"
                     className="text-4xl font-bold text-red-600 dark:text-red-500"
                   />
@@ -464,22 +393,7 @@ export default function HotDealDetailPage() {
                 )}
               </div>
               
-              {/* 배송비 정보 - 가격 다양이거나 일반 가격일 때만 표시 */}
-              {(deal.price === -1 || deal.price > 0 || (deal.price === 0 && /다양/i.test(deal.title))) && deal.shipping && (
-                <div className="pt-4 border-t border-gray-100 dark:border-gray-700">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-600 dark:text-gray-400">배송비</span>
-                    {deal.shipping.isFree ? (
-                      <div className="flex items-center gap-2 text-green-600 dark:text-green-400">
-                        <Truck className="w-4 h-4" />
-                        <span className="font-medium">무료배송</span>
-                      </div>
-                    ) : (
-                      <span className="text-gray-600 dark:text-gray-400">배송비 별도</span>
-                    )}
-                  </div>
-                </div>
-              )}
+              {/* 배송비 정보는 현재 스키마에 없어서 제거 */}
             </div>
           </div>
           
@@ -499,10 +413,10 @@ export default function HotDealDetailPage() {
               hotdeal={{
                 id: deal.id,
                 title: deal.title.replace(/\s*\([^)]*원[^)]*\)\s*$/, '').trim(),
-                price: deal.price ? deal.price.toString() : '0',
-                imageUrl: deal.originalImageUrl,
-                productUrl: deal.originalUrl,
-                seller: deal.seller,
+                price: deal.sale_price ? deal.sale_price.toString() : '0',
+                imageUrl: deal.image_url || '',
+                productUrl: deal.original_url,
+                seller: deal.seller || '',
               }}
               variant="default"
               size="lg"
@@ -511,7 +425,7 @@ export default function HotDealDetailPage() {
             
             {/* 원글 링크 버튼 - 보조 액션 */}
             <Link 
-              href={deal.originalUrl || '#'}
+              href={deal.original_url || '#'}
               target="_blank"
               rel="noopener noreferrer"
               className="block"
@@ -542,7 +456,7 @@ export default function HotDealDetailPage() {
           {/* 일반 댓글 */}
           <CommentSection 
             hotdealId={deal.id} 
-            commentCount={deal.commentCount || 0} 
+            commentCount={deal.comment_count || 0} 
           />
         </div>
         

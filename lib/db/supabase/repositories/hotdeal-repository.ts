@@ -22,25 +22,25 @@ export class SupabaseHotDealRepository {
 
     const insertData: HotDealInsert = {
       source: hotdeal.source,
-      source_id: hotdeal.sourcePostId,
+      source_id: hotdeal.source_id,
       category: hotdeal.category || '기타',
       title: hotdeal.title,
-      description: hotdeal.productComment || null,
-      original_price: typeof hotdeal.price === 'number' ? hotdeal.price : 0, // NOT NULL 제약조건 해결
-      sale_price: typeof hotdeal.price === 'number' ? hotdeal.price : 0, // NOT NULL 제약조건 해결
+      description: hotdeal.description || null,
+      original_price: typeof hotdeal.sale_price === 'number' ? hotdeal.sale_price : 0, // NOT NULL 제약조건 해결
+      sale_price: typeof hotdeal.sale_price === 'number' ? hotdeal.sale_price : 0, // NOT NULL 제약조건 해결
       discount_rate: 0, // NOT NULL 제약조건 해결
       seller: hotdeal.seller || null,
-      original_url: hotdeal.originalUrl,
-      thumbnail_url: hotdeal.imageUrl || null, // 썸네일 URL 매핑 추가
-      image_url: hotdeal.imageUrl || null,
-      is_free_shipping: hotdeal.shipping?.isFree || false,
+      original_url: hotdeal.original_url,
+      thumbnail_url: hotdeal.thumbnail_url || '', // 썸네일 URL 매핑 추가
+      image_url: hotdeal.image_url || '',
+      is_free_shipping: hotdeal.is_free_shipping || false,
       status: hotdeal.status,
       end_date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(), // 30일 후 만료
-      views: hotdeal.viewCount || 0,
-      comment_count: hotdeal.communityCommentCount || 0,
-      like_count: hotdeal.communityRecommendCount || 0,
-      author_name: hotdeal.userId || 'Unknown',
-      shopping_comment: hotdeal.productComment || null,
+      views: hotdeal.views || 0,
+      comment_count: hotdeal.comment_count || 0,
+      like_count: hotdeal.like_count || 0,
+      author_name: hotdeal.author_name || 'Unknown',
+      shopping_comment: hotdeal.shopping_comment || '',
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
       deleted_at: null
@@ -84,12 +84,12 @@ export class SupabaseHotDealRepository {
     const updateData: any = {}
     
     if (hotdeal.title !== undefined) updateData.title = hotdeal.title
-    if (hotdeal.productComment !== undefined) updateData.description = hotdeal.productComment
-    if (hotdeal.price !== undefined) updateData.sale_price = hotdeal.price
+    if (hotdeal.description !== undefined) updateData.description = hotdeal.description
+    if (hotdeal.sale_price !== undefined) updateData.sale_price = hotdeal.sale_price
     if (hotdeal.status !== undefined) updateData.status = hotdeal.status
-    if (hotdeal.viewCount !== undefined) updateData.views = hotdeal.viewCount
-    if (hotdeal.communityRecommendCount !== undefined) updateData.like_count = hotdeal.communityRecommendCount
-    if (hotdeal.communityCommentCount !== undefined) updateData.comment_count = hotdeal.communityCommentCount
+    if (hotdeal.views !== undefined) updateData.views = hotdeal.views
+    if (hotdeal.like_count !== undefined) updateData.like_count = hotdeal.like_count
+    if (hotdeal.comment_count !== undefined) updateData.comment_count = hotdeal.comment_count
 
     const { data, error } = await this.client
       .from('hot_deals')
@@ -106,14 +106,14 @@ export class SupabaseHotDealRepository {
     return this.mapToHotDeal(data)
   }
 
-  async findBySourceAndPostId(source: string, sourcePostId: string): Promise<HotDeal | null> {
+  async findBySourceAndPostId(source: string, sourceId: string): Promise<HotDeal | null> {
     if (!this.client) return null
 
     const { data, error } = await this.client
       .from('hot_deals')
       .select('*')
       .eq('source', source)
-      .eq('source_id', sourcePostId)
+      .eq('source_id', sourceId)
       .single()
 
     if (error) {
@@ -187,30 +187,7 @@ export class SupabaseHotDealRepository {
   }
 
   private mapToHotDeal(row: HotDealRow): HotDeal {
-    return {
-      id: row.id,
-      source: row.source as HotDeal['source'],
-      sourcePostId: row.source_id,
-      category: row.category,
-      title: row.title,
-      price: row.sale_price || 0,
-      seller: row.seller || '알 수 없음',
-      imageUrl: row.image_url || undefined,
-      originalUrl: row.original_url,
-      productComment: row.description || '',
-      crawledAt: new Date(row.created_at),
-      isHot: false, // hot_deals 테이블에 is_hot 필드가 없음
-      isPopular: false,
-      viewCount: row.views || 0,
-      communityRecommendCount: row.like_count || 0,
-      communityCommentCount: row.comment_count || 0,
-      status: row.status as HotDeal['status'],
-      likeCount: row.like_count || 0,
-      commentCount: row.comment_count || 0,
-      shipping: {
-        isFree: row.is_free_shipping || false
-      },
-      userId: row.author_name || 'Unknown'
-    }
+    // UI에서 직접 Supabase 타입을 사용하므로 변환 없이 그대로 반환
+    return row as HotDeal
   }
 }

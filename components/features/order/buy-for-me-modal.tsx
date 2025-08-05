@@ -133,7 +133,7 @@ export function BuyForMeModal({ open, onOpenChange, hotdeal }: BuyForMeModalProp
         setSaveAddress(true)
       }
     }
-  }, [open, defaultAddress, form])
+  }, [open, defaultAddress, form, currentUser?.email])
 
   // 배송지 선택 시 폼 자동 입력
   const handleAddressSelect = (addressId: string) => {

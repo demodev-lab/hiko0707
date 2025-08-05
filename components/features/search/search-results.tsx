@@ -38,9 +38,9 @@ export function SearchResults({ query, filters }: SearchResultsProps) {
     source: filters.source && filters.source !== 'all' ? filters.source : undefined,
     minPrice: filters.minPrice,
     maxPrice: filters.maxPrice,
-    sortBy: filters.sortBy === 'price_low' ? 'price' as const :
-            filters.sortBy === 'price_high' ? 'price' as const :
-            filters.sortBy === 'popular' ? 'view_count' as const :
+    sortBy: filters.sortBy === 'price_low' ? 'sale_price' as const :
+            filters.sortBy === 'price_high' ? 'sale_price' as const :
+            filters.sortBy === 'popular' ? 'views' as const :
             filters.sortBy === 'discount' ? 'like_count' as const :
             'created_at' as const,
     sortOrder: filters.sortBy === 'price_low' ? 'asc' as const :
@@ -62,31 +62,9 @@ export function SearchResults({ query, filters }: SearchResultsProps) {
     error: allDealsError 
   } = useHotDeals(searchOptions)
 
-  // 결과 통합 및 데이터 매핑
-  const mapSupabaseToHotDeal = (supabaseData: any): HotDeal => ({
-    id: supabaseData.id,
-    source: supabaseData.source,
-    sourcePostId: supabaseData.source_id,
-    category: supabaseData.category,
-    title: supabaseData.title,
-    productComment: supabaseData.description,
-    price: supabaseData.sale_price || 0,
-    seller: supabaseData.seller,
-    originalUrl: supabaseData.original_url,
-    imageUrl: supabaseData.image_url,
-    thumbnailImageUrl: supabaseData.thumbnail_url,
-    viewCount: supabaseData.views || 0,
-    likeCount: supabaseData.like_count || 0,
-    commentCount: supabaseData.comment_count || 0,
-    crawledAt: new Date(supabaseData.crawled_at || supabaseData.created_at),
-    status: supabaseData.status,
-    shipping: {
-      isFree: supabaseData.is_free_shipping || false
-    }
-  })
-
+  // 결과 통합 - Supabase 데이터를 직접 사용 (변환 레이어 제거)
   const rawResults = searchEnabled ? (searchResults?.data || []) : (allDealsData?.data || [])
-  const results = rawResults.map(mapSupabaseToHotDeal)
+  const results = rawResults
   const loading = searchEnabled ? searchLoading : allDealsLoading
   const error = searchEnabled ? searchError : allDealsError
 
