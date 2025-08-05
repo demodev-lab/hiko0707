@@ -6,12 +6,12 @@ export type ShippingMethod = 'standard' | 'express' | 'economy'
 
 export interface ShippingAddress {
   fullName: string
-  phoneNumber: string
+  phone: string
   email: string
-  postalCode: string
-  addressLine1: string
-  addressLine2?: string
-  isDefault?: boolean
+  post_code: string
+  address: string
+  address_detail?: string
+  is_default?: boolean
 }
 
 export interface OrderItem {

@@ -7,7 +7,21 @@ import { cn } from '@/lib/utils'
 import { useToggleFavorite, useIsFavorited, useFavoriteCount } from '@/hooks/use-favorites'
 import { useAuth } from '@/hooks/use-auth'
 import { useRouter } from 'next/navigation'
-import { Favorite } from '@/lib/db/local/repositories/favorite-repository'
+
+// Favorite 타입 정의 (LocalStorage 의존성 제거)
+interface Favorite {
+  id: string
+  userId: string
+  itemId: string
+  itemType: 'hotdeal' | 'product'
+  createdAt: Date
+  metadata?: {
+    title?: string
+    image?: string
+    price?: number
+    discount?: number
+  }
+}
 
 interface FavoriteButtonProps {
   itemId: string

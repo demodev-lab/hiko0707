@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect, useRef } from 'react'
-import { CrawlerSource } from '@/lib/crawlers/new-crawler-manager'
+import { CrawlerSource } from '@/lib/crawlers/crawler-manager'
 
 export interface CrawlerOptions {
   pages?: number

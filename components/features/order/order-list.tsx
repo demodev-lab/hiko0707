@@ -10,7 +10,7 @@ import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Loader2, Search, Package, Clock, CheckCircle, XCircle } from 'lucide-react'
 import { useLanguage } from '@/lib/i18n/context'
-import { OrderStatus } from '@/types/order'
+import { Order, OrderStatus } from '@/types/order'
 
 interface OrderListProps {
   userId?: string
@@ -63,7 +63,7 @@ export function OrderList({ userId, showStats = true }: OrderListProps) {
     )
   }
 
-  const orders = ordersData?.items || []
+  const orders: Order[] = ordersData?.items || []
   const totalPages = ordersData?.totalPages || 1
 
   return (
@@ -77,7 +77,7 @@ export function OrderList({ userId, showStats = true }: OrderListProps) {
                 <Package className="w-4 h-4 text-blue-500" />
                 <div>
                   <p className="text-sm text-gray-600">전체 주문</p>
-                  <p className="text-2xl font-bold">{stats.total}</p>
+                  <p className="text-2xl font-bold">{stats.totalOrders}</p>
                 </div>
               </div>
             </CardContent>
@@ -89,7 +89,7 @@ export function OrderList({ userId, showStats = true }: OrderListProps) {
                 <Clock className="w-4 h-4 text-yellow-500" />
                 <div>
                   <p className="text-sm text-gray-600">진행 중</p>
-                  <p className="text-2xl font-bold">{stats.processing}</p>
+                  <p className="text-2xl font-bold">{stats.pendingOrders}</p>
                 </div>
               </div>
             </CardContent>
@@ -101,7 +101,7 @@ export function OrderList({ userId, showStats = true }: OrderListProps) {
                 <CheckCircle className="w-4 h-4 text-green-500" />
                 <div>
                   <p className="text-sm text-gray-600">완료</p>
-                  <p className="text-2xl font-bold">{stats.completed}</p>
+                  <p className="text-2xl font-bold">{stats.completedOrders}</p>
                 </div>
               </div>
             </CardContent>
@@ -113,7 +113,7 @@ export function OrderList({ userId, showStats = true }: OrderListProps) {
                 <XCircle className="w-4 h-4 text-red-500" />
                 <div>
                   <p className="text-sm text-gray-600">취소</p>
-                  <p className="text-2xl font-bold">{stats.cancelled}</p>
+                  <p className="text-2xl font-bold">0</p>
                 </div>
               </div>
             </CardContent>

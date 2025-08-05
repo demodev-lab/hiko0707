@@ -1,6 +1,6 @@
 'use client'
 
-import { useHotDealTranslation } from '@/hooks/use-translations'
+import { useHotDealTranslation } from '@/hooks/use-supabase-translations'
 import { TranslationIndicator } from './translation-indicator'
 import { Skeleton } from '@/components/ui/skeleton'
 import { HotDeal } from '@/types/hotdeal'
@@ -37,8 +37,8 @@ export function TranslatedContent({
     return fallback || <Skeleton className="h-4 w-full" />
   }
   
-  // 번역이 없거나 대기/진행 중
-  if (!translation || translation.status === 'pending' || translation.status === 'translating') {
+  // 번역이 없는 경우 원본 표시
+  if (!translation) {
     const content = field === 'productComment' ? hotDeal.productComment : 
                     field === 'title' ? hotDeal.title : 
                     field === 'description' ? hotDeal.productComment : ''
@@ -47,7 +47,7 @@ export function TranslatedContent({
         <span className={className}>{content}</span>
         {showIndicator && (
           <TranslationIndicator 
-            status={translation?.status || 'pending'} 
+            status="pending" 
             language={language}
             className="inline-flex ml-2"
           />
@@ -56,27 +56,10 @@ export function TranslatedContent({
     )
   }
   
-  // 번역 실패
-  if (translation.status === 'failed') {
-    const content = field === 'productComment' ? hotDeal.productComment : 
-                    field === 'title' ? hotDeal.title : 
-                    field === 'description' ? hotDeal.productComment : ''
-    return (
-      <div className="space-y-1">
-        <span className={className}>{content}</span>
-        {showIndicator && (
-          <TranslationIndicator 
-            status="failed" 
-            language={language}
-            className="inline-flex ml-2"
-          />
-        )}
-      </div>
-    )
-  }
-  
-  // 번역 완료
-  const translatedField = field === 'productComment' ? 'translatedProductComment' : field
+  // 번역 완료 - Supabase에서는 번역이 있으면 항상 완료 상태
+  const translatedContent = field === 'title' ? translation.title :
+                          field === 'description' || field === 'productComment' ? translation.description :
+                          ''
   const originalContent = field === 'productComment' ? hotDeal.productComment : 
                           field === 'title' ? hotDeal.title : 
                           field === 'description' ? hotDeal.productComment : ''
@@ -84,11 +67,11 @@ export function TranslatedContent({
   return (
     <div className="space-y-1">
       <span className={className}>
-        {translation[translatedField] || originalContent}
+        {translatedContent || originalContent}
       </span>
-      {showIndicator && translation.status !== 'completed' && (
+      {showIndicator && translation.is_auto_translated && (
         <TranslationIndicator 
-          status={translation.status} 
+          status="completed" 
           language={language}
           className="inline-flex ml-2"
         />

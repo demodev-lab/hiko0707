@@ -1,5 +1,5 @@
 import { atom } from 'jotai'
-import { User } from '@/lib/db/local/models'
+import { User } from '@/types/user'
 
 // 로컬 스토리지에서 사용자 정보를 가져오는 함수
 const getUserFromStorage = (): User | null => {

@@ -18,6 +18,10 @@ export class SupabaseLikeService {
    */
   static async likeHotDeal(hotDealId: string, userId: string): Promise<HotDealLikeRow | null> {
     const supabase = supabaseAdmin()
+    if (!supabase) {
+      console.error('Supabase admin client not initialized')
+      return null
+    }
 
     // 이미 좋아요 했는지 확인
     const { data: existingLike } = await supabase
@@ -61,6 +65,10 @@ export class SupabaseLikeService {
    */
   static async unlikeHotDeal(hotDealId: string, userId: string): Promise<boolean> {
     const supabase = supabaseAdmin()
+    if (!supabase) {
+      console.error('Supabase admin client not initialized')
+      return false
+    }
 
     const { data, error } = await supabase
       .from('hot_deal_likes')
@@ -88,6 +96,10 @@ export class SupabaseLikeService {
    */
   static async updateHotDealLikeCount(hotDealId: string): Promise<void> {
     const supabase = supabaseAdmin()
+    if (!supabase) {
+      console.error('Supabase admin client not initialized')
+      return
+    }
 
     // 현재 좋아요 수 카운트
     const { count } = await supabase
@@ -110,6 +122,10 @@ export class SupabaseLikeService {
    */
   static async isHotDealLikedByUser(hotDealId: string, userId: string): Promise<boolean> {
     const supabase = supabaseAdmin()
+    if (!supabase) {
+      console.error('Supabase admin client not initialized')
+      return false
+    }
 
     const { data, error } = await supabase
       .from('hot_deal_likes')
@@ -133,6 +149,10 @@ export class SupabaseLikeService {
     offset?: number
   }): Promise<(HotDealLikeRow & { hot_deal: HotDealRow })[]> {
     const supabase = supabaseAdmin()
+    if (!supabase) {
+      console.error('Supabase admin client not initialized')
+      return []
+    }
     
     let query = supabase
       .from('hot_deal_likes')
@@ -188,6 +208,10 @@ export class SupabaseLikeService {
     offset?: number
   }): Promise<(HotDealLikeRow & { user: { id: string; name: string; email: string } })[]> {
     const supabase = supabaseAdmin()
+    if (!supabase) {
+      console.error('Supabase admin client not initialized')
+      return []
+    }
     
     let query = supabase
       .from('hot_deal_likes')
@@ -233,6 +257,10 @@ export class SupabaseLikeService {
     }
   } | null> {
     const supabase = supabaseAdmin()
+    if (!supabase) {
+      console.error('Supabase admin client not initialized')
+      return null
+    }
 
     try {
       // 전체 좋아요 수
@@ -302,6 +330,10 @@ export class SupabaseLikeService {
     favorite_categories: string[]
   } | null> {
     const supabase = supabaseAdmin()
+    if (!supabase) {
+      console.error('Supabase admin client not initialized')
+      return null
+    }
 
     try {
       // 전체 좋아요 수
@@ -361,6 +393,10 @@ export class SupabaseLikeService {
     timeframe?: 'day' | 'week' | 'month' | 'all'
   }): Promise<HotDealRow[]> {
     const supabase = supabaseAdmin()
+    if (!supabase) {
+      console.error('Supabase admin client not initialized')
+      return []
+    }
     
     let query = supabase
       .from('hot_deals')

@@ -19,11 +19,29 @@
  */
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { db } from '@/lib/db/database-service'
 import { useAuth } from './use-auth'
 import { toast } from 'sonner'
-import { HotDealComment } from '@/lib/db/local/repositories/hotdeal-comment-repository'
 import { useEffect } from 'react'
+
+// HotDealComment 타입 정의 (LocalStorage 의존성 제거)
+interface HotDealComment {
+  id: string
+  hotdealId: string
+  userId: string
+  content: string
+  parentId?: string // For nested comments
+  likeCount: number
+  likedByUsers?: string[] // Array of user IDs who liked this comment
+  createdAt: Date
+  updatedAt: Date
+  isDeleted?: boolean
+  deletedAt?: Date
+  user?: {
+    id: string
+    name: string
+    image?: string
+  }
+}
 
 export function useHotDealComments(hotdealId: string, enablePolling = true) {
   const queryClient = useQueryClient()
@@ -31,7 +49,9 @@ export function useHotDealComments(hotdealId: string, enablePolling = true) {
   const query = useQuery({
     queryKey: ['hotdeal-comments', hotdealId],
     queryFn: async () => {
-      return await db.hotdealComments.getNestedComments(hotdealId)
+      // Deprecated - LocalStorage removed
+      console.warn('useHotDealComments is deprecated. Use useSupabaseHotdealComments instead.')
+      return []
     },
     enabled: !!hotdealId,
     staleTime: 30 * 1000, // 30초
@@ -71,19 +91,13 @@ export function useCreateComment() {
         throw new Error('로그인이 필요합니다')
       }
       
-      return await db.hotdealComments.createComment({
-        hotdealId,
-        userId: currentUser.id,
-        content,
-        parentId
-      })
+      // Deprecated - LocalStorage removed
+      console.warn('useCreateComment is deprecated. Use useSupabaseHotdealComments instead.')
+      throw new Error('LocalStorage comments is no longer supported. Please use Supabase.')
     },
-    onSuccess: (data) => {
-      // 관련 쿼리 무효화
-      queryClient.invalidateQueries({ queryKey: ['hotdeal-comments', data.hotdealId] })
-      queryClient.invalidateQueries({ queryKey: ['hotdeal', data.hotdealId] })
-      
-      toast.success('댓글이 작성되었습니다')
+    onSuccess: () => {
+      // Since this is deprecated and always throws an error, this won't be called
+      // but TypeScript still checks it
     },
     onError: (error) => {
       if (error.message === '로그인이 필요합니다') {
@@ -111,22 +125,13 @@ export function useUpdateComment() {
         throw new Error('로그인이 필요합니다')
       }
       
-      const comment = await db.hotdealComments.findById(commentId)
-      if (!comment) {
-        throw new Error('댓글을 찾을 수 없습니다')
-      }
-      
-      if (comment.userId !== currentUser.id) {
-        throw new Error('수정 권한이 없습니다')
-      }
-      
-      return await db.hotdealComments.updateComment(commentId, content)
+      // Deprecated - LocalStorage removed
+      console.warn('useUpdateComment is deprecated. Use useSupabaseHotdealComments instead.')
+      throw new Error('LocalStorage comments is no longer supported. Please use Supabase.')
     },
-    onSuccess: (data) => {
-      if (data) {
-        queryClient.invalidateQueries({ queryKey: ['hotdeal-comments', data.hotdealId] })
-        toast.success('댓글이 수정되었습니다')
-      }
+    onSuccess: () => {
+      // Since this is deprecated and always throws an error, this won't be called
+      // but TypeScript still checks it
     },
     onError: (error) => {
       toast.error(error instanceof Error ? error.message : '댓글 수정에 실패했습니다')
@@ -144,26 +149,13 @@ export function useDeleteComment() {
         throw new Error('로그인이 필요합니다')
       }
       
-      const comment = await db.hotdealComments.findById(commentId)
-      if (!comment) {
-        throw new Error('댓글을 찾을 수 없습니다')
-      }
-      
-      if (comment.userId !== currentUser.id) {
-        throw new Error('삭제 권한이 없습니다')
-      }
-      
-      const success = await db.hotdealComments.deleteComment(commentId)
-      if (!success) {
-        throw new Error('댓글 삭제에 실패했습니다')
-      }
-      
-      return comment.hotdealId
+      // Deprecated - LocalStorage removed
+      console.warn('useDeleteComment is deprecated. Use useSupabaseHotdealComments instead.')
+      throw new Error('LocalStorage comments is no longer supported. Please use Supabase.')
     },
-    onSuccess: (hotdealId) => {
-      queryClient.invalidateQueries({ queryKey: ['hotdeal-comments', hotdealId] })
-      queryClient.invalidateQueries({ queryKey: ['hotdeal', hotdealId] })
-      toast.success('댓글이 삭제되었습니다')
+    onSuccess: () => {
+      // Since this is deprecated and always throws an error, this won't be called
+      // but TypeScript still checks it
     },
     onError: (error) => {
       toast.error(error instanceof Error ? error.message : '댓글 삭제에 실패했습니다')
@@ -187,18 +179,13 @@ export function useLikeComment() {
         throw new Error('로그인이 필요합니다')
       }
       
-      const result = isLiked 
-        ? await db.hotdealComments.unlikeComment(commentId, currentUser.id)
-        : await db.hotdealComments.likeComment(commentId, currentUser.id)
-        
-      if (!result) {
-        throw new Error('좋아요 처리에 실패했습니다')
-      }
-      
-      return result
+      // Deprecated - LocalStorage removed
+      console.warn('useLikeComment is deprecated. Use useSupabaseHotdealComments instead.')
+      throw new Error('LocalStorage comments is no longer supported. Please use Supabase.')
     },
-    onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: ['hotdeal-comments', data.hotdealId] })
+    onSuccess: () => {
+      // Since this is deprecated and always throws an error, this won't be called
+      // but TypeScript still checks it
     },
     onError: (error) => {
       if (error.message === '로그인이 필요합니다') {

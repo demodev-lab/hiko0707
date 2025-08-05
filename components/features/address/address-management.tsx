@@ -27,8 +27,23 @@ import {
   Building
 } from 'lucide-react'
 import { useAddresses } from '@/hooks/use-addresses'
-import { Address } from '@/lib/db/local/models'
 import { toast } from 'sonner'
+
+// Address 타입 정의 (LocalStorage 의존성 제거)
+interface Address {
+  id: string
+  userId: string
+  name: string // 배송지 이름 (집, 회사 등)
+  recipientName: string // 수령인 이름
+  phoneNumber: string
+  email: string
+  postalCode: string
+  address: string
+  detailAddress?: string
+  isDefault: boolean // 기본 배송지 여부
+  createdAt: Date
+  updatedAt: Date
+}
 
 const addressSchema = z.object({
   name: z.string().min(1, '배송지 이름을 입력해주세요'),

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { db } from '@/lib/db/database-service'
+import { SupabasePaymentService } from '@/lib/services/supabase-payment-service'
 
 interface RouteContext {
   params: Promise<{ paymentId: string }>
@@ -21,7 +21,7 @@ export async function GET(
     }
 
     // 결제 정보 조회
-    const payment = await db.payments.findById(paymentId)
+    const payment = await SupabasePaymentService.getPaymentById(paymentId)
     
     if (!payment) {
       return NextResponse.json(
@@ -30,27 +30,27 @@ export async function GET(
       )
     }
 
-    // 민감한 정보 제외하고 반환
+    // 민감한 정보 제외하고 반환 (snake_case를 camelCase로 변환)
     const safePayment = {
       id: payment.id,
-      orderId: payment.orderId,
+      orderId: payment.request_id, // request_id를 orderId로 매핑
       amount: payment.amount,
       currency: payment.currency,
-      provider: payment.provider,
+      provider: payment.payment_method, // payment_method를 provider로 매핑
       status: payment.status,
-      paidAmount: payment.paidAmount,
-      fees: payment.fees,
-      netAmount: payment.netAmount,
-      createdAt: payment.createdAt,
-      updatedAt: payment.updatedAt,
-      paidAt: payment.paidAt,
-      failedAt: payment.failedAt,
-      cancelledAt: payment.cancelledAt,
-      refundedAt: payment.refundedAt,
-      failureReason: payment.failureReason,
-      cancelReason: payment.cancelReason,
-      refundReason: payment.refundReason,
-      refundAmount: payment.refundAmount
+      paidAmount: payment.amount, // Supabase 스키마에는 paid_amount가 없으므로 amount 사용
+      fees: 0, // Supabase 스키마에는 fees가 없음
+      netAmount: payment.amount, // Supabase 스키마에는 net_amount가 없음
+      createdAt: payment.created_at,
+      updatedAt: payment.updated_at,
+      paidAt: payment.paid_at,
+      failedAt: null, // Supabase 스키마에는 failed_at이 없음
+      cancelledAt: null, // Supabase 스키마에는 cancelled_at이 없음
+      refundedAt: null, // Supabase 스키마에는 refunded_at이 없음
+      failureReason: null, // Supabase 스키마에는 failure_reason이 없음
+      cancelReason: null, // Supabase 스키마에는 cancel_reason이 없음
+      refundReason: null, // Supabase 스키마에는 refund_reason이 없음
+      refundAmount: 0 // Supabase 스키마에는 refund_amount가 없음
     }
 
     return NextResponse.json(safePayment)

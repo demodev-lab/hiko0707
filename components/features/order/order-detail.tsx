@@ -216,13 +216,13 @@ export function OrderDetail({ order }: OrderDetailProps) {
                 <h4 className="font-semibold mb-2">배송지</h4>
                 <div className="space-y-1 text-sm">
                   <p><strong>받는 분:</strong> {order.shippingAddress.fullName}</p>
-                  <p><strong>연락처:</strong> {order.shippingAddress.phoneNumber}</p>
+                  <p><strong>연락처:</strong> {order.shippingAddress.phone}</p>
                   <p><strong>이메일:</strong> {order.shippingAddress.email}</p>
-                  <p><strong>주소:</strong> {order.shippingAddress.addressLine1}</p>
-                  {order.shippingAddress.addressLine2 && (
-                    <p className="ml-4">{order.shippingAddress.addressLine2}</p>
+                  <p><strong>주소:</strong> {order.shippingAddress.address}</p>
+                  {order.shippingAddress.address_detail && (
+                    <p className="ml-4">{order.shippingAddress.address_detail}</p>
                   )}
-                  <p>{order.shippingAddress.postalCode}</p>
+                  <p>{order.shippingAddress.post_code}</p>
                 </div>
               </div>
 

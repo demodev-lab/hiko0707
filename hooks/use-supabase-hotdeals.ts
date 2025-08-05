@@ -77,7 +77,7 @@ export function useHotDeals(options: UseHotDealsOptions = {}) {
           },
           (payload) => {
             // 좋아요 업데이트는 throttling 적용
-            const throttleKey = `like-update-${payload.new?.hotdeal_id || 'unknown'}`
+            const throttleKey = `like-update-${(payload.new as any)?.hotdeal_id || 'unknown'}`
             const win = window as any
             
             if (win.lastLikeUpdate && win.lastLikeUpdate[throttleKey] && 
@@ -89,8 +89,8 @@ export function useHotDeals(options: UseHotDealsOptions = {}) {
             win.lastLikeUpdate[throttleKey] = Date.now()
             
             console.log('핫딜 좋아요 실시간 업데이트:', payload)
-            if (payload.new?.hotdeal_id) {
-              queryClient.invalidateQueries({ queryKey: ['hotdeal', payload.new.hotdeal_id] })
+            if ((payload.new as any)?.hotdeal_id) {
+              queryClient.invalidateQueries({ queryKey: ['hotdeal', (payload.new as any).hotdeal_id] })
             }
           }
         )
@@ -172,7 +172,7 @@ export function useIncrementHotDealViews() {
         if (old) {
           return {
             ...old,
-            view_count: (old.view_count || 0) + 1
+            views: (old.views || 0) + 1
           }
         }
         return old
@@ -323,23 +323,33 @@ export function useSupabaseHotDeals() {
     error,
     createHotDeal: async (hotdealData: any) => {
       // Transform to Supabase format
+      const currentDate = new Date().toISOString()
+      const price = typeof hotdealData.price === 'number' ? hotdealData.price : 0
+      const originalPrice = hotdealData.originalPrice || price
+      
       const insertData = {
         source: hotdealData.source,
-        source_id: hotdealData.sourcePostId,
+        source_id: hotdealData.sourcePostId || 'unknown',
         category: hotdealData.category || '기타',
         title: hotdealData.title,
         description: hotdealData.productComment || null,
-        price: typeof hotdealData.price === 'number' ? hotdealData.price : null,
-        original_price: null,
+        sale_price: price,
+        original_price: originalPrice,
+        discount_rate: originalPrice > 0 ? Math.round((originalPrice - price) / originalPrice * 100) : 0,
         seller: hotdealData.seller || null,
-        url: hotdealData.originalUrl,
-        image_url: hotdealData.imageUrl || null,
-        thumbnail_url: hotdealData.thumbnailImageUrl || null,
-        view_count: hotdealData.viewCount || 0,
+        original_url: hotdealData.originalUrl || '',
+        image_url: hotdealData.imageUrl || '',
+        thumbnail_url: hotdealData.thumbnailImageUrl || '',
+        views: hotdealData.viewCount || 0,
         like_count: hotdealData.likeCount || 0,
         comment_count: hotdealData.commentCount || 0,
         status: hotdealData.status || 'active',
         is_free_shipping: hotdealData.shipping?.isFree || false,
+        author_name: hotdealData.authorName || 'Unknown',
+        shopping_comment: hotdealData.shoppingComment || '',
+        end_date: hotdealData.endDate || new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(), // 기본 7일 후
+        created_at: currentDate,
+        updated_at: currentDate,
       }
       return SupabaseHotDealService.createHotDeal(insertData)
     },

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { CrawlerManager, CrawlerSource } from '@/lib/crawlers/crawler-manager'
-import { db } from '@/lib/db/database-service'
+// import { db } from '@/lib/db/database-service' // DEPRECATED: 레거시 LocalStorage 시스템
 import { crawlerScheduler } from '@/lib/services/crawler-scheduler'
 
 export async function POST(request: NextRequest) {
@@ -52,27 +52,10 @@ export async function POST(request: NextRequest) {
       let updatedDeals = 0
       
       if (options.saveToDb) {
-        for (const hotdeal of result.hotdeals) {
-          try {
-            const existing = await db.hotdeals.findOne(hd => 
-              hd.source === hotdeal.source && 
-              hd.sourcePostId === hotdeal.sourcePostId
-            )
-            
-            if (existing) {
-              await db.hotdeals.update(existing.id, {
-                ...hotdeal,
-                id: existing.id
-              })
-              updatedDeals++
-            } else {
-              await db.hotdeals.create(hotdeal)
-              newDeals++
-            }
-          } catch (error) {
-            console.error('Failed to save hotdeal:', error)
-          }
-        }
+        // DEPRECATED: LocalStorage 시스템 제거됨
+        // 수동 크롤링은 crawlerScheduler.runCrawlManually()를 사용하세요
+        console.warn('saveToDb 옵션은 더 이상 지원되지 않습니다. manual 옵션을 사용하세요.')
+        newDeals = result.hotdeals.length // 모든 항목을 새 항목으로 표시
       }
       
       totalDeals += result.hotdeals.length

@@ -24,7 +24,6 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { db } from '@/lib/db/database-service'
 import { 
   Payment, 
   PaymentRequest, 
@@ -36,13 +35,12 @@ import { paymentService } from '@/lib/services/payment-service'
 
 // 결제 내역 조회 훅
 export function usePayments(userId?: string) {
-  return useQuery({
+  return useQuery<Payment[]>({
     queryKey: ['payments', userId],
     queryFn: async () => {
-      if (userId) {
-        return db.payments.findByUserId(userId)
-      }
-      return db.payments.findAll()
+      // Deprecated - LocalStorage removed
+      console.warn('usePayments is deprecated. Use useSupabaseOrder instead.')
+      return [] as Payment[]
     },
     staleTime: 1000 * 60 * 5, // 5분
   })
@@ -52,7 +50,11 @@ export function usePayments(userId?: string) {
 export function usePayment(paymentId: string) {
   return useQuery({
     queryKey: ['payment', paymentId],
-    queryFn: () => db.payments.findById(paymentId),
+    queryFn: () => {
+      // Deprecated - LocalStorage removed
+      console.warn('usePayment is deprecated. Use useSupabaseOrder instead.')
+      return null
+    },
     enabled: !!paymentId,
     staleTime: 1000 * 60 * 5,
   })
@@ -62,7 +64,11 @@ export function usePayment(paymentId: string) {
 export function usePaymentsByOrder(orderId: string) {
   return useQuery({
     queryKey: ['payments', 'order', orderId],
-    queryFn: () => db.payments.findByOrderId(orderId),
+    queryFn: () => {
+      // Deprecated - LocalStorage removed
+      console.warn('usePaymentsByOrder is deprecated. Use useSupabaseOrder instead.')
+      return []
+    },
     enabled: !!orderId,
     staleTime: 1000 * 60 * 5,
   })
@@ -88,39 +94,13 @@ export function useCreatePayment() {
       cancelUrl?: string
       metadata?: Record<string, any>
     }) => {
-      // 결제 요청 생성
-      const paymentRequest: Omit<PaymentRequest, 'id' | 'createdAt'> = {
-        orderId: data.orderId,
-        userId: data.userId,
-        amount: data.amount,
-        currency: data.currency,
-        provider: 'card', // 기본값, 실제로는 paymentMethodId로부터 결정
-        paymentMethodId: data.paymentMethodId,
-        description: `Order ${data.orderId} payment`,
-        customerInfo: data.customerInfo,
-        returnUrl: data.returnUrl,
-        cancelUrl: data.cancelUrl,
-        metadata: data.metadata,
-        expiresAt: new Date(Date.now() + 30 * 60 * 1000) // 30분 후 만료
-      }
-
-      // 결제 요청 저장
-      const createdRequest = await paymentService.createPaymentRequest(paymentRequest)
-      await db.paymentRequests.create(createdRequest)
-
-      // 결제 처리
-      const payment = await paymentService.processPayment(createdRequest)
-      
-      // 결제 저장
-      const savedPayment = await db.payments.create(payment)
-      
-      return savedPayment
+      // Deprecated - LocalStorage removed
+      console.warn('useCreatePayment is deprecated. Use useSupabaseOrder instead.')
+      throw new Error('LocalStorage payments is no longer supported. Please use Supabase.')
     },
-    onSuccess: (payment) => {
-      // 캐시 무효화
-      queryClient.invalidateQueries({ queryKey: ['payments'] })
-      queryClient.invalidateQueries({ queryKey: ['payments', 'order', payment.orderId] })
-      queryClient.invalidateQueries({ queryKey: ['payments', payment.userId] })
+    onSuccess: () => {
+      // Since this is deprecated and always throws an error, this won't be called
+      // but TypeScript still checks it
     },
     onError: (error) => {
       console.error('Payment creation failed:', error)
@@ -138,23 +118,13 @@ export function useUpdatePaymentStatus() {
       status: PaymentStatus
       metadata?: Record<string, any>
     }) => {
-      const updatedPayment = await db.payments.updateStatus(
-        data.paymentId,
-        data.status,
-        data.metadata
-      )
-      
-      if (!updatedPayment) {
-        throw new Error('Payment not found')
-      }
-      
-      return updatedPayment
+      // Deprecated - LocalStorage removed
+      console.warn('useUpdatePaymentStatus is deprecated. Use useSupabaseOrder instead.')
+      throw new Error('LocalStorage payments is no longer supported. Please use Supabase.')
     },
-    onSuccess: (payment) => {
-      queryClient.invalidateQueries({ queryKey: ['payments'] })
-      queryClient.invalidateQueries({ queryKey: ['payment', payment.id] })
-      queryClient.invalidateQueries({ queryKey: ['payments', 'order', payment.orderId] })
-      queryClient.invalidateQueries({ queryKey: ['payments', payment.userId] })
+    onSuccess: () => {
+      // Since this is deprecated and always throws an error, this won't be called
+      // but TypeScript still checks it
     }
   })
 }
@@ -165,18 +135,13 @@ export function useCancelPayment() {
 
   return useMutation({
     mutationFn: async (data: { paymentId: string; reason: string }) => {
-      const cancelledPayment = await paymentService.cancelPayment(data.paymentId, data.reason)
-      
-      // DB 업데이트
-      await db.payments.cancelPayment(data.paymentId, data.reason)
-      
-      return cancelledPayment
+      // Deprecated - LocalStorage removed
+      console.warn('useCancelPayment is deprecated. Use useSupabaseOrder instead.')
+      throw new Error('LocalStorage payments is no longer supported. Please use Supabase.')
     },
-    onSuccess: (payment) => {
-      queryClient.invalidateQueries({ queryKey: ['payments'] })
-      queryClient.invalidateQueries({ queryKey: ['payment', payment.id] })
-      queryClient.invalidateQueries({ queryKey: ['payments', 'order', payment.orderId] })
-      queryClient.invalidateQueries({ queryKey: ['payments', payment.userId] })
+    onSuccess: () => {
+      // Since this is deprecated and always throws an error, this won't be called
+      // but TypeScript still checks it
     }
   })
 }
@@ -191,22 +156,13 @@ export function useRefundPayment() {
       amount: number 
       reason: string 
     }) => {
-      const refundedPayment = await paymentService.refundPayment(
-        data.paymentId,
-        data.amount,
-        data.reason
-      )
-      
-      // DB 업데이트
-      await db.payments.processRefund(data.paymentId, data.amount, data.reason)
-      
-      return refundedPayment
+      // Deprecated - LocalStorage removed
+      console.warn('useRefundPayment is deprecated. Use useSupabaseOrder instead.')
+      throw new Error('LocalStorage payments is no longer supported. Please use Supabase.')
     },
-    onSuccess: (payment) => {
-      queryClient.invalidateQueries({ queryKey: ['payments'] })
-      queryClient.invalidateQueries({ queryKey: ['payment', payment.id] })
-      queryClient.invalidateQueries({ queryKey: ['payments', 'order', payment.orderId] })
-      queryClient.invalidateQueries({ queryKey: ['payments', payment.userId] })
+    onSuccess: () => {
+      // Since this is deprecated and always throws an error, this won't be called
+      // but TypeScript still checks it
     }
   })
 }
@@ -225,9 +181,8 @@ export function usePaymentStats(dateFrom?: Date, dateTo?: Date) {
   return useQuery({
     queryKey: ['payment-stats', dateFrom, dateTo],
     queryFn: () => {
-      if (dateFrom && dateTo) {
-        return db.payments.getPaymentStatsByDateRange(dateFrom, dateTo)
-      }
+      // Deprecated - LocalStorage removed
+      console.warn('usePaymentStats is deprecated. Use useSupabaseOrder instead.')
       return null
     },
     enabled: !!(dateFrom && dateTo),
@@ -239,7 +194,11 @@ export function usePaymentStats(dateFrom?: Date, dateTo?: Date) {
 export function usePaymentStatsByProvider() {
   return useQuery({
     queryKey: ['payment-stats-by-provider'],
-    queryFn: () => db.payments.getPaymentStatsByProvider(),
+    queryFn: () => {
+      // Deprecated - LocalStorage removed
+      console.warn('usePaymentStatsByProvider is deprecated. Use useSupabaseOrder instead.')
+      return {}
+    },
     staleTime: 1000 * 60 * 10,
   })
 }
@@ -248,7 +207,11 @@ export function usePaymentStatsByProvider() {
 export function useUserPaymentTotal(userId: string) {
   return useQuery({
     queryKey: ['user-payment-total', userId],
-    queryFn: () => db.payments.getTotalPaidAmountByUser(userId),
+    queryFn: () => {
+      // Deprecated - LocalStorage removed
+      console.warn('useUserPaymentTotal is deprecated. Use useSupabaseOrder instead.')
+      return 0
+    },
     enabled: !!userId,
     staleTime: 1000 * 60 * 5,
   })
@@ -263,10 +226,9 @@ export function usePaymentsLocal(userId?: string) {
   const loadPayments = useCallback(async () => {
     try {
       setLoading(true)
-      const data = userId 
-        ? await db.payments.findByUserId(userId)
-        : await db.payments.findAll()
-      setPayments(data)
+      // Deprecated - LocalStorage removed
+      console.warn('usePaymentsLocal is deprecated. Use useSupabaseOrder instead.')
+      setPayments([])
       setError(null)
     } catch (err) {
       setError(err as Error)
@@ -282,13 +244,9 @@ export function usePaymentsLocal(userId?: string) {
 
   const createPayment = useCallback(async (paymentData: Omit<Payment, 'id' | 'createdAt' | 'updatedAt'>) => {
     try {
-      const newPayment = await db.payments.create({
-        ...paymentData,
-        createdAt: new Date(),
-        updatedAt: new Date()
-      })
-      await loadPayments()
-      return newPayment
+      // Deprecated - LocalStorage removed
+      console.warn('usePaymentsLocal.createPayment is deprecated. Use useSupabaseOrder instead.')
+      throw new Error('LocalStorage payments is no longer supported. Please use Supabase.')
     } catch (err) {
       console.error('Failed to create payment:', err)
       throw err
@@ -297,9 +255,9 @@ export function usePaymentsLocal(userId?: string) {
 
   const updatePaymentStatus = useCallback(async (paymentId: string, status: PaymentStatus, metadata?: Record<string, any>) => {
     try {
-      const updatedPayment = await db.payments.updateStatus(paymentId, status, metadata)
-      await loadPayments()
-      return updatedPayment
+      // Deprecated - LocalStorage removed
+      console.warn('usePaymentsLocal.updatePaymentStatus is deprecated. Use useSupabaseOrder instead.')
+      throw new Error('LocalStorage payments is no longer supported. Please use Supabase.')
     } catch (err) {
       console.error('Failed to update payment status:', err)
       throw err
@@ -308,9 +266,9 @@ export function usePaymentsLocal(userId?: string) {
 
   const cancelPayment = useCallback(async (paymentId: string, reason: string) => {
     try {
-      const result = await db.payments.cancelPayment(paymentId, reason)
-      await loadPayments()
-      return result
+      // Deprecated - LocalStorage removed
+      console.warn('usePaymentsLocal.cancelPayment is deprecated. Use useSupabaseOrder instead.')
+      throw new Error('LocalStorage payments is no longer supported. Please use Supabase.')
     } catch (err) {
       console.error('Failed to cancel payment:', err)
       throw err
@@ -319,9 +277,9 @@ export function usePaymentsLocal(userId?: string) {
 
   const refundPayment = useCallback(async (paymentId: string, amount: number, reason: string) => {
     try {
-      const result = await db.payments.processRefund(paymentId, amount, reason)
-      await loadPayments()
-      return result
+      // Deprecated - LocalStorage removed
+      console.warn('usePaymentsLocal.refundPayment is deprecated. Use useSupabaseOrder instead.')
+      throw new Error('LocalStorage payments is no longer supported. Please use Supabase.')
     } catch (err) {
       console.error('Failed to refund payment:', err)
       throw err

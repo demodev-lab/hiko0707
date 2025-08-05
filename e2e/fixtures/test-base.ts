@@ -6,7 +6,7 @@ type TestFixtures = {
 }
 
 export const test = base.extend<TestFixtures>({
-  locale: ['ko', { option: true }],
+  locale: ['ko', { scope: 'test' }],
   
   page: async ({ page, locale }, use) => {
     // 로케일에 따른 Accept-Language 헤더 설정

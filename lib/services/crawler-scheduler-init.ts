@@ -1,5 +1,5 @@
 import { crawlerScheduler } from './crawler-scheduler'
-import { CrawlerSource } from '@/lib/crawlers/new-crawler-manager'
+import { CrawlerSource } from '@/lib/crawlers/crawler-manager'
 
 // 기본 크롤링 스케줄 설정
 export function initializeDefaultSchedules() {

@@ -23,6 +23,10 @@ export class SupabaseOrderService {
    */
   static async createOrder(orderData: Omit<ProxyPurchaseInsert, 'created_at' | 'updated_at' | 'order_number'>): Promise<ProxyPurchaseRow | null> {
     const supabase = supabaseAdmin()
+    if (!supabase) {
+      console.error('Supabase admin client not initialized')
+      return null
+    }
     
     // 주문 번호 생성 (HIKO + YYYYMMDD + 4자리 랜덤)
     const orderNumber = `HIKO${new Date().toISOString().slice(0, 10).replace(/-/g, '')}${Math.floor(1000 + Math.random() * 9000)}`
@@ -63,6 +67,10 @@ export class SupabaseOrderService {
     offset?: number
   }): Promise<ProxyPurchaseRow[]> {
     const supabase = supabaseAdmin()
+    if (!supabase) {
+      console.error('Supabase admin client not initialized')
+      return []
+    }
     
     let query = supabase
       .from('proxy_purchases_request')
@@ -114,6 +122,10 @@ export class SupabaseOrderService {
    */
   static async getOrderById(orderId: string): Promise<ProxyPurchaseRow | null> {
     const supabase = supabaseAdmin()
+    if (!supabase) {
+      console.error('Supabase admin client not initialized')
+      return null
+    }
 
     const { data, error } = await supabase
       .from('proxy_purchases_request')
@@ -189,6 +201,10 @@ export class SupabaseOrderService {
     notes?: string
   ): Promise<ProxyPurchaseRow | null> {
     const supabase = supabaseAdmin()
+    if (!supabase) {
+      console.error('Supabase admin client not initialized')
+      return null
+    }
 
     // 현재 상태 조회
     const { data: currentOrder } = await supabase
@@ -229,6 +245,10 @@ export class SupabaseOrderService {
    */
   static async updateOrder(orderId: string, updates: ProxyPurchaseUpdate): Promise<ProxyPurchaseRow | null> {
     const supabase = supabaseAdmin()
+    if (!supabase) {
+      console.error('Supabase admin client not initialized')
+      return null
+    }
 
     const updateData: ProxyPurchaseUpdate = {
       ...updates,
@@ -268,6 +288,10 @@ export class SupabaseOrderService {
     notes?: string
   ): Promise<OrderStatusHistoryRow | null> {
     const supabase = supabaseAdmin()
+    if (!supabase) {
+      console.error('Supabase admin client not initialized')
+      return null
+    }
 
     const historyData: OrderStatusHistoryInsert = {
       request_id: requestId,
@@ -297,6 +321,10 @@ export class SupabaseOrderService {
    */
   static async createQuote(quoteData: Omit<ProxyPurchaseQuoteInsert, 'created_at'>): Promise<ProxyPurchaseQuoteRow | null> {
     const supabase = supabaseAdmin()
+    if (!supabase) {
+      console.error('Supabase admin client not initialized')
+      return null
+    }
 
     const insertData: ProxyPurchaseQuoteInsert = {
       ...quoteData,
@@ -327,6 +355,10 @@ export class SupabaseOrderService {
     notes?: string
   ): Promise<ProxyPurchaseQuoteRow | null> {
     const supabase = supabaseAdmin()
+    if (!supabase) {
+      console.error('Supabase admin client not initialized')
+      return null
+    }
 
     const updateData: ProxyPurchaseQuoteUpdate = {
       approval_state: approvalState,
@@ -364,6 +396,10 @@ export class SupabaseOrderService {
     offset?: number
   }): Promise<ProxyPurchaseRow[]> {
     const supabase = supabaseAdmin()
+    if (!supabase) {
+      console.error('Supabase admin client not initialized')
+      return []
+    }
     
     // 기본값 설정으로 성능 최적화
     const { 
@@ -432,6 +468,10 @@ export class SupabaseOrderService {
     cancelled: number
   } | null> {
     const supabase = supabaseAdmin()
+    if (!supabase) {
+      console.error('Supabase admin client not initialized')
+      return null
+    }
 
     let query = supabase
       .from('proxy_purchases_request')
@@ -481,6 +521,10 @@ export class SupabaseOrderService {
    */
   static async getAllPayments(): Promise<Database['public']['Tables']['payments']['Row'][]> {
     const supabase = supabaseAdmin()
+    if (!supabase) {
+      console.error('Supabase admin client not initialized')
+      return []
+    }
 
     const { data, error } = await supabase
       .from('payments')

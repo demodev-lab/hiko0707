@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Progress } from '@/components/ui/progress'
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
 import { TranslationIndicator } from './translation-indicator'
-import { useTranslationStatus } from '@/hooks/use-translations'
+import { useTranslationStatus } from '@/hooks/use-supabase-translations'
 import { Language } from '@/types/hotdeal'
 import { cn } from '@/lib/utils'
 
@@ -40,12 +40,14 @@ export function TranslationStatusPanel({
     return null
   }
 
+  // 번역 가능한 언어 목록 (한국어 제외)
+  const supportedLanguages: Language[] = ['en', 'zh', 'vi', 'mn', 'th', 'ja', 'ru']
   const languages = Object.keys(translationStatus) as Language[]
-  const completedCount = languages.filter(lang => translationStatus[lang] === 'completed').length
-  const totalCount = languages.length - 1 // 한국어 제외
+  const completedCount = languages.length // 존재하는 번역 수
+  const totalCount = supportedLanguages.length
   const progressPercentage = totalCount > 0 ? (completedCount / totalCount) * 100 : 0
 
-  const hasTranslations = languages.some(lang => lang !== 'ko' && translationStatus[lang] !== 'pending')
+  const hasTranslations = languages.length > 0
 
   if (!hasTranslations) {
     return null // 번역이 하나도 시작되지 않았으면 표시하지 않음
@@ -87,8 +89,7 @@ export function TranslationStatusPanel({
 
               {/* 각 언어별 상태 */}
               <div className="grid grid-cols-2 gap-2">
-                {languages
-                  .filter(lang => lang !== 'ko') // 한국어는 원본이므로 제외
+                {supportedLanguages
                   .map(lang => (
                     <div
                       key={lang}
@@ -96,7 +97,7 @@ export function TranslationStatusPanel({
                     >
                       <span className="text-xs font-medium">{languageLabels[lang]}</span>
                       <TranslationIndicator
-                        status={translationStatus[lang]}
+                        status={translationStatus[lang] ? 'completed' : 'pending'}
                         language={lang}
                         showLabel={false}
                       />

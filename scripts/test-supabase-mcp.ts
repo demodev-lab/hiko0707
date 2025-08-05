@@ -47,8 +47,8 @@ async function testConnection() {
         try {
           const response = await fetch(`${supabaseUrl}/rest/v1/`, {
             headers: {
-              'apikey': supabaseAnonKey,
-              'Authorization': `Bearer ${supabaseAnonKey}`
+              'apikey': supabaseAnonKey!,
+              'Authorization': `Bearer ${supabaseAnonKey!}`
             }
           })
           

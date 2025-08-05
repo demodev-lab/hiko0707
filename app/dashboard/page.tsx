@@ -6,13 +6,54 @@ import { Loading, CardLoading } from '@/components/ui/loading'
 import { ProtectedRoute } from '@/components/features/auth/protected-route'
 import { ShoppingBag, TrendingUp, Heart, Clock, User, CreditCard, Package, Bell } from 'lucide-react'
 import Link from 'next/link'
-import { db } from '@/lib/db/database-service'
+import { SupabaseHotDealService } from '@/lib/services/supabase-hotdeal-service'
+import { SupabaseOrderService } from '@/lib/services/supabase-order-service'
+import { SupabasePaymentService } from '@/lib/services/supabase-payment-service'
 import { formatDate } from '@/lib/utils'
+import { HotDeal } from '@/types/hotdeal'
+
+// Supabase 데이터를 HotDeal 타입으로 변환하는 함수
+const mapSupabaseToHotDeal = (supabaseData: any): HotDeal => ({
+  id: supabaseData.id,
+  source: supabaseData.source,
+  sourcePostId: supabaseData.source_id,
+  category: supabaseData.category,
+  title: supabaseData.title,
+  productComment: supabaseData.description,
+  price: supabaseData.sale_price || 0,
+  seller: supabaseData.seller,
+  originalUrl: supabaseData.original_url,
+  imageUrl: supabaseData.image_url,
+  thumbnailImageUrl: supabaseData.thumbnail_url,
+  viewCount: supabaseData.views || 0,
+  likeCount: supabaseData.like_count || 0,
+  commentCount: supabaseData.comment_count || 0,
+  crawledAt: new Date(supabaseData.crawled_at || supabaseData.created_at),
+  status: supabaseData.status,
+  shipping: {
+    isFree: supabaseData.is_free_shipping || false
+  }
+})
 
 async function DashboardStats() {
-  const hotdeals = await db.hotdeals.findAll()
-  const orders = await db.orders.findAll()
-  const payments = await db.payments.findAll()
+  // Supabase에서 데이터 조회
+  const { data: hotdealsData } = await SupabaseHotDealService.getHotDeals({
+    limit: 100,
+    status: 'active'
+  })
+  
+  const ordersData = await SupabaseOrderService.getAllOrders({
+    limit: 100
+  })
+  
+  const paymentsData = await SupabasePaymentService.getAllPayments({
+    limit: 100
+  })
+  
+  // HotDeal 타입으로 변환
+  const hotdeals = hotdealsData.map(mapSupabaseToHotDeal)
+  const orders = ordersData
+  const payments = paymentsData
   
   const recentHotdeals = hotdeals.slice(0, 3)
   const recentOrders = orders.slice(0, 3)
@@ -134,20 +175,20 @@ async function DashboardStats() {
                     <div key={order.id} className="flex items-center justify-between p-3 rounded-lg border">
                       <div>
                         <p className="font-medium text-sm line-clamp-1">
-                          {order.items[0]?.productName || '주문 상품'}
+                          주문 #{order.order_number}
                         </p>
                         <p className="text-xs text-gray-600">
-                          {formatDate(order.createdAt).split(' ')[0]}
+                          {formatDate(new Date(order.created_at)).split(' ')[0]}
                         </p>
                       </div>
                       <Badge variant={
                         order.status === 'delivered' ? 'default' :
-                        order.status === 'purchasing' || order.status === 'shipping' ? 'secondary' :
-                        order.status === 'pending' || order.status === 'confirmed' ? 'outline' : 'destructive'
+                        order.status === 'purchased' || order.status === 'shipped' ? 'secondary' :
+                        order.status === 'pending' || order.status === 'payment_completed' ? 'outline' : 'destructive'
                       }>
                         {order.status === 'delivered' ? '완료' :
-                         order.status === 'purchasing' || order.status === 'shipping' ? '진행중' :
-                         order.status === 'pending' || order.status === 'confirmed' ? '대기' : '취소'}
+                         order.status === 'purchased' || order.status === 'shipped' ? '진행중' :
+                         order.status === 'pending' || order.status === 'payment_completed' ? '대기' : '취소'}
                       </Badge>
                     </div>
                   ))}

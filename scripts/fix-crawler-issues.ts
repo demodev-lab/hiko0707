@@ -42,7 +42,7 @@ async function main() {
     console.log(chalk.cyan('\n🧪 크롤러 테스트 시작...'))
     
     // 간단한 테스트 코드
-    const { PpomppuCrawler } = await import('../lib/crawlers/new-ppomppu-crawler')
+    const { PpomppuCrawler } = await import('../lib/crawlers/ppomppu-crawler')
     const crawler = new PpomppuCrawler({ 
       headless: true, 
       maxPages: 1,

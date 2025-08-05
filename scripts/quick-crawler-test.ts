@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 import { config } from 'dotenv'
-import { HotdealCrawlerManager } from '../lib/crawlers/new-crawler-manager'
+import { CrawlerManager } from '../lib/crawlers/crawler-manager'
 import { SupabaseHotDealRepository } from '../lib/db/supabase/repositories/hotdeal-repository'
 import chalk from 'chalk'
 
@@ -21,7 +21,7 @@ async function quickTest() {
   
   try {
     // 크롤러 매니저 생성 (1페이지만)
-    const manager = new HotdealCrawlerManager({
+    const manager = new CrawlerManager({
       headless: true,
       maxPages: 1,
       delay: 2000,

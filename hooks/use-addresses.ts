@@ -18,9 +18,24 @@
 
 import { useState, useEffect } from 'react'
 import { db } from '@/lib/db/database-service'
-import { Address } from '@/lib/db/local/models'
 import { useAuth } from './use-auth'
 import { toast } from 'sonner'
+
+// Address 타입 정의 (LocalStorage 의존성 제거)
+interface Address {
+  id: string
+  userId: string
+  name: string // 배송지 이름 (집, 회사 등)
+  recipientName: string // 수령인 이름
+  phoneNumber: string
+  email: string
+  postalCode: string
+  address: string
+  detailAddress?: string
+  isDefault: boolean // 기본 배송지 여부
+  createdAt: Date
+  updatedAt: Date
+}
 
 export function useAddresses() {
   const { currentUser } = useAuth()
@@ -34,11 +49,10 @@ export function useAddresses() {
     
     try {
       setLoading(true)
-      const userAddresses = await db.addresses.findByUserId(currentUser.id)
-      setAddresses(userAddresses)
-      
-      const defaultAddr = await db.addresses.findDefaultByUserId(currentUser.id)
-      setDefaultAddress(defaultAddr)
+      // Deprecated - always return empty array since LocalStorage is removed
+      console.warn('useAddresses is deprecated. Use useSupabaseProfile instead.')
+      setAddresses([])
+      setDefaultAddress(null)
     } catch (error) {
       console.error('Failed to load addresses:', error)
       toast.error('배송지 목록을 불러오는데 실패했습니다')
@@ -78,13 +92,15 @@ export function useAddresses() {
       
       console.log('💾 DB에 저장할 최종 데이터:', newAddressData)
       
-      const newAddress = await db.addresses.create(newAddressData)
-      console.log('✅ DB 저장 완료:', newAddress)
+      // Deprecated - don't create in LocalStorage
+      console.warn('useAddresses.createAddress is deprecated. Use useSupabaseProfile instead.')
+      const newAddress = { id: crypto.randomUUID(), ...newAddressData }
 
       // 기본 배송지로 설정하는 경우 다른 배송지들의 기본 설정 해제
       if (addressData.isDefault || isFirstAddress) {
         console.log('🏠 기본 배송지로 설정 중...')
-        await db.addresses.setAsDefault(newAddress.id, currentUser.id)
+        // Deprecated - setAsDefault removed
+        console.warn('setAsDefault is deprecated')
         console.log('✅ 기본 배송지 설정 완료')
       }
 
@@ -111,14 +127,14 @@ export function useAddresses() {
     try {
       setLoading(true)
       
-      const updatedAddress = await db.addresses.update(id, {
-        ...updates,
-        updatedAt: new Date(),
-      })
+      // Deprecated - don't update in LocalStorage
+      console.warn('useAddresses.updateAddress is deprecated. Use useSupabaseProfile instead.')
+      const updatedAddress = null
 
       // 기본 배송지로 설정하는 경우
       if (updates.isDefault) {
-        await db.addresses.setAsDefault(id, currentUser.id)
+        // Deprecated - setAsDefault removed
+        console.warn('setAsDefault is deprecated')
       }
 
       await loadAddresses()
@@ -143,13 +159,15 @@ export function useAddresses() {
       const addressToDelete = addresses.find(addr => addr.id === id)
       const wasDefault = addressToDelete?.isDefault || false
       
-      await db.addresses.delete(id)
+      // Deprecated - don't delete from LocalStorage
+      console.warn('useAddresses.deleteAddress is deprecated. Use useSupabaseProfile instead.')
       
       // 삭제된 배송지가 기본 배송지였다면, 다른 배송지 중 첫 번째를 기본으로 설정
       if (wasDefault && addresses.length > 1) {
         const remainingAddresses = addresses.filter(addr => addr.id !== id)
         if (remainingAddresses.length > 0) {
-          await db.addresses.setAsDefault(remainingAddresses[0].id, currentUser.id)
+          // Deprecated - setAsDefault removed
+          console.warn('setAsDefault is deprecated')
         }
       }
 
@@ -171,7 +189,8 @@ export function useAddresses() {
 
     try {
       setLoading(true)
-      await db.addresses.setAsDefault(id, currentUser.id)
+      // Deprecated - setAsDefault removed
+      console.warn('setAsDefault is deprecated')
       await loadAddresses()
       toast.success('기본 배송지가 설정되었습니다')
       return true

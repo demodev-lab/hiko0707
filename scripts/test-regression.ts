@@ -1,9 +1,10 @@
 import 'dotenv/config'
-import { db } from '../lib/db/database-service'
-// 크롤링 서비스는 현재 구조상 직접 import 불가능하므로 제외
+import { SupabaseHotDealService } from '../lib/services/supabase-hotdeal-service'
+import { SupabaseProfileService } from '../lib/services/supabase-profile-service'
+import { supabase } from '../lib/supabase/client'
 
 async function testRegression() {
-  console.log('🔄 Phase 0.1 회귀 테스트 시작...\n')
+  console.log('🔄 Phase 0.1 회귀 테스트 시작 (Supabase)...\n')
   
   let allTestsPassed = true
   const testResults: { name: string; status: 'PASS' | 'FAIL'; error?: string }[] = []
@@ -25,47 +26,54 @@ async function testRegression() {
     }
   }
 
-  // 1. LocalStorage 데이터베이스 기본 기능 테스트
-  await runTest('LocalStorage 데이터베이스 연결', async () => {
-    const users = await db.users.findAll()
-    if (!Array.isArray(users)) {
-      throw new Error('사용자 목록 조회 실패')
+  // 1. Supabase 데이터베이스 기본 기능 테스트
+  await runTest('Supabase 데이터베이스 연결', async () => {
+    const { data, error } = await supabase()
+      .from('hot_deals')
+      .select('id')
+      .limit(1)
+    
+    if (error) {
+      throw new Error(`핫딜 테이블 접근 실패: ${error.message}`)
     }
   })
 
   await runTest('HotDeal 데이터 조회', async () => {
-    const hotDeals = await db.hotdeals.findAll({ limit: 5 })
+    const { data: hotDeals } = await SupabaseHotDealService.getHotDeals({ limit: 10 })
     if (!Array.isArray(hotDeals)) {
       throw new Error('핫딜 목록 조회 실패')
     }
   })
 
-  await runTest('Post 데이터 조회', async () => {
-    const posts = await db.posts.findAll({ limit: 5 })
-    if (!Array.isArray(posts)) {
-      throw new Error('게시글 목록 조회 실패')
+  await runTest('Profile 서비스 기본 기능', async () => {
+    // 존재하지 않는 프로필 조회 테스트
+    const testUserId = `test-user-${Date.now()}`
+    const profile = await SupabaseProfileService.getProfile(testUserId)
+    // 존재하지 않는 프로필이므로 null이어야 함
+    if (profile !== null) {
+      throw new Error('존재하지 않는 프로필이 반환됨')
     }
   })
 
-  // 2. 인증 시스템 테스트 (기본 구조 확인)
-  await runTest('사용자 생성 테스트', async () => {
-    const testUser = {
-      id: `test-user-${Date.now()}`,
-      name: '테스트 사용자',
-      email: `test${Date.now()}@example.com`,
-      role: 'member' as const,
-      createdAt: new Date(),
-      lastLoginedAt: new Date(),
-      language: 'ko' as const
-    }
+  // 2. 인증 시스템 테스트 (Clerk 통합 확인)
+  await runTest('Clerk 인증 시스템 확인', async () => {
+    // Clerk은 서버 사이드에서 직접 사용자 생성을 지원하지 않음
+    // 대신 프로필 서비스가 정상 작동하는지 확인
+    const testUserId = `test-user-${Date.now()}`
     
-    const createdUser = await db.users.create(testUser)
-    if (!createdUser || createdUser.email !== testUser.email) {
-      throw new Error('사용자 생성 실패')
+    try {
+      // 프로필 서비스가 존재하고 호출 가능한지 확인
+      const profile = await SupabaseProfileService.getProfile(testUserId)
+      // 존재하지 않는 프로필이므로 null이어야 함
+      if (profile !== null) {
+        throw new Error('존재하지 않는 프로필이 반환됨')
+      }
+    } catch (error) {
+      // 프로필을 찾을 수 없다는 오류는 정상
+      if (error instanceof Error && !error.message.includes('프로필을 찾을 수 없습니다')) {
+        throw error
+      }
     }
-
-    // 정리
-    await db.users.delete(createdUser.id)
   })
 
   // 3. 크롤링 시스템 기본 구조 확인
@@ -162,21 +170,12 @@ async function testRegression() {
     }
   })
 
-  // 7. 데이터 무결성 확인
-  await runTest('데이터 무결성 확인', async () => {
-    const users = await db.users.findAll()
-    const hotDeals = await db.hotdeals.findAll({ limit: 10 })
-    
-    // 사용자 데이터 구조 확인
-    if (users.length > 0) {
-      const user = users[0]
-      if (!user.id || !user.email || !user.name) {
-        throw new Error('사용자 데이터 구조 오류')
-      }
-    }
-
+  // 7. Supabase 데이터 무결성 확인
+  await runTest('Supabase 데이터 무결성 확인', async () => {
     // 핫딜 데이터 구조 확인
-    if (hotDeals.length > 0) {
+    const { data: hotDeals } = await SupabaseHotDealService.getHotDeals({ limit: 10 })
+    
+    if (hotDeals && hotDeals.length > 0) {
       const hotDeal = hotDeals[0]
       if (!hotDeal.id || !hotDeal.title || !hotDeal.source) {
         throw new Error('핫딜 데이터 구조 오류')

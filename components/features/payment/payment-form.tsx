@@ -13,10 +13,11 @@ import { Separator } from '@/components/ui/separator'
 import { CreditCard, Smartphone, Building2, Globe } from 'lucide-react'
 import { PaymentFormData, PaymentProvider } from '@/types/payment'
 import { useLanguage } from '@/lib/i18n/context'
-import { usePaymentMethods, useCreatePayment } from '@/hooks/use-payments'
+import { usePaymentMethods } from '@/hooks/use-payments'
 import { toast } from 'sonner'
 import { useAuth } from '@/hooks/use-auth'
 import { useNotifications } from '@/contexts/notification-context'
+import { SupabasePaymentService } from '@/lib/services/supabase-payment-service'
 
 const paymentFormSchema = z.object({
   paymentMethod: z.enum(['card', 'bank_transfer', 'paypal', 'alipay', 'wechat_pay', 'kakao_pay', 'naver_pay', 'toss_pay']),
@@ -63,7 +64,7 @@ export function PaymentForm({
   const { t } = useLanguage()
   const { currentUser } = useAuth()
   const { data: paymentMethods = [], isLoading: methodsLoading } = usePaymentMethods()
-  const createPayment = useCreatePayment()
+  // Removed deprecated useCreatePayment hook - now using SupabasePaymentService directly
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   const form = useForm<PaymentFormData>({
@@ -107,19 +108,20 @@ export function PaymentForm({
         throw new Error('선택한 결제 방법을 찾을 수 없습니다')
       }
 
-      const result = await createPayment.mutateAsync({
-        orderId,
-        userId,
+      // Use Supabase payment service directly
+      const result = await SupabasePaymentService.createPayment({
+        request_id: orderId,
+        user_id: userId,
         amount,
-        currency,
-        paymentMethodId: selectedMethod.id,
-        customerInfo,
-        returnUrl: `${window.location.origin}/payment/success`,
-        cancelUrl: `${window.location.origin}/payment/cancel`,
-        metadata: {
-          paymentFormData: data
-        }
+        currency: currency || 'KRW',
+        payment_method: data.paymentMethod,
+        status: 'pending',
+        payment_gateway: selectedMethod.provider
       })
+
+      if (!result) {
+        throw new Error('결제 생성에 실패했습니다.')
+      }
 
       toast.success('결제가 처리되었습니다!')
       

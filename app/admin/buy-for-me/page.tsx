@@ -13,7 +13,7 @@ export const metadata: Metadata = {
 export default async function BuyForMeAdminPage({
   searchParams,
 }: {
-  searchParams: { page?: string; status?: string; sort?: string }
+  searchParams: Promise<{ page?: string; status?: string; sort?: string }>
 }) {
   const hasAdminRole = await isAdmin()
   
@@ -21,9 +21,10 @@ export default async function BuyForMeAdminPage({
     redirect('/')
   }
 
-  const page = parseInt(searchParams.page || '1')
-  const status = searchParams.status
-  const sort = searchParams.sort || 'created_at'
+  const params = await searchParams
+  const page = parseInt(params.page || '1')
+  const status = params.status
+  const sort = params.sort || 'created_at'
   const pageSize = 20
 
   // 서버사이드에서 페이지네이션된 데이터와 통계 가져오기

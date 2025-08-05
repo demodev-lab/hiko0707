@@ -369,11 +369,10 @@ export class ImageOptimizationService {
   static isAVIFSupported(): boolean {
     if (typeof window === 'undefined') return false
     
-    return new Promise((resolve) => {
-      const avif = new Image()
-      avif.onload = avif.onerror = () => resolve(avif.height === 2)
-      avif.src = 'data:image/avif;base64,AAAAIGZ0eXBhdmlmAAAAAGF2aWZtaWYxbWlhZk1BMUIAAADybWV0YQAAAAAAAAAoaGRscgAAAAAAAAAAcGljdAAAAAAAAAAAAAAAAGxpYmF2aWYAAAAADnBpdG0AAAAAAAEAAAAeaWxvYwAAAABEAAABAAEAAAABAAABGgAAAB0AAAAoaWluZgAAAAAAAQAAABppbmZlAgAAAAABAABhdjAxQ29sb3IAAAAAamlwcnAAAABLaXBjbwAAABRpc3BlAAAAAAAAAAIAAAACAAAAEHBpeGkAAAAAAwgICAAAAAxhdjFDgQ0MAAAAABNjb2xybmNseAACAAIAAYAAAAAXaXBtYQAAAAAAAAABAAEEAQKDBAAAACVtZGF0EgAKCBgABogQEAwgMg8f8D///8WfhwB8+ErK42A='
-    }).catch(() => false)
+    // TODO: AVIF 지원을 정확히 감지하려면 비동기 이미지 로딩이 필요합니다.
+    // 현재는 보수적으로 false를 반환하고, 추후 개선 예정입니다.
+    // AVIF는 아직 브라우저 지원이 제한적이므로 WebP를 주로 사용합니다.
+    return false
   }
 
   /**

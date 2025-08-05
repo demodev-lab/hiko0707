@@ -1,9 +1,9 @@
 #!/usr/bin/env tsx
 
-import { db } from '@/lib/db/database-service'
+import { SupabaseHotDealService } from '@/lib/services/supabase-hotdeal-service'
 import fs from 'fs/promises'
 import path from 'path'
-import { HotdealCrawlerManager } from '@/lib/crawlers/new-crawler-manager'
+import { CrawlerManager } from '@/lib/crawlers/crawler-manager'
 
 async function importLatestHotdeals() {
   console.log('📥 최신 핫딜 JSON 파일 가져오기...')
@@ -26,47 +26,91 @@ async function importLatestHotdeals() {
     console.log(`📄 파일 선택: ${latestFile}`)
     
     // Import using crawler manager
-    const manager = new HotdealCrawlerManager()
+    const manager = new CrawlerManager()
     const hotdeals = await manager.importFromJson(filepath)
     
     console.log(`📊 ${hotdeals.length}개의 핫딜을 가져왔습니다.`)
     
-    // Clear existing hotdeals
+    // Clear existing hotdeals in Supabase
     console.log('🗑️  기존 핫딜 삭제 중...')
-    const existingHotdeals = await db.hotdeals.findAll()
-    for (const hotdeal of existingHotdeals) {
-      await db.hotdeals.delete(hotdeal.id)
-    }
-    console.log(`✅ ${existingHotdeals.length}개의 기존 핫딜이 삭제되었습니다.`)
+    const { data: existingHotdeals, count } = await SupabaseHotDealService.getHotDeals({
+      limit: 1000,
+      status: undefined
+    })
     
-    // Save new hotdeals
+    let deletedCount = 0
+    for (const hotdeal of existingHotdeals) {
+      const success = await SupabaseHotDealService.deleteHotDeal(hotdeal.id)
+      if (success) {
+        deletedCount++
+      }
+    }
+    console.log(`✅ ${deletedCount}개의 기존 핫딜이 삭제되었습니다.`)
+    
+    // Save new hotdeals to Supabase
     console.log('💾 새로운 핫딜 저장 중...')
     let savedCount = 0
+    let skippedCount = 0
     
     for (const hotdeal of hotdeals) {
       try {
-        await db.hotdeals.create({
-          ...hotdeal
-        })
-        savedCount++
+        // 중복 확인
+        const isDuplicate = await SupabaseHotDealService.checkDuplicate(
+          hotdeal.source,
+          hotdeal.sourcePostId
+        )
+        
+        if (isDuplicate) {
+          skippedCount++
+        } else {
+          // SupabaseHotDealService의 importFromCrawler 사용
+          const result = await SupabaseHotDealService.importFromCrawler(
+            hotdeal.source,
+            [{
+              title: hotdeal.title,
+              description: hotdeal.productComment,
+              originalPrice: hotdeal.price,
+              salePrice: hotdeal.price,
+              thumbnailUrl: hotdeal.imageUrl,
+              imageUrl: hotdeal.imageUrl,
+              originalUrl: hotdeal.originalUrl,
+              url: hotdeal.originalUrl,
+              category: hotdeal.category,
+              sourceId: hotdeal.sourcePostId,
+              shopName: hotdeal.seller,
+              isFreeShipping: hotdeal.shipping?.isFree || false,
+              authorName: hotdeal.userId || 'Unknown',
+              shoppingComment: '',
+              postDate: hotdeal.crawledAt?.toISOString() || new Date().toISOString()
+            }]
+          )
+          
+          if (result.added > 0) {
+            savedCount++
+          }
+        }
       } catch (error) {
         console.error(`❌ 핫딜 저장 실패: ${hotdeal.title}`, error)
       }
     }
     
-    console.log(`✅ ${savedCount}개의 핫딜이 저장되었습니다.`)
+    console.log(`✅ ${savedCount}개의 핫딜이 저장되었습니다. (${skippedCount}개 중복 건너뜀)`)
     
-    // Show statistics
-    const stats = await db.hotdeals.findAll()
-    const categories = new Set(stats.map(h => h.category))
-    const stores = new Set(stats.map(h => h.seller).filter(Boolean))
+    // Show statistics from Supabase
+    const { data: allHotdeals, count: totalCount } = await SupabaseHotDealService.getHotDeals({
+      limit: 1000,
+      status: undefined
+    })
+    
+    const categories = new Set(allHotdeals.map(h => h.category))
+    const stores = new Set(allHotdeals.map(h => h.seller).filter(Boolean))
     
     console.log('\n📈 통계:')
-    console.log(`- 총 핫딜 수: ${stats.length}`)
+    console.log(`- 총 핫딜 수: ${totalCount || allHotdeals.length}`)
     console.log(`- 카테고리: ${categories.size}개`)
     console.log(`- 쇼핑몰: ${stores.size}개`)
-    console.log(`- 무료배송: ${stats.filter(h => h.shipping?.isFree).length}개`)
-    console.log(`- 인기 게시글: ${stats.filter(h => h.isPopular).length}개`)
+    console.log(`- 무료배송: ${allHotdeals.filter(h => h.is_free_shipping).length}개`)
+    console.log(`- 전체 게시글: ${allHotdeals.length}개`)
     
   } catch (error) {
     console.error('❌ 가져오기 실패:', error)

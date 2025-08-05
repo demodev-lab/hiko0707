@@ -19,6 +19,10 @@ export class SupabaseCommentService {
    */
   static async createComment(commentData: Omit<CommentInsert, 'created_at' | 'updated_at'>): Promise<CommentRow | null> {
     const supabase = supabaseAdmin()
+    if (!supabase) {
+      console.error('Supabase admin client not initialized')
+      return null
+    }
     
     const insertData: CommentInsert = {
       ...commentData,
@@ -63,6 +67,10 @@ export class SupabaseCommentService {
     includeDeleted?: boolean
   }): Promise<CommentRow[]> {
     const supabase = supabaseAdmin()
+    if (!supabase) {
+      console.error('Supabase admin client not initialized')
+      return []
+    }
     
     let query = supabase
       .from('hot_deal_comments')
@@ -129,6 +137,10 @@ export class SupabaseCommentService {
     offset?: number
   }): Promise<CommentRow[]> {
     const supabase = supabaseAdmin()
+    if (!supabase) {
+      console.error('Supabase admin client not initialized')
+      return []
+    }
     
     let query = supabase
       .from('hot_deal_comments')
@@ -180,6 +192,10 @@ export class SupabaseCommentService {
    */
   static async getReplies(parentCommentId: string): Promise<CommentRow[]> {
     const supabase = supabaseAdmin()
+    if (!supabase) {
+      console.error('Supabase admin client not initialized')
+      return []
+    }
 
     const { data, error } = await supabase
       .from('hot_deal_comments')
@@ -208,6 +224,10 @@ export class SupabaseCommentService {
    */
   static async updateComment(commentId: string, updates: Pick<CommentUpdate, 'content'>): Promise<CommentRow | null> {
     const supabase = supabaseAdmin()
+    if (!supabase) {
+      console.error('Supabase admin client not initialized')
+      return null
+    }
 
     const updateData: CommentUpdate = {
       ...updates,
@@ -241,6 +261,10 @@ export class SupabaseCommentService {
    */
   static async deleteComment(commentId: string): Promise<boolean> {
     const supabase = supabaseAdmin()
+    if (!supabase) {
+      console.error('Supabase admin client not initialized')
+      return false
+    }
 
     const { data, error } = await supabase
       .from('hot_deal_comments')
@@ -266,6 +290,10 @@ export class SupabaseCommentService {
    */
   static async likeComment(commentId: string, userId: string): Promise<CommentLikeRow | null> {
     const supabase = supabaseAdmin()
+    if (!supabase) {
+      console.error('Supabase admin client not initialized')
+      return null
+    }
 
     // 이미 좋아요 했는지 확인
     const { data: existingLike } = await supabase
@@ -309,6 +337,10 @@ export class SupabaseCommentService {
    */
   static async unlikeComment(commentId: string, userId: string): Promise<boolean> {
     const supabase = supabaseAdmin()
+    if (!supabase) {
+      console.error('Supabase admin client not initialized')
+      return false
+    }
 
     const { data, error } = await supabase
       .from('comment_likes')
@@ -336,6 +368,10 @@ export class SupabaseCommentService {
    */
   static async updateCommentLikeCount(commentId: string): Promise<void> {
     const supabase = supabaseAdmin()
+    if (!supabase) {
+      console.error('Supabase admin client not initialized')
+      return
+    }
 
     // 현재 좋아요 수 카운트
     const { count } = await supabase
@@ -358,6 +394,10 @@ export class SupabaseCommentService {
    */
   static async isCommentLikedByUser(commentId: string, userId: string): Promise<boolean> {
     const supabase = supabaseAdmin()
+    if (!supabase) {
+      console.error('Supabase admin client not initialized')
+      return false
+    }
 
     const { data, error } = await supabase
       .from('comment_likes')
@@ -381,6 +421,10 @@ export class SupabaseCommentService {
     offset?: number
   }): Promise<CommentRow[]> {
     const supabase = supabaseAdmin()
+    if (!supabase) {
+      console.error('Supabase admin client not initialized')
+      return []
+    }
     
     let query = supabase
       .from('hot_deal_comments')
@@ -431,6 +475,10 @@ export class SupabaseCommentService {
     most_liked_comment?: CommentRow
   } | null> {
     const supabase = supabaseAdmin()
+    if (!supabase) {
+      console.error('Supabase admin client not initialized')
+      return null
+    }
 
     try {
       // 전체 댓글 수

@@ -39,6 +39,10 @@ export class SupabaseSystemSettingsService {
     updated_by: string
   }): Promise<SystemSettingRow | null> {
     const supabase = supabaseAdmin()
+    if (!supabase) {
+      console.error('Supabase admin client not initialized')
+      return null
+    }
 
     // 중복 키 확인
     const { data: existing } = await supabase
@@ -86,6 +90,10 @@ export class SupabaseSystemSettingsService {
    */
   static async getSetting<T = any>(key: string): Promise<T | null> {
     const supabase = supabaseAdmin()
+    if (!supabase) {
+      console.error('Supabase admin client not initialized')
+      return null
+    }
 
     const { data, error } = await supabase
       .from('system_settings')
@@ -106,6 +114,10 @@ export class SupabaseSystemSettingsService {
    */
   static async getSettingDetail(key: string): Promise<SystemSettingRow | null> {
     const supabase = supabaseAdmin()
+    if (!supabase) {
+      console.error('Supabase admin client not initialized')
+      return null
+    }
 
     const { data, error } = await supabase
       .from('system_settings')
@@ -126,6 +138,10 @@ export class SupabaseSystemSettingsService {
    */
   static async getPublicSettings(): Promise<{ [key: string]: any }> {
     const supabase = supabaseAdmin()
+    if (!supabase) {
+      console.error('Supabase admin client not initialized')
+      return {}
+    }
 
     const { data, error } = await supabase
       .from('system_settings')
@@ -153,6 +169,10 @@ export class SupabaseSystemSettingsService {
     includePrivate: boolean = false
   ): Promise<SystemSettingRow[]> {
     const supabase = supabaseAdmin()
+    if (!supabase) {
+      console.error('Supabase admin client not initialized')
+      return []
+    }
 
     let query = supabase
       .from('system_settings')
@@ -187,6 +207,10 @@ export class SupabaseSystemSettingsService {
     offset?: number
   }): Promise<SystemSettingRow[]> {
     const supabase = supabaseAdmin()
+    if (!supabase) {
+      console.error('Supabase admin client not initialized')
+      return []
+    }
 
     let query = supabase
       .from('system_settings')
@@ -240,6 +264,10 @@ export class SupabaseSystemSettingsService {
     validateValue: boolean = true
   ): Promise<SystemSettingRow | null> {
     const supabase = supabaseAdmin()
+    if (!supabase) {
+      console.error('Supabase admin client not initialized')
+      return null
+    }
 
     // 기존 설정 조회
     const existingSetting = await this.getSettingDetail(key)
@@ -321,6 +349,10 @@ export class SupabaseSystemSettingsService {
    */
   static async deleteSetting(key: string): Promise<boolean> {
     const supabase = supabaseAdmin()
+    if (!supabase) {
+      console.error('Supabase admin client not initialized')
+      return false
+    }
 
     // 기존 설정 조회 (편집 가능 여부 확인)
     const existingSetting = await this.getSettingDetail(key)
@@ -352,6 +384,10 @@ export class SupabaseSystemSettingsService {
    */
   static async getCategories(): Promise<{ category: string; count: number }[]> {
     const supabase = supabaseAdmin()
+    if (!supabase) {
+      console.error('Supabase admin client not initialized')
+      return []
+    }
 
     const { data, error } = await supabase
       .from('system_settings')

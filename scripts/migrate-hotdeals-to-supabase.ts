@@ -63,8 +63,8 @@ async function migrateHotDeals() {
 
     for (const hotdeal of localHotDeals) {
       // 필수 필드 검사
-      if (!hotdeal.source || !hotdeal.sourceId) {
-        log.warning(`유효하지 않은 핫딜 (ID: ${hotdeal.id}) - source 또는 sourceId 없음`)
+      if (!hotdeal.source || !hotdeal.sourcePostId) {
+        log.warning(`유효하지 않은 핫딜 (ID: ${hotdeal.id}) - source 또는 sourcePostId 없음`)
         invalidHotDeals.push(hotdeal)
         continue
       }
@@ -72,7 +72,7 @@ async function migrateHotDeals() {
       // 날짜 형식 검증
       try {
         new Date(hotdeal.crawledAt)
-        if (hotdeal.endDate) new Date(hotdeal.endDate)
+        // endDate는 HotDeal 타입에 없음
         validHotDeals.push(hotdeal)
       } catch (error) {
         log.warning(`유효하지 않은 날짜 형식 (ID: ${hotdeal.id})`)
@@ -105,7 +105,7 @@ async function migrateHotDeals() {
           // 중복 체크
           const exists = await SupabaseHotDealService.checkDuplicate(
             hotdeal.source,
-            hotdeal.sourceId
+            hotdeal.sourcePostId
           )
 
           if (exists) {
@@ -147,7 +147,7 @@ async function migrateHotDeals() {
               // 조회수 동기화
               if (hotdeal.viewCount && hotdeal.viewCount > 0) {
                 // 조회수는 직접 업데이트 불가능하므로 로그만 남김
-                log.gray(`조회수 ${hotdeal.viewCount}은 마이그레이션 후 재설정됩니다`)
+                log.info(`조회수 ${hotdeal.viewCount}은 마이그레이션 후 재설정됩니다`)
               }
             } else {
               totalErrors++
@@ -203,13 +203,13 @@ ${colors.bold}Supabase 핫딜 통계:${colors.reset}
 
 ${colors.bold}소스별 분포:${colors.reset}
 ${Object.entries(stats.bySource)
-  .sort(([, a], [, b]) => b - a)
+  .sort(([, a], [, b]) => (b as number) - (a as number))
   .map(([source, count]) => `  • ${source}: ${count}개`)
   .join('\n')}
 
 ${colors.bold}카테고리별 분포:${colors.reset}
 ${Object.entries(stats.byCategory)
-  .sort(([, a], [, b]) => b - a)
+  .sort(([, a], [, b]) => (b as number) - (a as number))
   .map(([category, count]) => `  • ${category}: ${count}개`)
   .join('\n')}
     `)

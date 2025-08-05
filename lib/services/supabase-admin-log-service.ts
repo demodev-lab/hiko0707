@@ -28,6 +28,10 @@ export class SupabaseAdminLogService {
     session_id?: string
   }): Promise<AdminActivityLogRow | null> {
     const supabase = supabaseAdmin()
+    if (!supabase) {
+      console.error('Supabase admin client not initialized')
+      return null
+    }
 
     const logData: AdminActivityLogInsert = {
       admin_id: data.admin_id,
@@ -73,6 +77,10 @@ export class SupabaseAdminLogService {
     sortOrder?: 'asc' | 'desc'
   }): Promise<(AdminActivityLogRow & { admin: { name: string; email: string } })[]> {
     const supabase = supabaseAdmin()
+    if (!supabase) {
+      console.error('Supabase admin client not initialized')
+      return []
+    }
 
     let query = supabase
       .from('admin_activity_logs')
@@ -143,6 +151,10 @@ export class SupabaseAdminLogService {
     }
   ): Promise<AdminActivityLogRow[]> {
     const supabase = supabaseAdmin()
+    if (!supabase) {
+      console.error('Supabase admin client not initialized')
+      return []
+    }
 
     let query = supabase
       .from('admin_activity_logs')
@@ -184,6 +196,10 @@ export class SupabaseAdminLogService {
     entities_modified: number
   } | null> {
     const supabase = supabaseAdmin()
+    if (!supabase) {
+      console.error('Supabase admin client not initialized')
+      return null
+    }
 
     try {
       let query = supabase
@@ -283,6 +299,10 @@ export class SupabaseAdminLogService {
     }
   ): Promise<AdminActivityLogRow[]> {
     const supabase = supabaseAdmin()
+    if (!supabase) {
+      console.error('Supabase admin client not initialized')
+      return []
+    }
 
     let query = supabase
       .from('admin_activity_logs')
@@ -335,6 +355,10 @@ export class SupabaseAdminLogService {
     offset?: number
   }): Promise<AdminActivityLogRow[]> {
     const supabase = supabaseAdmin()
+    if (!supabase) {
+      console.error('Supabase admin client not initialized')
+      return []
+    }
 
     const securityActions = [
       'user_delete',
@@ -388,6 +412,11 @@ export class SupabaseAdminLogService {
     error?: string
   }> {
     const supabase = supabaseAdmin()
+    if (!supabase) {
+      console.error('Supabase admin client not initialized')
+      return { deleted_count: 0, error: 'Supabase admin client not initialized' }
+    }
+
     const cutoffDate = new Date()
     cutoffDate.setDate(cutoffDate.getDate() - daysOld)
 
@@ -442,6 +471,10 @@ export class SupabaseAdminLogService {
     admin_summary: { admin_id: string; name: string; action_count: number }[]
   } | null> {
     const supabase = supabaseAdmin()
+    if (!supabase) {
+      console.error('Supabase admin client not initialized')
+      return null
+    }
 
     try {
       let query = supabase

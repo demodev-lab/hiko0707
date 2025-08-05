@@ -27,10 +27,11 @@ import { format } from 'date-fns'
 import { ko } from 'date-fns/locale'
 import Link from 'next/link'
 import { HotDeal } from '@/types/hotdeal'
+import { UserProfile } from '@/types/user'
 
 export default function ProfilePage() {
   const { user, isLoading: userLoading } = useSupabaseUser()
-  const { updateProfile } = useSupabaseProfile()
+  const { updateProfile } = useSupabaseProfile(user?.id || null)
   const { isAuthenticated } = useClerkRole()
   const { signOut } = useClerk()
   const { language, setLanguage } = useLanguage()
@@ -61,7 +62,7 @@ export default function ProfilePage() {
         name: user.name || '',
         email: user.email,
         phone: user.phone || '',
-        address: user.address || '',
+        address: '', // user_addresses 테이블에서 별도로 조회해야 함
         preferredLanguage: user.preferred_language || language
       })
     }
@@ -73,7 +74,7 @@ export default function ProfilePage() {
       const total = ordersData.length
       const completed = ordersData.filter(o => o.status === 'delivered').length
       const spent = ordersData.reduce((sum, order) => {
-        return sum + (order.quotes?.[0]?.total_amount || order.estimated_total_amount || 0)
+        return sum + (order.quote?.totalAmount || order.estimatedTotalAmount || 0)
       }, 0)
       
       setStats({
@@ -98,14 +99,17 @@ export default function ProfilePage() {
     // loadLikedHotdeals()
   }, [user])
 
-  const handleSave = async () => {
+  const handleSave = () => {
     if (!user) return
     
     try {
-      await updateProfile.mutateAsync({
-        name: formData.name,
-        phone: formData.phone,
-        preferred_language: formData.preferredLanguage
+      updateProfile({
+        userId: user.id,
+        updates: {
+          display_name: formData.name,
+          phone_number: formData.phone,
+          language: formData.preferredLanguage
+        } as Partial<UserProfile>
       })
       
       // Update global language if changed
@@ -113,7 +117,6 @@ export default function ProfilePage() {
         setLanguage(formData.preferredLanguage as any)
       }
       
-      toast.success('프로필이 업데이트되었습니다')
       setIsEditing(false)
     } catch (error) {
       console.error('프로필 업데이트 오류:', error)
@@ -140,14 +143,14 @@ export default function ProfilePage() {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-6">
             <Avatar className="w-20 h-20 border-4 border-white">
-              <AvatarImage src={user.avatar} />
+              <AvatarImage src={undefined} />
               <AvatarFallback>{user.name?.[0] || user.email[0].toUpperCase()}</AvatarFallback>
             </Avatar>
             <div>
               <h1 className="text-3xl font-bold mb-1">{user.name || '사용자'}</h1>
               <p className="text-blue-100">{user.email}</p>
               <p className="text-sm text-blue-200 mt-1">
-                가입일: {format(new Date(user.createdAt), 'yyyy년 MM월 dd일', { locale: ko })}
+                가입일: {format(new Date(user.created_at), 'yyyy년 MM월 dd일', { locale: ko })}
               </p>
             </div>
           </div>
@@ -322,18 +325,18 @@ export default function ProfilePage() {
               <CardTitle>최근 주문 내역</CardTitle>
             </CardHeader>
             <CardContent>
-              {ordersData?.items && ordersData.items.length > 0 ? (
+              {ordersData && ordersData.length > 0 ? (
                 <div className="space-y-4">
-                  {ordersData.items.slice(0, 5).map((order) => (
+                  {ordersData.slice(0, 5).map((order) => (
                     <div key={order.id} className="border rounded-lg p-4">
                       <div className="flex justify-between items-start">
                         <div>
-                          <p className="font-medium">주문번호: {order.orderNumber}</p>
+                          <p className="font-medium">상품: {order.productInfo.title}</p>
                           <p className="text-sm text-gray-600">
-                            {format(new Date(order.createdAt), 'yyyy-MM-dd HH:mm')}
+                            {format(new Date(order.requestDate), 'yyyy-MM-dd HH:mm')}
                           </p>
                           <p className="text-sm mt-1">
-                            상품 {order.items.length}개 • ₩{order.totalAmount.toLocaleString()}
+                            수량 {order.quantity}개 • ₩{(order.quote?.totalAmount || order.estimatedTotalAmount).toLocaleString()}
                           </p>
                         </div>
                         <div className="flex items-center gap-2">
@@ -342,14 +345,17 @@ export default function ProfilePage() {
                             order.status === 'cancelled' ? 'destructive' :
                             'secondary'
                           }>
-                            {order.status === 'confirmed' && '주문확인'}
+                            {order.status === 'pending_review' && '검토중'}
+                            {order.status === 'quote_sent' && '견적발송'}
+                            {order.status === 'payment_pending' && '결제대기'}
+                            {order.status === 'payment_completed' && '결제완료'}
                             {order.status === 'purchasing' && '구매중'}
                             {order.status === 'shipping' && '배송중'}
                             {order.status === 'delivered' && '배송완료'}
                             {order.status === 'cancelled' && '취소됨'}
                           </Badge>
                           <Button size="sm" variant="outline" asChild>
-                            <Link href={`/order/${order.id}`}>
+                            <Link href={`/buy-for-me/${order.id}`}>
                               상세보기
                             </Link>
                           </Button>
@@ -358,10 +364,10 @@ export default function ProfilePage() {
                     </div>
                   ))}
                   
-                  {ordersData.total > 5 && (
+                  {ordersData.length > 5 && (
                     <div className="text-center pt-4">
                       <Button variant="outline" asChild>
-                        <Link href="/orders">
+                        <Link href="/buy-for-me">
                           전체 주문 내역 보기
                         </Link>
                       </Button>

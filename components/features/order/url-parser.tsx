@@ -161,7 +161,7 @@ export function UrlParser({ onProductParsed }: UrlParserProps) {
                 <div className="w-28 h-28 relative bg-gray-100 rounded-lg border-2 border-white shadow-md overflow-hidden">
                   <Image 
                     src={parsedInfo.imageUrl} 
-                    alt={parsedInfo.productName}
+                    alt={parsedInfo.productName || '상품 이미지'}
                     fill
                     className="object-cover"
                     sizes="(max-width: 768px) 112px, 112px"

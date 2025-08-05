@@ -178,23 +178,17 @@ export function useSupabaseBuyForMe() {
           if (!fullRequest) return null
           
           const [payment, address] = await Promise.all([
-            SupabasePaymentService.getPaymentByRequestId(request.id),
+            SupabasePaymentService.getPaymentsByRequest(request.id),
             request.shipping_address_id 
-              ? SupabaseAddressService.getAddressById(request.shipping_address_id)
+              ? SupabaseAddressService.getUserAddressById(request.shipping_address_id)
               : null
           ])
           
-          // quotes 배열에서 첫 번째 quote 가져오기 (가장 최신)
-          const quote = fullRequest.quotes && Array.isArray(fullRequest.quotes) && fullRequest.quotes.length > 0 
-            ? fullRequest.quotes[0] 
-            : null
+          // quotes와 status_history는 현재 Supabase 스키마에 없음
+          const quote = null
+          const statusHistory: any[] = []
           
-          // status_history 배열 가져오기
-          const statusHistory = fullRequest.status_history && Array.isArray(fullRequest.status_history) 
-            ? fullRequest.status_history 
-            : []
-          
-          return mapSupabaseToLocalFormat(fullRequest, payment, address, quote, statusHistory)
+          return mapSupabaseToLocalFormat(fullRequest, payment?.[0] || null, address, quote, statusHistory)
         })
       )
       
@@ -301,9 +295,8 @@ export function useSupabaseBuyForMe() {
       const { proxyRequest, addressData } = mapLocalToSupabaseFormat(data)
       
       // 1. 주소 정보 생성
-      const address = await SupabaseAddressService.createAddress({
+      const address = await SupabaseAddressService.createUserAddress({
         user_id: currentUser.id,
-        type: 'shipping',
         ...addressData
       })
       
@@ -363,23 +356,17 @@ export function useSupabaseBuyForMe() {
     if (!proxyRequest) return null
 
     const [payment, address] = await Promise.all([
-      SupabasePaymentService.getPaymentByRequestId(requestId),
+      SupabasePaymentService.getPaymentsByRequest(requestId),
       proxyRequest.shipping_address_id 
-        ? SupabaseAddressService.getAddressById(proxyRequest.shipping_address_id)
+        ? SupabaseAddressService.getUserAddressById(proxyRequest.shipping_address_id)
         : null
     ])
 
-    // quotes 배열에서 첫 번째 quote 가져오기 (가장 최신)
-    const quote = proxyRequest.quotes && Array.isArray(proxyRequest.quotes) && proxyRequest.quotes.length > 0 
-      ? proxyRequest.quotes[0] 
-      : null
+    // quotes와 status_history는 현재 Supabase 스키마에 없음
+    const quote = null
+    const statusHistory: any[] = []
 
-    // status_history 배열 가져오기
-    const statusHistory = proxyRequest.status_history && Array.isArray(proxyRequest.status_history) 
-      ? proxyRequest.status_history 
-      : []
-
-    return mapSupabaseToLocalFormat(proxyRequest, payment, address, quote, statusHistory)
+    return mapSupabaseToLocalFormat(proxyRequest, payment?.[0] || null, address, quote, statusHistory)
   }, [])
 
   // 견적 승인
@@ -467,17 +454,18 @@ export function useSupabaseBuyForMeAdmin() {
       // 각 요청에 대한 상세 정보 조회 (quote 정보 포함)
       const requestsWithDetails = await Promise.all(
         proxyRequests.map(async (request) => {
-          const [payment, address] = await Promise.all([
-            SupabasePaymentService.getPaymentByRequestId(request.id),
+          const [payments, address] = await Promise.all([
+            SupabasePaymentService.getPaymentsByRequest(request.id),
             request.shipping_address_id 
-              ? SupabaseAddressService.getAddressById(request.shipping_address_id)
+              ? SupabaseAddressService.getUserAddressById(request.shipping_address_id)
               : null
           ])
           
+          // payments 배열에서 첫 번째 payment 선택 (가장 최신)
+          const payment = payments.length > 0 ? payments[0] : null
+          
           // quotes 배열에서 첫 번째 quote 가져오기 (가장 최신)
-          const quote = request.quotes && Array.isArray(request.quotes) && request.quotes.length > 0 
-            ? request.quotes[0] 
-            : null
+          const quote = null
           
           // status_history는 getAllOrders에서 조회하지 않으므로 빈 배열로 처리
           // 필요시 개별적으로 getOrderById를 호출해야 함
@@ -589,17 +577,18 @@ export function useSupabaseBuyForMeAdmin() {
     
     const requestsWithDetails = await Promise.all(
       proxyRequests.map(async (request) => {
-        const [payment, address] = await Promise.all([
-          SupabasePaymentService.getPaymentByRequestId(request.id),
+        const [payments, address] = await Promise.all([
+          SupabasePaymentService.getPaymentsByRequest(request.id),
           request.shipping_address_id 
-            ? SupabaseAddressService.getAddressById(request.shipping_address_id)
+            ? SupabaseAddressService.getUserAddressById(request.shipping_address_id)
             : null
         ])
         
-        // quotes 배열에서 첫 번째 quote 가져오기 (가장 최신)
-        const quote = request.quotes && Array.isArray(request.quotes) && request.quotes.length > 0 
-          ? request.quotes[0] 
-          : null
+        // payments 배열에서 첫 번째 payment 선택 (가장 최신)
+        const payment = payments.length > 0 ? payments[0] : null
+        
+        // quotes는 Supabase에서 별도로 조회해야 함 (현재는 null로 처리)
+        const quote = null
         
         // status_history는 getAllOrders에서 조회하지 않으므로 빈 배열로 처리
         const statusHistory: OrderStatusHistoryRow[] = []

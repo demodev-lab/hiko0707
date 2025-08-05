@@ -91,12 +91,13 @@ describe('AccessibleModal', () => {
     expect(screen.getByRole('dialog')).toHaveClass('custom-modal')
   })
 
-  it('renders footer when provided', () => {
-    const footer = <button>Footer Button</button>
+  it('renders children content correctly', () => {
     render(
-      <AccessibleModal {...defaultProps} footer={footer} />
+      <AccessibleModal {...defaultProps}>
+        <button>Content Button</button>
+      </AccessibleModal>
     )
-    expect(screen.getByText('Footer Button')).toBeInTheDocument()
+    expect(screen.getByText('Content Button')).toBeInTheDocument()
   })
 
   it('applies size variants correctly', () => {

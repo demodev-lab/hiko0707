@@ -1,4 +1,4 @@
-import cron from 'node-cron'
+import * as cron from 'node-cron'
 import { HotDealExpiryService } from './hotdeal-expiry-service'
 import chalk from 'chalk'
 
@@ -38,7 +38,6 @@ export class HotDealScheduler {
     const expiryTask = cron.schedule('0 * * * *', async () => {
       await this.runExpiryProcess()
     }, {
-      scheduled: false,
       timezone: 'Asia/Seoul'
     })
 
@@ -46,7 +45,6 @@ export class HotDealScheduler {
     const dailyReportTask = cron.schedule('0 9 * * *', async () => {
       await this.runDailyReport()
     }, {
-      scheduled: false,
       timezone: 'Asia/Seoul'
     })
 
@@ -54,7 +52,6 @@ export class HotDealScheduler {
     const weeklyCleanupTask = cron.schedule('0 6 * * 0', async () => {
       await this.runWeeklyCleanup()
     }, {
-      scheduled: false,
       timezone: 'Asia/Seoul'
     })
 

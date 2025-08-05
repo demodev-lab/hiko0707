@@ -17,6 +17,10 @@ export class SupabaseFavoriteService {
    */
   static async addToFavorites(hotDealId: string, userId: string): Promise<UserFavoriteHotDealRow | null> {
     const supabase = supabaseAdmin()
+    if (!supabase) {
+      console.error('Supabase admin client not initialized')
+      return null
+    }
 
     // 이미 즐겨찾기에 있는지 확인
     const { data: existingFavorite } = await supabase
@@ -57,6 +61,10 @@ export class SupabaseFavoriteService {
    */
   static async removeFromFavorites(hotDealId: string, userId: string): Promise<boolean> {
     const supabase = supabaseAdmin()
+    if (!supabase) {
+      console.error('Supabase admin client not initialized')
+      return false
+    }
 
     const { data, error } = await supabase
       .from('user_favorite_hotdeals')
@@ -78,6 +86,10 @@ export class SupabaseFavoriteService {
    */
   static async isHotDealFavorited(hotDealId: string, userId: string): Promise<boolean> {
     const supabase = supabaseAdmin()
+    if (!supabase) {
+      console.error('Supabase admin client not initialized')
+      return false
+    }
 
     const { data, error } = await supabase
       .from('user_favorite_hotdeals')
@@ -104,6 +116,10 @@ export class SupabaseFavoriteService {
     sortOrder?: 'asc' | 'desc'
   }): Promise<(UserFavoriteHotDealRow & { hot_deal: HotDealRow })[]> {
     const supabase = supabaseAdmin()
+    if (!supabase) {
+      console.error('Supabase admin client not initialized')
+      return []
+    }
     
     let query = supabase
       .from('user_favorite_hotdeals')
@@ -246,6 +262,10 @@ export class SupabaseFavoriteService {
     }
   } | null> {
     const supabase = supabaseAdmin()
+    if (!supabase) {
+      console.error('Supabase admin client not initialized')
+      return null
+    }
 
     try {
       const lastWeek = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
@@ -345,6 +365,10 @@ export class SupabaseFavoriteService {
     excludeExpired?: boolean
   }): Promise<HotDealRow[]> {
     const supabase = supabaseAdmin()
+    if (!supabase) {
+      console.error('Supabase admin client not initialized')
+      return []
+    }
 
     try {
       // 사용자의 즐겨찾기 카테고리 분석
@@ -407,6 +431,10 @@ export class SupabaseFavoriteService {
     removed_deleted: number
   }> {
     const supabase = supabaseAdmin()
+    if (!supabase) {
+      console.error('Supabase admin client not initialized')
+      return { removed_duplicates: 0, removed_expired: 0, removed_deleted: 0 }
+    }
 
     try {
       let removedDuplicates = 0

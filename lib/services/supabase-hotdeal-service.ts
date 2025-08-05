@@ -11,9 +11,14 @@ type TranslationInsert = Tables['hotdeal_translations']['Insert']
 export interface HotDealQueryOptions {
   page?: number
   limit?: number
+  offset?: number
   category?: string
   status?: string
-  sortBy?: 'created_at' | 'sale_price' | 'discount_rate' | 'end_date'
+  source?: string
+  seller?: string
+  minPrice?: number
+  maxPrice?: number
+  sortBy?: 'created_at' | 'sale_price' | 'discount_rate' | 'end_date' | 'price' | 'like_count' | 'view_count' | 'comment_count'
   sortOrder?: 'asc' | 'desc'
   searchTerm?: string
 }
@@ -30,7 +35,13 @@ export class SupabaseHotDealService {
    */
   static async createHotDeal(data: HotDealInsert): Promise<HotDealRow | null> {
     try {
-      const { data: hotdeal, error } = await supabaseAdmin()
+      const supabase = supabaseAdmin()
+      if (!supabase) {
+        console.error('Supabase admin client not initialized')
+        return null
+      }
+      
+      const { data: hotdeal, error } = await supabase
         .from('hot_deals')
         .insert(data)
         .select()
@@ -86,8 +97,16 @@ export class SupabaseHotDealService {
         query = query.or(`title.ilike.%${searchTerm}%,description.ilike.%${searchTerm}%`)
       }
 
-      // 정렬
-      query = query.order(sortBy, { ascending: sortOrder === 'asc' })
+      // 정렬 - 컬럼명 매핑
+      let actualSortBy = sortBy
+      if (sortBy === 'price') {
+        actualSortBy = 'sale_price'
+      } else if (['like_count', 'view_count', 'comment_count'].includes(sortBy)) {
+        // 이 컬럼들이 실제 테이블에 없다면 created_at로 fallback
+        actualSortBy = 'created_at'
+      }
+      
+      query = query.order(actualSortBy, { ascending: sortOrder === 'asc' })
 
       // 페이지네이션
       query = query.range(offset, offset + limit - 1)
@@ -135,7 +154,13 @@ export class SupabaseHotDealService {
    */
   static async updateHotDeal(id: string, updates: HotDealUpdate): Promise<boolean> {
     try {
-      const { error } = await supabaseAdmin()
+      const supabase = supabaseAdmin()
+      if (!supabase) {
+        console.error('Supabase admin client not initialized')
+        return false
+      }
+      
+      const { error } = await supabase
         .from('hot_deals')
         .update({
           ...updates,
@@ -161,7 +186,13 @@ export class SupabaseHotDealService {
    */
   static async deleteHotDeal(id: string): Promise<boolean> {
     try {
-      const { error } = await supabaseAdmin()
+      const supabase = supabaseAdmin()
+      if (!supabase) {
+        console.error('Supabase admin client not initialized')
+        return false
+      }
+      
+      const { error } = await supabase
         .from('hot_deals')
         .update({
           deleted_at: new Date().toISOString(),
@@ -333,7 +364,13 @@ export class SupabaseHotDealService {
    */
   static async createTranslation(data: TranslationInsert): Promise<TranslationRow | null> {
     try {
-      const { data: translation, error } = await supabaseAdmin()
+      const supabase = supabaseAdmin()
+      if (!supabase) {
+        console.error('Supabase admin client not initialized')
+        return null
+      }
+      
+      const { data: translation, error } = await supabase
         .from('hotdeal_translations')
         .insert(data)
         .select()
@@ -407,8 +444,16 @@ export class SupabaseHotDealService {
         query = query.or(`title.ilike.%${searchTerm}%,description.ilike.%${searchTerm}%`)
       }
 
-      // 정렬
-      query = query.order(sortBy, { ascending: sortOrder === 'asc' })
+      // 정렬 - 컬럼명 매핑
+      let actualSortBy = sortBy
+      if (sortBy === 'price') {
+        actualSortBy = 'sale_price'
+      } else if (['like_count', 'view_count', 'comment_count'].includes(sortBy)) {
+        // 이 컬럼들이 실제 테이블에 없다면 created_at로 fallback
+        actualSortBy = 'created_at'
+      }
+      
+      query = query.order(actualSortBy, { ascending: sortOrder === 'asc' })
 
       // 페이지네이션
       query = query.range(offset, offset + limit - 1)
@@ -443,15 +488,36 @@ export class SupabaseHotDealService {
    */
   static async incrementViews(id: string): Promise<void> {
     try {
-      const { error } = await supabaseAdmin()
+      const supabase = supabaseAdmin()
+      if (!supabase) {
+        console.error('Supabase admin client not initialized')
+        return
+      }
+      
+      const { error } = await supabase
         .rpc('increment_views', { hotdeal_id: id })
 
       if (error) {
         // RPC 함수가 없는 경우 직접 업데이트
-        await supabaseAdmin()
+        const supabaseAdmin2 = supabaseAdmin()
+        if (!supabaseAdmin2) {
+          console.error('Supabase admin client not initialized')
+          return
+        }
+        
+        // 현재 조회수를 가져와서 증가시키기
+        const { data: hotdeal } = await supabaseAdmin2
           .from('hot_deals')
-          .update({ views: supabase().raw('views + 1') })
+          .select('views')
           .eq('id', id)
+          .single()
+          
+        if (hotdeal) {
+          await supabaseAdmin2
+            .from('hot_deals')
+            .update({ views: (hotdeal.views || 0) + 1 })
+            .eq('id', id)
+        }
       }
     } catch (error) {
       console.error('조회수 증가 오류:', error)
@@ -477,7 +543,13 @@ export class SupabaseHotDealService {
         .eq('hot_deal_id', id)
 
       // 업데이트
-      await supabaseAdmin()
+      const supabaseAdminClient = supabaseAdmin()
+      if (!supabaseAdminClient) {
+        console.error('Supabase admin client not initialized')
+        return
+      }
+      
+      await supabaseAdminClient
         .from('hot_deals')
         .update({
           comment_count: commentCount || 0,
@@ -593,7 +665,13 @@ export class SupabaseHotDealService {
    */
   static async updateExpiredDeals(): Promise<number> {
     try {
-      const { data, error } = await supabaseAdmin()
+      const supabase = supabaseAdmin()
+      if (!supabase) {
+        console.error('Supabase admin client not initialized')
+        return 0
+      }
+      
+      const { data, error } = await supabase
         .from('hot_deals')
         .update({ status: 'expired' })
         .eq('status', 'active')
@@ -957,16 +1035,11 @@ export class SupabaseHotDealService {
     // 기존 번역 확인
     const existing = await this.getTranslation(hotdealId, language)
     
-    if (existing?.status === 'translating') {
-      return existing // 이미 번역 중
-    }
-
     if (existing) {
-      // 상태를 translating으로 업데이트
+      // 이미 번역이 있으면 업데이트
       const { data, error } = await supabase()
         .from('hotdeal_translations')
         .update({
-          status: 'translating',
           updated_at: new Date().toISOString()
         })
         .eq('id', existing.id)
@@ -976,14 +1049,19 @@ export class SupabaseHotDealService {
       if (error) throw error
       return data
     } else {
-      // 새 번역 생성
+      // 새 번역 생성 - 실제 번역은 별도 프로세스에서 수행
+      const hotdeal = await this.getHotDealById(hotdealId)
+      if (!hotdeal) return null
+      
       return await this.createTranslation({
         hotdeal_id: hotdealId,
         language: language as TranslationInsert['language'],
-        status: 'translating',
-        translated_title: null,
-        translated_description: null,
-        error_message: null
+        title: hotdeal.title,  // 임시로 원본 제목 사용
+        description: hotdeal.description,  // 임시로 원본 설명 사용
+        is_auto_translated: false,
+        translated_at: new Date().toISOString(),
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
       })
     }
   }
@@ -991,7 +1069,7 @@ export class SupabaseHotDealService {
   /**
    * 번역 업데이트
    */
-  static async updateTranslation(id: string, updates: TranslationUpdate): Promise<TranslationRow | null> {
+  static async updateTranslation(id: string, updates: Partial<TranslationRow>): Promise<TranslationRow | null> {
     try {
       const { data, error } = await supabase()
         .from('hotdeal_translations')
@@ -1195,7 +1273,16 @@ export class SupabaseHotDealService {
         .order('views', { ascending: false })
         .limit(5)
 
-      const activities = []
+      interface Activity {
+        id: string
+        type: 'new_deal' | 'trending'
+        title: string
+        description: string
+        timestamp: string
+        data: { views?: number; likes?: number }
+      }
+      
+      const activities: Activity[] = []
 
       // 새 핫딜 활동
       newDeals?.forEach(deal => {

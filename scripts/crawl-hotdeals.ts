@@ -1,8 +1,7 @@
 #!/usr/bin/env tsx
 
 import { Command } from 'commander'
-import { CrawlerManager } from '@/lib/crawlers/crawler-manager'
-import { CrawlerSource } from '@/lib/crawlers/types'
+import { CrawlerManager, CrawlerSource } from '@/lib/crawlers/crawler-manager'
 import chalk from 'chalk'
 import { CrawlerOptions } from '@/lib/crawlers/base-hotdeal-crawler'
 
@@ -52,6 +51,11 @@ program
           const results = [{
             source: 'imported',
             hotdeals,
+            totalCrawled: hotdeals.length,
+            newDeals: hotdeals.length,
+            updatedDeals: 0,
+            errors: 0,
+            duration: 0,
             statistics: {},
             crawledAt: new Date().toISOString()
           }]

@@ -679,7 +679,7 @@ export function BuyForMeModal({ open, onOpenChange, hotdeal }: BuyForMeModalProp
                         {addresses.map((address) => (
                           <SelectItem key={address.id} value={address.id}>
                             <div className="flex items-center gap-2">
-                              {address.isDefault && <BookmarkCheck className="w-3 h-3 text-blue-600" />}
+                              {address.is_default && <BookmarkCheck className="w-3 h-3 text-blue-600" />}
                               <span>{address.name}</span>
                             </div>
                           </SelectItem>

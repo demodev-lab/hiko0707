@@ -298,9 +298,35 @@ export function OrderFormV2({ initialData, hotdealId, onSuccess }: OrderFormProp
         }
       }
 
+      // OrderFormData를 Supabase proxy_purchases_request 형식으로 변환
       const orderData = {
-        ...data,
-        userId: currentUser.id
+        user_id: currentUser.id,
+        hot_deal_id: hotdealId || '00000000-0000-0000-0000-000000000000', // 직접 주문의 경우 NULL UUID 사용
+        quantity: data.items.reduce((sum, item) => sum + item.quantity, 0),
+        option: data.items.map(item => 
+          item.options ? Object.entries(item.options).map(([key, value]) => `${key}: ${value}`).join(', ') : ''
+        ).filter(Boolean).join(' | ') || null,
+        special_requests: data.customerNotes || null,
+        status: 'payment_pending', // 초기 상태
+        product_info: JSON.parse(JSON.stringify({
+          items: data.items.map(item => ({
+            title: item.productName,
+            originalPrice: item.price,
+            discountedPrice: item.price,
+            discountRate: 0,
+            shippingFee: 0,
+            imageUrl: item.imageUrl,
+            originalUrl: item.productUrl || '',
+            siteName: '직접 주문',
+            quantity: item.quantity,
+            notes: item.notes
+          })),
+          shippingAddress: data.shippingAddress,
+          paymentMethod: data.paymentMethod,
+          subtotal: subtotal,
+          serviceFee: serviceFee,
+          totalAmount: totalAmount
+        }))
       }
       
       console.log('주문 데이터:', orderData)
@@ -853,7 +879,7 @@ export function OrderFormV2({ initialData, hotdealId, onSuccess }: OrderFormProp
                             {addresses.map((address) => (
                               <SelectItem key={address.id} value={address.id}>
                                 <div className="flex items-center gap-2">
-                                  {address.isDefault && <BookmarkCheck className="w-3 h-3 text-blue-600" />}
+                                  {address.is_default && <BookmarkCheck className="w-3 h-3 text-blue-600" />}
                                   <span>{address.name}</span>
                                 </div>
                               </SelectItem>

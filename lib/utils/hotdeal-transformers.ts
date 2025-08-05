@@ -1,5 +1,5 @@
 import type { Database } from '@/database.types'
-import type { HotDeal } from '@/types/hotdeal'
+import type { HotDeal, HotDealSource } from '@/types/hotdeal'
 
 type Tables = Database['public']['Tables']
 type HotDealRow = Tables['hot_deals']['Row']
@@ -12,32 +12,31 @@ export function transformLocalToSupabase(local: HotDeal): HotDealInsert {
   return {
     // 기본 정보
     title: local.title,
-    description: local.description || null,
     
-    // 가격 정보
-    original_price: local.originalPrice,
-    sale_price: local.salePrice,
-    discount_rate: local.discountRate,
+    // 가격 정보 - HotDeal은 단일 price 필드만 가짐
+    original_price: local.price,
+    sale_price: local.price,
+    discount_rate: 0, // HotDeal에는 할인율 정보가 없음
     
     // 이미지
-    thumbnail_url: local.thumbnailUrl,
-    image_url: local.imageUrl || local.thumbnailUrl,
+    thumbnail_url: local.thumbnailImageUrl || local.imageUrl || '',
+    image_url: local.originalImageUrl || local.imageUrl || '',
     
     // URL
-    original_url: local.originalUrl || local.url,
+    original_url: local.originalUrl,
     
     // 카테고리 및 소스
-    category: local.category,
+    category: local.category || 'general',
     source: local.source,
-    source_id: local.sourcePostId || local.sourceId || '',
+    source_id: local.sourcePostId,
     
     // 판매자 정보
-    seller: local.shopName || null,
-    is_free_shipping: !local.deliveryFee || local.deliveryFee === 0,
+    seller: local.seller,
+    is_free_shipping: local.shipping?.isFree || false,
     
     // 상태 관리
-    status: local.isExpired ? 'expired' : 'active',
-    end_date: local.postDate || new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+    status: local.status === 'ended' ? 'expired' : 'active',
+    end_date: local.crawledAt ? new Date(new Date(local.crawledAt).getTime() + 7 * 24 * 60 * 60 * 1000).toISOString() : new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
     
     // 통계
     views: local.viewCount || 0,
@@ -45,11 +44,11 @@ export function transformLocalToSupabase(local: HotDeal): HotDealInsert {
     like_count: local.communityRecommendCount || 0,
     
     // 추가 정보
-    author_name: 'Unknown', // LocalStorage에 없는 필드
-    shopping_comment: '', // LocalStorage에 없는 필드
+    author_name: local.userId || 'Unknown',
+    shopping_comment: local.productComment || '',
     
     // 타임스탬프
-    created_at: local.crawledAt || new Date().toISOString(),
+    created_at: local.crawledAt instanceof Date ? local.crawledAt.toISOString() : (local.crawledAt || new Date().toISOString()),
     updated_at: new Date().toISOString()
   }
 }
@@ -63,64 +62,50 @@ export function transformSupabaseToLocal(supabase: HotDealRow): HotDeal {
     
     // 기본 정보
     title: supabase.title,
-    description: supabase.description || '',
     
-    // 가격 정보
-    originalPrice: supabase.original_price,
-    salePrice: supabase.sale_price,
-    discountRate: supabase.discount_rate,
+    // 가격 정보 - HotDeal은 단일 price 필드만 가짐
     price: supabase.sale_price,
     
     // 이미지
-    thumbnailUrl: supabase.thumbnail_url,
     imageUrl: supabase.image_url,
+    thumbnailImageUrl: supabase.thumbnail_url,
     originalImageUrl: supabase.image_url,
     
     // URL
-    url: supabase.original_url,
     originalUrl: supabase.original_url,
     
     // 카테고리 및 소스
     category: supabase.category,
-    source: supabase.source,
-    sourceId: supabase.source_id,
+    source: supabase.source as HotDealSource,
     sourcePostId: supabase.source_id,
     
     // 판매자 정보
-    shopName: supabase.seller || '',
     seller: supabase.seller || '',
-    deliveryFee: supabase.is_free_shipping ? 0 : null,
     shipping: {
-      isFree: supabase.is_free_shipping || false,
-      fee: supabase.is_free_shipping ? 0 : null
+      isFree: supabase.is_free_shipping || false
     },
     
     // 상태 관리
-    isHot: false, // Supabase에서는 제거됨
-    isExpired: supabase.status === 'expired',
-    isNsfw: false, // Supabase에서는 제거됨
+    isHot: false,
     isPopular: supabase.like_count > 100,
-    ranking: null,
+    ranking: undefined,
     
     // 날짜
-    postDate: supabase.end_date,
+    crawledAt: new Date(supabase.created_at),
     
     // 통계
     viewCount: supabase.views,
     communityRecommendCount: supabase.like_count,
     communityCommentCount: supabase.comment_count,
     commentCount: supabase.comment_count,
+    likeCount: supabase.like_count,
     
     // 상태
-    status: supabase.status,
-    
-    // 타임스탬프
-    crawledAt: supabase.created_at,
-    createdAt: supabase.created_at,
-    updatedAt: supabase.updated_at,
+    status: supabase.status === 'expired' ? 'ended' : 'active',
     
     // 추가 필드
-    userId: supabase.author_name || 'Unknown'
+    userId: supabase.author_name,
+    productComment: supabase.shopping_comment || undefined
   }
 }
 
@@ -152,7 +137,6 @@ export function transformCrawlerData(source: string, data: any): HotDealInsert {
 function transformPpomppuData(data: any): HotDealInsert {
   return {
     title: data.title || '',
-    description: data.description || null,
     original_price: data.originalPrice || 0,
     sale_price: data.salePrice || 0,
     discount_rate: data.discountRate || calculateDiscountRate(data.originalPrice, data.salePrice),
@@ -182,7 +166,6 @@ function transformPpomppuData(data: any): HotDealInsert {
 function transformRuliwebData(data: any): HotDealInsert {
   return {
     title: data.title || '',
-    description: data.description || null,
     original_price: data.originalPrice || 0,
     sale_price: data.salePrice || 0,
     discount_rate: data.discountRate || calculateDiscountRate(data.originalPrice, data.salePrice),
@@ -212,7 +195,6 @@ function transformRuliwebData(data: any): HotDealInsert {
 function transformClienData(data: any): HotDealInsert {
   return {
     title: data.title || '',
-    description: data.description || null,
     original_price: data.originalPrice || 0,
     sale_price: data.salePrice || 0,
     discount_rate: data.discountRate || calculateDiscountRate(data.originalPrice, data.salePrice),
@@ -242,7 +224,6 @@ function transformClienData(data: any): HotDealInsert {
 function transformQuasarzoneData(data: any): HotDealInsert {
   return {
     title: data.title || '',
-    description: data.description || null,
     original_price: data.originalPrice || 0,
     sale_price: data.salePrice || 0,
     discount_rate: data.discountRate || calculateDiscountRate(data.originalPrice, data.salePrice),
@@ -272,7 +253,6 @@ function transformQuasarzoneData(data: any): HotDealInsert {
 function transformCoolenjoyData(data: any): HotDealInsert {
   return {
     title: data.title || '',
-    description: data.description || null,
     original_price: data.originalPrice || 0,
     sale_price: data.salePrice || 0,
     discount_rate: data.discountRate || calculateDiscountRate(data.originalPrice, data.salePrice),
@@ -302,7 +282,6 @@ function transformCoolenjoyData(data: any): HotDealInsert {
 function transformItcmData(data: any): HotDealInsert {
   return {
     title: data.title || '',
-    description: data.description || null,
     original_price: data.originalPrice || 0,
     sale_price: data.salePrice || 0,
     discount_rate: data.discountRate || calculateDiscountRate(data.originalPrice, data.salePrice),
@@ -332,7 +311,6 @@ function transformItcmData(data: any): HotDealInsert {
 function transformGenericData(source: string, data: any): HotDealInsert {
   return {
     title: data.title || '',
-    description: data.description || null,
     original_price: data.originalPrice || 0,
     sale_price: data.salePrice || 0,
     discount_rate: data.discountRate || calculateDiscountRate(data.originalPrice, data.salePrice),

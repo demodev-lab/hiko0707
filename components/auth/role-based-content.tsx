@@ -60,7 +60,7 @@ export function ShowForRole({
   }
   
   // 현재 사용자의 역할이 허용된 역할에 포함되는지 확인
-  const userRole = isAdmin ? 'admin' : (currentUser.role || 'guest')
+  const userRole: UserRole = isAdmin ? 'admin' : (currentUser.role as UserRole || 'guest')
   let hasPermission = roles.includes(userRole)
   
   // includeHigherRoles가 true이고 admin인 경우 모든 권한 허용
@@ -91,7 +91,7 @@ export function HideForRole({ children, roles }: HideForRoleProps) {
   }
   
   // 현재 사용자의 역할이 숨겨야 할 역할에 포함되는지 확인
-  const userRole = isAdmin ? 'admin' : (currentUser.role || 'guest')
+  const userRole: UserRole = isAdmin ? 'admin' : (currentUser.role as UserRole || 'guest')
   const shouldHide = roles.includes(userRole)
   
   return shouldHide ? null : <>{children}</>

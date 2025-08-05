@@ -20,6 +20,10 @@ export class SupabaseAddressService {
    */
   static async createUserAddress(addressData: Omit<UserAddressInsert, 'created_at' | 'updated_at'>): Promise<UserAddressRow | null> {
     const supabase = supabaseAdmin()
+    if (!supabase) {
+      console.error('Supabase admin client not initialized')
+      return null
+    }
     
     const insertData: UserAddressInsert = {
       ...addressData,
@@ -52,6 +56,10 @@ export class SupabaseAddressService {
    */
   static async getUserAddresses(userId: string): Promise<UserAddressRow[]> {
     const supabase = supabaseAdmin()
+    if (!supabase) {
+      console.error('Supabase admin client not initialized')
+      return []
+    }
 
     const { data, error } = await supabase
       .from('user_addresses')
@@ -73,6 +81,10 @@ export class SupabaseAddressService {
    */
   static async getDefaultAddress(userId: string): Promise<UserAddressRow | null> {
     const supabase = supabaseAdmin()
+    if (!supabase) {
+      console.error('Supabase admin client not initialized')
+      return null
+    }
 
     const { data, error } = await supabase
       .from('user_addresses')
@@ -94,6 +106,10 @@ export class SupabaseAddressService {
    */
   static async getUserAddressById(addressId: string): Promise<UserAddressRow | null> {
     const supabase = supabaseAdmin()
+    if (!supabase) {
+      console.error('Supabase admin client not initialized')
+      return null
+    }
 
     const { data, error } = await supabase
       .from('user_addresses')
@@ -114,6 +130,10 @@ export class SupabaseAddressService {
    */
   static async updateUserAddress(addressId: string, updates: UserAddressUpdate): Promise<UserAddressRow | null> {
     const supabase = supabaseAdmin()
+    if (!supabase) {
+      console.error('Supabase admin client not initialized')
+      return null
+    }
 
     const updateData: UserAddressUpdate = {
       ...updates,
@@ -160,6 +180,10 @@ export class SupabaseAddressService {
    */
   static async deleteUserAddress(addressId: string): Promise<boolean> {
     const supabase = supabaseAdmin()
+    if (!supabase) {
+      console.error('Supabase admin client not initialized')
+      return false
+    }
 
     const { error } = await supabase
       .from('user_addresses')
@@ -179,6 +203,10 @@ export class SupabaseAddressService {
    */
   private static async clearDefaultAddress(userId: string): Promise<void> {
     const supabase = supabaseAdmin()
+    if (!supabase) {
+      console.error('Supabase admin client not initialized')
+      return
+    }
 
     await supabase
       .from('user_addresses')
@@ -192,6 +220,10 @@ export class SupabaseAddressService {
    */
   static async setDefaultAddress(addressId: string): Promise<UserAddressRow | null> {
     const supabase = supabaseAdmin()
+    if (!supabase) {
+      console.error('Supabase admin client not initialized')
+      return null
+    }
 
     // 먼저 해당 주소의 사용자 ID 조회
     const { data: address } = await supabase
@@ -217,6 +249,10 @@ export class SupabaseAddressService {
    */
   static async createProxyPurchaseAddress(addressData: ProxyPurchaseAddressInsert): Promise<ProxyPurchaseAddressRow | null> {
     const supabase = supabaseAdmin()
+    if (!supabase) {
+      console.error('Supabase admin client not initialized')
+      return null
+    }
 
     const { data, error } = await supabase
       .from('proxy_purchase_addresses')
@@ -237,6 +273,10 @@ export class SupabaseAddressService {
    */
   static async getProxyPurchaseAddress(proxyPurchaseId: string): Promise<ProxyPurchaseAddressRow | null> {
     const supabase = supabaseAdmin()
+    if (!supabase) {
+      console.error('Supabase admin client not initialized')
+      return null
+    }
 
     const { data, error } = await supabase
       .from('proxy_purchase_addresses')
@@ -257,6 +297,10 @@ export class SupabaseAddressService {
    */
   static async updateProxyPurchaseAddress(addressId: string, updates: ProxyPurchaseAddressUpdate): Promise<ProxyPurchaseAddressRow | null> {
     const supabase = supabaseAdmin()
+    if (!supabase) {
+      console.error('Supabase admin client not initialized')
+      return null
+    }
 
     // undefined 값 제거
     const updateData = { ...updates }

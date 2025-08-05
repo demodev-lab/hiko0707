@@ -239,8 +239,7 @@ export class CrawlerManager {
     try {
       const manager = new CrawlerManager({
         maxPages: options.maxPages || 2,
-        delay: options.pageDelay || 3000,
-        retryAttempts: options.retryAttempts || 3
+        delay: options.pageDelay || 3000
       })
 
       const results = await manager.crawl(options.sources)

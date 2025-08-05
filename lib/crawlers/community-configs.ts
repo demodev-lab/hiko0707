@@ -1,5 +1,43 @@
-import { CommunitySelectors } from './community-crawler'
 import { HotDealSource } from '@/types/hotdeal'
+
+// 커뮤니티별 셀렉터 타입 정의
+export interface CommunitySelectors {
+  // 기본 필드
+  postList?: string
+  postTitle?: string
+  postLink?: string
+  postPrice?: string
+  postImage?: string
+  postAuthor?: string
+  postDate?: string
+  postViews?: string
+  postComments?: string
+  
+  // Ppomppu 특화 필드들
+  listRows?: string
+  nextPageButton?: string
+  titleLink?: string
+  titleText?: string
+  imageThumb?: string
+  category?: string
+  author?: string
+  date?: string
+  views?: string
+  recommend?: string
+  commentCount?: string
+  endedMark?: string
+  
+  // 상세 페이지
+  contentContainer?: string
+  mainContent?: string
+  priceInfo?: string
+  sellerInfo?: string
+  shippingInfo?: string
+  detailImages?: string
+  
+  // 기타
+  [key: string]: string | string[] | undefined // 추가 커스텀 필드들 (배열도 지원)
+}
 
 // 커뮤니티별 설정 타입
 export interface CommunityConfig {
@@ -300,39 +338,39 @@ export const COMMUNITY_CONFIGS: Record<HotDealSource, CommunityConfig> = {
     }
   },
   
-  itcm: {
-    name: 'itcm',
-    displayName: 'ITCM',
-    baseUrl: 'https://www.itcm.co.kr',
-    boardUrl: 'https://www.itcm.co.kr/board/sale',
-    selectors: {
-      // 목록 페이지 - ITCM 특화
-      listRows: '.board-list tbody tr',
-      nextPageButton: '.pagination .next',
-      
-      // 목록 항목
-      titleLink: '.subject a',
-      titleText: '.subject a',
-      imageThumb: '.subject img.thumb',
-      category: '.category',
-      author: '.writer',
-      date: '.date',
-      views: '.hit',
-      recommend: '.recommend',
-      commentCount: '.comment',
-      endedMark: '.end-icon',
-      
-      // 상세 페이지
-      detailImage: [
-        '.board-view img',
-        '.content-view img'
-      ],
-      detailContent: [
-        '.board-view',
-        '.content-view'
-      ]
-    }
-  }
+  // itcm: {
+  //   name: 'itcm',
+  //   displayName: 'ITCM',
+  //   baseUrl: 'https://www.itcm.co.kr',
+  //   boardUrl: 'https://www.itcm.co.kr/board/sale',
+  //   selectors: {
+  //     // 목록 페이지 - ITCM 특화
+  //     listRows: '.board-list tbody tr',
+  //     nextPageButton: '.pagination .next',
+  //     
+  //     // 목록 항목
+  //     titleLink: '.subject a',
+  //     titleText: '.subject a',
+  //     imageThumb: '.subject img.thumb',
+  //     category: '.category',
+  //     author: '.writer',
+  //     date: '.date',
+  //     views: '.hit',
+  //     recommend: '.recommend',
+  //     commentCount: '.comment',
+  //     endedMark: '.end-icon',
+  //     
+  //     // 상세 페이지
+  //     detailImage: [
+  //       '.board-view img',
+  //       '.content-view img'
+  //     ],
+  //     detailContent: [
+  //       '.board-view',
+  //       '.content-view'
+  //     ]
+  //   }
+  // }
 }
 
 // 카테고리 정규화 맵

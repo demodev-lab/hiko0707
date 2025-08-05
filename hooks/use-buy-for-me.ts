@@ -17,7 +17,6 @@
 
 import { useState, useCallback, useEffect } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { db } from '@/lib/db/database-service'
 import type { BuyForMeRequest, CreateBuyForMeRequestData } from '@/types/buy-for-me'
 import { useAuth } from './use-auth'
 import { toast } from 'sonner'
@@ -32,7 +31,9 @@ export function useBuyForMe() {
     queryKey: ['buyForMeRequests', currentUser?.id],
     queryFn: async () => {
       if (!currentUser) return []
-      return db.buyForMeRequests.findByUserId(currentUser.id)
+      // Deprecated - LocalStorage removed
+      console.warn('useBuyForMe is deprecated. Use useSupabaseBuyForMe instead.')
+      return []
     },
     enabled: !!currentUser,
   })
@@ -40,15 +41,9 @@ export function useBuyForMe() {
   // 새로운 Buy for Me 요청 생성
   const createRequestMutation = useMutation({
     mutationFn: async (data: CreateBuyForMeRequestData) => {
-      const newRequest: Omit<BuyForMeRequest, 'id'> = {
-        ...data,
-        status: 'pending_review',
-        requestDate: new Date(),
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      }
-      
-      return db.buyForMeRequests.create(newRequest)
+      // Deprecated - LocalStorage removed
+      console.warn('useBuyForMe.createRequest is deprecated. Use useSupabaseBuyForMe instead.')
+      throw new Error('LocalStorage BuyForMe is no longer supported. Please use Supabase.')
     },
     onSuccess: (newRequest) => {
       queryClient.invalidateQueries({ queryKey: ['buyForMeRequests'] })
@@ -63,19 +58,15 @@ export function useBuyForMe() {
 
   // 특정 요청 조회
   const getRequest = useCallback(async (id: string) => {
-    return db.buyForMeRequests.findById(id)
+    console.warn('useBuyForMe.getRequest is deprecated. Use useSupabaseBuyForMe instead.')
+    return null
   }, [])
 
   // 견적 승인
   const approveQuoteMutation = useMutation({
     mutationFn: async (requestId: string) => {
-      // 먼저 견적을 승인하고
-      const approvedRequest = await db.buyForMeRequests.approveQuote(requestId)
-      // 그다음 상태를 payment_pending으로 변경
-      if (approvedRequest) {
-        return db.buyForMeRequests.updateStatus(requestId, 'payment_pending')
-      }
-      return approvedRequest
+      console.warn('useBuyForMe.approveQuote is deprecated. Use useSupabaseBuyForMe instead.')
+      throw new Error('LocalStorage BuyForMe is no longer supported. Please use Supabase.')
     },
     onSuccess: (request) => {
       queryClient.invalidateQueries({ queryKey: ['buyForMeRequests'] })
@@ -90,7 +81,8 @@ export function useBuyForMe() {
   // 요청 취소
   const cancelRequestMutation = useMutation({
     mutationFn: async (requestId: string) => {
-      return db.buyForMeRequests.updateStatus(requestId, 'cancelled')
+      console.warn('useBuyForMe.cancelRequest is deprecated. Use useSupabaseBuyForMe instead.')
+      throw new Error('LocalStorage BuyForMe is no longer supported. Please use Supabase.')
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['buyForMeRequests'] })
@@ -118,12 +110,16 @@ export function useBuyForMeAdmin() {
   // 모든 Buy for Me 요청 조회
   const { data: allRequests = [], isLoading } = useQuery({
     queryKey: ['buyForMeRequests', 'admin'],
-    queryFn: () => db.buyForMeRequests.findAll(),
+    queryFn: () => {
+      console.warn('useBuyForMeAdmin is deprecated. Use useSupabaseBuyForMe instead.')
+      return []
+    },
   })
 
   // 상태별 요청 조회
   const getRequestsByStatus = useCallback(async (status: BuyForMeRequest['status']) => {
-    return db.buyForMeRequests.findByStatus(status)
+    console.warn('useBuyForMeAdmin.getRequestsByStatus is deprecated. Use useSupabaseBuyForMe instead.')
+    return []
   }, [])
 
   // 견적서 작성
@@ -135,7 +131,8 @@ export function useBuyForMeAdmin() {
       requestId: string
       quote: BuyForMeRequest['quote'] 
     }) => {
-      return db.buyForMeRequests.addQuote(requestId, quote)
+      console.warn('useBuyForMeAdmin.createQuote is deprecated. Use useSupabaseBuyForMe instead.')
+      throw new Error('LocalStorage BuyForMe is no longer supported. Please use Supabase.')
     },
     onSuccess: (request) => {
       queryClient.invalidateQueries({ queryKey: ['buyForMeRequests'] })
@@ -156,7 +153,8 @@ export function useBuyForMeAdmin() {
       requestId: string
       orderInfo: BuyForMeRequest['orderInfo'] 
     }) => {
-      return db.buyForMeRequests.addOrderInfo(requestId, orderInfo)
+      console.warn('useBuyForMeAdmin.updateOrderInfo is deprecated. Use useSupabaseBuyForMe instead.')
+      throw new Error('LocalStorage BuyForMe is no longer supported. Please use Supabase.')
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['buyForMeRequests'] })
@@ -175,7 +173,8 @@ export function useBuyForMeAdmin() {
       trackingNumber: string
       trackingUrl?: string 
     }) => {
-      return db.buyForMeRequests.updateTrackingInfo(requestId, trackingNumber, trackingUrl)
+      console.warn('useBuyForMeAdmin.updateTracking is deprecated. Use useSupabaseBuyForMe instead.')
+      throw new Error('LocalStorage BuyForMe is no longer supported. Please use Supabase.')
     },
     onSuccess: (request) => {
       queryClient.invalidateQueries({ queryKey: ['buyForMeRequests'] })
@@ -196,7 +195,8 @@ export function useBuyForMeAdmin() {
       requestId: string
       status: BuyForMeRequest['status'] 
     }) => {
-      return db.buyForMeRequests.updateStatus(requestId, status)
+      console.warn('useBuyForMeAdmin.updateStatus is deprecated. Use useSupabaseBuyForMe instead.')
+      throw new Error('LocalStorage BuyForMe is no longer supported. Please use Supabase.')
     },
     onSuccess: (request, variables) => {
       queryClient.invalidateQueries({ queryKey: ['buyForMeRequests'] })
@@ -215,7 +215,8 @@ export function useBuyForMeAdmin() {
   // 전체 요청 업데이트 (견적서 작성 시 사용)
   const updateRequestMutation = useMutation({
     mutationFn: async (request: BuyForMeRequest) => {
-      return db.buyForMeRequests.update(request.id, request)
+      console.warn('useBuyForMeAdmin.updateRequest is deprecated. Use useSupabaseBuyForMe instead.')
+      throw new Error('LocalStorage BuyForMe is no longer supported. Please use Supabase.')
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['buyForMeRequests'] })

@@ -69,12 +69,12 @@ export class SupabaseProfileService {
     const supabase = getSupabaseClient()
     const insertData: ProfileInsert = {
       user_id: userId,
-      display_name: profileData.displayName || null,
-      phone_number: profileData.phoneNumber || null,
-      avatar_url: profileData.avatarUrl || null,
+      display_name: profileData.display_name || null,
+      phone_number: profileData.phone_number || null,
+      avatar_url: profileData.avatar_url || null,
       language: profileData.language || 'ko',
-      notification_enabled: profileData.notificationEnabled ?? true,
-      notification_types: profileData.notificationTypes || ['order_status', 'hot_deal'],
+      notification_enabled: profileData.notification_enabled ?? true,
+      notification_types: profileData.notification_types || ['order_status', 'hot_deal'],
       created_at: new Date().toISOString()
     }
 
@@ -98,12 +98,12 @@ export class SupabaseProfileService {
   static async updateProfile(userId: string, updates: Partial<UserProfile>): Promise<UserProfile | null> {
     const supabase = getSupabaseClient()
     const updateData: ProfileUpdate = {
-      display_name: updates.displayName,
-      phone_number: updates.phoneNumber,
-      avatar_url: updates.avatarUrl,
+      display_name: updates.display_name,
+      phone_number: updates.phone_number,
+      avatar_url: updates.avatar_url,
       language: updates.language,
-      notification_enabled: updates.notificationEnabled,
-      notification_types: updates.notificationTypes,
+      notification_enabled: updates.notification_enabled,
+      notification_types: updates.notification_types,
       updated_at: new Date().toISOString()
     }
 
@@ -162,10 +162,10 @@ export class SupabaseProfileService {
       user_id: userId,
       name: addressData.name,
       phone: addressData.phone,
-      post_code: addressData.postalCode,
+      post_code: addressData.post_code,
       address: addressData.address,
-      address_detail: addressData.addressDetail || null,
-      is_default: isFirstAddress || addressData.isDefault || false,
+      address_detail: addressData.address_detail || null,
+      is_default: isFirstAddress || addressData.is_default || false,
       created_at: new Date().toISOString()
     }
 
@@ -200,10 +200,10 @@ export class SupabaseProfileService {
     const updateData: AddressUpdate = {
       name: updates.name,
       phone: updates.phone,
-      post_code: updates.postalCode,
+      post_code: updates.post_code,
       address: updates.address,
-      address_detail: updates.addressDetail,
-      is_default: updates.isDefault,
+      address_detail: updates.address_detail,
+      is_default: updates.is_default,
       updated_at: new Date().toISOString()
     }
 
@@ -215,7 +215,7 @@ export class SupabaseProfileService {
     })
 
     // 기본 주소로 변경하는 경우
-    if (updates.isDefault === true) {
+    if (updates.is_default === true) {
       // 먼저 해당 주소의 user_id 조회
       const { data: addressData } = await supabase
         .from('user_addresses')
@@ -301,15 +301,15 @@ export class SupabaseProfileService {
   private static mapProfileFromDB(data: ProfileRow): UserProfile {
     return {
       id: data.id,
-      userId: data.user_id,
-      displayName: data.display_name || undefined,
-      phoneNumber: data.phone_number || undefined,
-      avatarUrl: data.avatar_url || undefined,
-      language: data.language as 'ko' | 'en' | 'zh' | 'vi' | 'mn' | 'th' | 'ja' | 'ru',
-      notificationEnabled: data.notification_enabled,
-      notificationTypes: data.notification_types as Array<'order_status' | 'hot_deal' | 'comment' | 'like'>,
-      createdAt: new Date(data.created_at),
-      updatedAt: data.updated_at ? new Date(data.updated_at) : undefined
+      user_id: data.user_id,
+      display_name: data.display_name || undefined,
+      phone_number: data.phone_number || undefined,
+      avatar_url: data.avatar_url || undefined,
+      language: data.language,
+      notification_enabled: data.notification_enabled,
+      notification_types: data.notification_types,
+      created_at: data.created_at,
+      updated_at: data.updated_at || undefined
     }
   }
 
@@ -319,15 +319,15 @@ export class SupabaseProfileService {
   private static mapAddressFromDB(data: AddressRow): UserAddress {
     return {
       id: data.id,
-      userId: data.user_id,
+      user_id: data.user_id,
       name: data.name,
       phone: data.phone,
-      postalCode: data.post_code,
+      post_code: data.post_code,
       address: data.address,
-      addressDetail: data.address_detail || undefined,
-      isDefault: data.is_default,
-      createdAt: new Date(data.created_at),
-      updatedAt: data.updated_at ? new Date(data.updated_at) : undefined
+      address_detail: data.address_detail || undefined,
+      is_default: data.is_default,
+      created_at: data.created_at,
+      updated_at: data.updated_at || undefined
     }
   }
 }

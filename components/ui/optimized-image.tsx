@@ -52,10 +52,11 @@ export function OptimizedImage({
     }
 
     // 이미지 최적화 서비스를 통한 URL 처리
-    const optimizedSrc = ImageOptimizationService.optimizeImageUrl(src, {
+    const srcString = typeof src === 'string' ? src : (src as any).src || String(src)
+    const optimizedSrc = ImageOptimizationService.optimizeImageUrl(srcString, {
       width: typeof props.width === 'number' ? props.width : undefined,
       height: typeof props.height === 'number' ? props.height : undefined,
-      quality: props.quality || 85,
+      quality: typeof props.quality === 'number' ? props.quality : 85,
     })
 
     setCurrentSrc(optimizedSrc)
@@ -113,7 +114,7 @@ export function OptimizedImage({
       const optimizedFallback = ImageOptimizationService.optimizeImageUrl(fallbackSrc, {
         width: typeof props.width === 'number' ? props.width : undefined,
         height: typeof props.height === 'number' ? props.height : undefined,
-        quality: props.quality || 85,
+        quality: typeof props.quality === 'number' ? props.quality : 85,
       })
       setCurrentSrc(optimizedFallback)
       setIsLoading(true)

@@ -20,7 +20,7 @@ export default function OrderPage() {
       if (hotdealId) {
         try {
           const deal = await SupabaseHotDealService.getHotDealById(hotdealId)
-          setHotdealData(deal)
+          setHotdealData(deal as any)
         } catch (error) {
           console.error('Failed to fetch hotdeal data:', error)
         }
@@ -30,12 +30,12 @@ export default function OrderPage() {
     fetchHotdeal()
   }, [hotdealId])
 
-  // 핫딜 정보가 있으면 초기 데이터로 설정
+  // 핫딜 정보가 있으면 초기 데이터로 설정 (Supabase snake_case 필드 사용)
   const initialData = hotdealData ? {
     items: [{
       productName: hotdealData.title,
-      productUrl: hotdealData.original_url,
-      price: hotdealData.sale_price,
+      productUrl: (hotdealData as any).original_url, // snake_case 필드
+      price: (hotdealData as any).sale_price, // snake_case 필드
       quantity: 1,
       options: {},
       notes: ''

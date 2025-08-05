@@ -180,7 +180,7 @@ export function useSupabaseProfile(userId: string | null) {
     // 데이터
     profile,
     addresses,
-    defaultAddress: addresses.find(addr => addr.isDefault),
+    defaultAddress: addresses.find(addr => addr.is_default),
     
     // 로딩 상태
     isLoading: profileLoading || addressesLoading,

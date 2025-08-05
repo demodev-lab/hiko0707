@@ -1,16 +1,28 @@
-import { db } from '@/lib/db/database-service'
+import { auth as clerkAuth, currentUser } from '@clerk/nextjs/server'
 import { User } from '@/types/user'
 
 export async function getCurrentUser(): Promise<User | null> {
-  // In a real app, this would get the user from the session/cookie
-  // For now, we'll return the first admin user as a mock
-  try {
-    const users = await db.users.findAll()
-    const adminUser = users.find(u => u.role === 'admin')
-    return adminUser || null
-  } catch (error) {
-    console.error('Failed to get current user:', error)
+  // Clerk 인증 확인
+  const { userId } = await clerkAuth()
+  
+  if (!userId) {
     return null
+  }
+  
+  const user = await currentUser()
+  
+  if (!user) {
+    return null
+  }
+  
+  // Clerk 사용자 정보를 기존 User 타입으로 변환
+  return {
+    id: user.id,
+    email: user.emailAddresses[0]?.emailAddress || '',
+    name: user.firstName ? `${user.firstName} ${user.lastName || ''}`.trim() : user.username || '',
+    role: (user.publicMetadata?.role as User['role']) || 'member',
+    createdAt: new Date(user.createdAt),
+    updatedAt: new Date(user.updatedAt)
   }
 }
 
@@ -18,7 +30,7 @@ export async function requireAuth(): Promise<User> {
   const user = await getCurrentUser()
   
   if (!user) {
-    throw new Error('Unauthorized: No user found')
+    throw new Error('인증이 필요합니다. 로그인해주세요.')
   }
   
   return user
@@ -30,18 +42,19 @@ export function checkRole(user: User | null, requiredRoles: string[]): boolean {
   return requiredRoles.includes(userRole)
 }
 
-// 더미 auth 함수 - 실제 구현 필요
+// Clerk auth 함수 래퍼 - 기존 코드와의 호환성을 위해 유지
 export async function auth(): Promise<{ user?: { id: string; email: string; role: string } } | null> {
-  // TODO: 실제 인증 로직 구현
-  // 임시로 관리자 세션 반환 (테스트용)
-  if (typeof window === 'undefined') {
-    return {
-      user: {
-        id: 'admin',
-        email: 'admin@hiko.kr',
-        role: 'admin'
-      }
+  const user = await getCurrentUser()
+  
+  if (!user) {
+    return null
+  }
+  
+  return {
+    user: {
+      id: user.id,
+      email: user.email,
+      role: user.role || 'guest'
     }
   }
-  return null
 }

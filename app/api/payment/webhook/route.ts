@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { db } from '@/lib/db/database-service'
+import { SupabasePaymentService } from '@/lib/services/supabase-payment-service'
+import { SupabaseOrderService } from '@/lib/services/supabase-order-service'
 import { paymentService } from '@/lib/services/payment-service'
 import { PaymentStatus } from '@/types/payment'
 
@@ -44,7 +45,7 @@ export async function POST(request: NextRequest) {
     }
 
     // 기존 결제 조회
-    const existingPayment = await db.payments.findByExternalTransactionId(externalTransactionId)
+    const existingPayment = await SupabasePaymentService.getPaymentByExternalId(externalTransactionId)
     
     if (!existingPayment) {
       return NextResponse.json(
@@ -55,7 +56,7 @@ export async function POST(request: NextRequest) {
 
     // 이미 최종 상태인 경우 업데이트 거부
     const finalStatuses: PaymentStatus[] = ['completed', 'failed', 'cancelled', 'refunded']
-    if (finalStatuses.includes(existingPayment.status) && existingPayment.status !== status) {
+    if (finalStatuses.includes(existingPayment.status as PaymentStatus) && existingPayment.status !== status) {
       return NextResponse.json(
         { error: 'Payment already in final state' }, 
         { status: 409 }
@@ -70,13 +71,22 @@ export async function POST(request: NextRequest) {
         metadata
       )
 
-      // 데이터베이스에 업데이트
-      await db.payments.updateStatus(existingPayment.id, status, metadata)
+      // Supabase에 결제 상태 업데이트
+      await SupabasePaymentService.updatePaymentStatus(
+        existingPayment.id, 
+        status,
+        undefined, // externalPaymentId는 이미 설정되어 있음
+        status === 'completed' ? new Date().toISOString() : undefined
+      )
 
       // 주문 상태도 함께 업데이트 (결제 완료 시)
-      if (status === 'completed') {
+      if (status === 'completed' && existingPayment.request_id) {
         try {
-          await db.orders.updateStatus(existingPayment.orderId, 'confirmed')
+          await SupabaseOrderService.updateOrderStatus(
+            existingPayment.request_id, 
+            'payment_completed',
+            'webhook' // changedBy parameter
+          )
         } catch (orderError) {
           console.error('Failed to update order status:', orderError)
           // 주문 상태 업데이트 실패는 결제 상태 업데이트를 막지 않음

@@ -41,7 +41,7 @@ export default function PaymentPage() {
       
       try {
         // 주문 정보 조회
-        const orderData = await SupabaseOrderService.getRequestById(orderId)
+        const orderData = await SupabaseOrderService.getOrderById(orderId)
         if (!orderData) {
           router.push('/404')
           return
@@ -49,18 +49,18 @@ export default function PaymentPage() {
         setOrder(orderData)
         
         // 사용자 정보 조회
-        const userData = await SupabaseUserService.getUserById(orderData.user_id)
+        const userData = await SupabaseUserService.getUser(orderData.user_id)
         if (userData) {
           setCustomerInfo({
-            name: userData.name || orderData.shipping_info?.name,
-            email: userData.email || orderData.shipping_info?.email,
-            phone: userData.phone || orderData.shipping_info?.phone
+            name: userData.name || '',
+            email: userData.email || '',
+            phone: userData.phone || ''
           })
         } else {
           setCustomerInfo({
-            name: orderData.shipping_info?.name,
-            email: orderData.shipping_info?.email,
-            phone: orderData.shipping_info?.phone
+            name: '',
+            email: '',
+            phone: ''
           })
         }
       } catch (error) {

@@ -38,20 +38,20 @@ async function testProfileSystem() {
     // 2. 프로필 생성 테스트
     console.log('\n2️⃣ 프로필 생성 테스트')
     profile = await SupabaseProfileService.createProfile(testUser.id, {
-      displayName: testUser.name,
-      phoneNumber: '010-1234-5678',
+      display_name: testUser.name,
+      phone_number: '010-1234-5678',
       language: 'ko',
-      notificationEnabled: true,
-      notificationTypes: ['order_status', 'hot_deal']
+      notification_enabled: true,
+      notification_types: ['order_status', 'hot_deal']
     })
     
     if (profile) {
       console.log('   ✅ 프로필 생성 성공!')
-      console.log('   표시 이름:', profile.displayName)
-      console.log('   전화번호:', profile.phoneNumber)
+      console.log('   표시 이름:', profile.display_name)
+      console.log('   전화번호:', profile.phone_number)
       console.log('   언어:', profile.language)
-      console.log('   알림 활성화:', profile.notificationEnabled)
-      console.log('   알림 유형:', profile.notificationTypes)
+      console.log('   알림 활성화:', profile.notification_enabled)
+      console.log('   알림 유형:', profile.notification_types)
     } else {
       console.error('   ❌ 프로필 생성 실패')
       return
@@ -59,21 +59,21 @@ async function testProfileSystem() {
   } else {
     console.log('   ✅ 기존 프로필 발견')
     console.log('   프로필 ID:', profile.id)
-    console.log('   표시 이름:', profile.displayName)
+    console.log('   표시 이름:', profile.display_name)
     console.log('   언어:', profile.language)
   }
 
   // 3. 프로필 업데이트 테스트
   console.log('\n3️⃣ 프로필 업데이트 테스트')
   const updatedProfile = await SupabaseProfileService.updateProfile(testUser.id, {
-    displayName: `${testUser.name} (업데이트됨)`,
-    notificationTypes: ['order_status', 'hot_deal', 'comment']
+    display_name: `${testUser.name} (업데이트됨)`,
+    notification_types: ['order_status', 'hot_deal', 'comment']
   })
   
   if (updatedProfile) {
     console.log('   ✅ 프로필 업데이트 성공!')
-    console.log('   새 표시 이름:', updatedProfile.displayName)
-    console.log('   새 알림 유형:', updatedProfile.notificationTypes)
+    console.log('   새 표시 이름:', updatedProfile.display_name)
+    console.log('   새 알림 유형:', updatedProfile.notification_types)
   } else {
     console.error('   ❌ 프로필 업데이트 실패')
   }
@@ -81,21 +81,22 @@ async function testProfileSystem() {
   // 4. 주소 추가 테스트
   console.log('\n4️⃣ 주소 추가 테스트')
   const newAddress = await SupabaseProfileService.addAddress(testUser.id, {
-    userId: testUser.id,
     name: '테스트 주소',
     phone: '010-1234-5678',
-    postalCode: '12345',
+    post_code: '12345',
     address: '서울시 강남구 테스트로 123',
-    addressDetail: '101호',
-    isDefault: true
+    address_detail: '101호',
+    is_default: true,
+    created_at: new Date().toISOString(),
+    user_id: testUser.id
   })
   
   if (newAddress) {
     console.log('   ✅ 주소 추가 성공!')
     console.log('   주소 ID:', newAddress.id)
     console.log('   수령인:', newAddress.name)
-    console.log('   주소:', newAddress.address, newAddress.addressDetail)
-    console.log('   기본 주소:', newAddress.isDefault)
+    console.log('   주소:', newAddress.address, newAddress.address_detail)
+    console.log('   기본 주소:', newAddress.is_default)
   } else {
     console.error('   ❌ 주소 추가 실패')
   }
@@ -106,7 +107,7 @@ async function testProfileSystem() {
   
   console.log(`   총 ${addresses.length}개의 주소를 찾았습니다.`)
   addresses.forEach((addr, index) => {
-    console.log(`   ${index + 1}. ${addr.name} - ${addr.address} ${addr.isDefault ? '(기본)' : ''}`)
+    console.log(`   ${index + 1}. ${addr.name} - ${addr.address} ${addr.is_default ? '(기본)' : ''}`)
   })
 
   console.log('\n✅ 프로필 시스템 테스트 완료!')

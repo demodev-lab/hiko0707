@@ -19,10 +19,23 @@
  */
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { db } from '@/lib/db/database-service'
-import { Favorite } from '@/lib/db/local/repositories/favorite-repository'
 import { useAuth } from './use-auth'
 import { toast } from 'sonner'
+
+// Favorite 타입 정의 (LocalStorage 의존성 제거)
+interface Favorite {
+  id: string
+  userId: string
+  itemId: string
+  itemType: 'hotdeal' | 'product'
+  createdAt: Date
+  metadata?: {
+    title?: string
+    image?: string
+    price?: number
+    discount?: number
+  }
+}
 
 export function useFavorites(itemType?: 'hotdeal' | 'product') {
   const { currentUser } = useAuth()
@@ -31,8 +44,9 @@ export function useFavorites(itemType?: 'hotdeal' | 'product') {
     queryKey: ['favorites', currentUser?.id, itemType],
     queryFn: async () => {
       if (!currentUser) return []
-      const favorites = await db.favorites.findByUserId(currentUser.id)
-      return itemType ? favorites.filter(fav => fav.itemType === itemType) : favorites
+      // Deprecated - LocalStorage removed
+      console.warn('useFavorites is deprecated. Use useSupabaseFavorites instead.')
+      return []
     },
     enabled: !!currentUser,
     staleTime: 1 * 60 * 1000 // 1분
@@ -46,7 +60,9 @@ export function useFavoriteIds(itemType?: 'hotdeal' | 'product') {
     queryKey: ['favorite-ids', currentUser?.id, itemType],
     queryFn: async () => {
       if (!currentUser) return []
-      return await db.favorites.getFavoriteIds(currentUser.id, itemType)
+      // Deprecated - LocalStorage removed
+      console.warn('useFavoriteIds is deprecated. Use useSupabaseFavorites instead.')
+      return []
     },
     enabled: !!currentUser,
     staleTime: 1 * 60 * 1000 // 1분
@@ -60,7 +76,9 @@ export function useIsFavorited(itemId: string, itemType: 'hotdeal' | 'product') 
     queryKey: ['is-favorited', currentUser?.id, itemId, itemType],
     queryFn: async () => {
       if (!currentUser) return false
-      return await db.favorites.isFavorited(currentUser.id, itemId, itemType)
+      // Deprecated - LocalStorage removed
+      console.warn('useIsFavorited is deprecated. Use useSupabaseFavorites instead.')
+      return false
     },
     enabled: !!currentUser && !!itemId,
     staleTime: 1 * 60 * 1000 // 1분
@@ -71,7 +89,9 @@ export function useFavoriteCount(itemId: string, itemType: 'hotdeal' | 'product'
   return useQuery({
     queryKey: ['favorite-count', itemId, itemType],
     queryFn: async () => {
-      return await db.favorites.countByItem(itemId, itemType)
+      // Deprecated - LocalStorage removed
+      console.warn('useFavoriteCount is deprecated. Use useSupabaseFavorites instead.')
+      return 0
     },
     enabled: !!itemId,
     staleTime: 1 * 60 * 1000 // 1분
@@ -96,21 +116,13 @@ export function useToggleFavorite() {
         throw new Error('로그인이 필요합니다')
       }
       
-      return await db.favorites.toggle(currentUser.id, itemId, itemType, metadata)
+      // Deprecated - LocalStorage removed
+      console.warn('useToggleFavorite is deprecated. Use useSupabaseFavorites instead.')
+      throw new Error('LocalStorage favorites is no longer supported. Please use Supabase.')
     },
     onSuccess: (result, variables) => {
-      // 관련 쿼리 무효화
-      queryClient.invalidateQueries({ queryKey: ['favorites'] })
-      queryClient.invalidateQueries({ queryKey: ['favorite-ids'] })
-      queryClient.invalidateQueries({ queryKey: ['is-favorited', currentUser?.id, variables.itemId, variables.itemType] })
-      queryClient.invalidateQueries({ queryKey: ['favorite-count', variables.itemId, variables.itemType] })
-      
-      // 토스트 메시지
-      if (result.added) {
-        toast.success('찜 목록에 추가되었습니다')
-      } else {
-        toast.info('찜 목록에서 제거되었습니다')
-      }
+      // Since this is deprecated and always throws an error, this won't be called
+      // but TypeScript still checks it
     },
     onError: (error) => {
       if (error.message === '로그인이 필요합니다') {
@@ -132,25 +144,13 @@ export function useDeleteFavorite() {
         throw new Error('로그인이 필요합니다')
       }
       
-      const favorite = await db.favorites.findById(favoriteId)
-      if (!favorite) {
-        throw new Error('찜 항목을 찾을 수 없습니다')
-      }
-      
-      if (favorite.userId !== currentUser.id) {
-        throw new Error('권한이 없습니다')
-      }
-      
-      return await db.favorites.delete(favoriteId)
+      // Deprecated - LocalStorage removed
+      console.warn('useDeleteFavorite is deprecated. Use useSupabaseFavorites instead.')
+      throw new Error('LocalStorage favorites is no longer supported. Please use Supabase.')
     },
     onSuccess: () => {
-      // 관련 쿼리 무효화
-      queryClient.invalidateQueries({ queryKey: ['favorites'] })
-      queryClient.invalidateQueries({ queryKey: ['favorite-ids'] })
-      queryClient.invalidateQueries({ queryKey: ['is-favorited'] })
-      queryClient.invalidateQueries({ queryKey: ['favorite-count'] })
-      
-      toast.success('찜 목록에서 제거되었습니다')
+      // Since this is deprecated and always throws an error, this won't be called
+      // but TypeScript still checks it
     },
     onError: (error) => {
       toast.error(error instanceof Error ? error.message : '오류가 발생했습니다')

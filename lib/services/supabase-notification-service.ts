@@ -22,6 +22,10 @@ export class SupabaseNotificationService {
     sortOrder?: 'asc' | 'desc'
   }): Promise<NotificationRow[]> {
     const supabase = supabaseAdmin()
+    if (!supabase) {
+      console.error('Supabase admin client not initialized')
+      return []
+    }
     
     let query = supabase
       .from('notifications')
@@ -66,6 +70,10 @@ export class SupabaseNotificationService {
    */
   static async getUnreadCount(userId: string): Promise<number> {
     const supabase = supabaseAdmin()
+    if (!supabase) {
+      console.error('Supabase admin client not initialized')
+      return 0
+    }
     const { count, error } = await supabase
       .from('notifications')
       .select('*', { count: 'exact', head: true })
@@ -89,6 +97,10 @@ export class SupabaseNotificationService {
     content: string
   ): Promise<NotificationRow | null> {
     const supabase = supabaseAdmin()
+    if (!supabase) {
+      console.error('Supabase admin client not initialized')
+      return null
+    }
     
     const notificationData: NotificationInsert = {
       user_id: userId,
@@ -117,6 +129,10 @@ export class SupabaseNotificationService {
    */
   static async markAsRead(notificationId: string): Promise<boolean> {
     const supabase = supabaseAdmin()
+    if (!supabase) {
+      console.error('Supabase admin client not initialized')
+      return false
+    }
     const { error } = await supabase
       .from('notifications')
       .update({ is_read: true })
@@ -135,6 +151,10 @@ export class SupabaseNotificationService {
    */
   static async markAllAsRead(userId: string): Promise<boolean> {
     const supabase = supabaseAdmin()
+    if (!supabase) {
+      console.error('Supabase admin client not initialized')
+      return false
+    }
     const { error } = await supabase
       .from('notifications')
       .update({ is_read: true })
@@ -154,6 +174,10 @@ export class SupabaseNotificationService {
    */
   static async deleteNotification(notificationId: string): Promise<boolean> {
     const supabase = supabaseAdmin()
+    if (!supabase) {
+      console.error('Supabase admin client not initialized')
+      return false
+    }
     const { error } = await supabase
       .from('notifications')
       .delete()
@@ -172,6 +196,10 @@ export class SupabaseNotificationService {
    */
   static async deleteOldNotifications(userId: string): Promise<boolean> {
     const supabase = supabaseAdmin()
+    if (!supabase) {
+      console.error('Supabase admin client not initialized')
+      return false
+    }
     const thirtyDaysAgo = new Date()
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
 
@@ -235,6 +263,10 @@ export class SupabaseNotificationService {
     }>
   ): Promise<NotificationRow[]> {
     const supabase = supabaseAdmin()
+    if (!supabase) {
+      console.error('Supabase admin client not initialized')
+      return []
+    }
     
     const notificationData: NotificationInsert[] = notifications.map(notif => ({
       user_id: notif.user_id,
@@ -265,6 +297,10 @@ export class SupabaseNotificationService {
     error?: string
   }> {
     const supabase = supabaseAdmin()
+    if (!supabase) {
+      console.error('Supabase admin client not initialized')
+      return { deleted_count: 0, error: 'Supabase admin client not initialized' }
+    }
     const cutoffDate = new Date()
     cutoffDate.setDate(cutoffDate.getDate() - daysOld)
 
@@ -302,6 +338,10 @@ export class SupabaseNotificationService {
     recent_notifications: number // 최근 7일
   } | null> {
     const supabase = supabaseAdmin()
+    if (!supabase) {
+      console.error('Supabase admin client not initialized')
+      return null
+    }
 
     try {
       // 총 알림 수
@@ -382,6 +422,10 @@ export class SupabaseNotificationService {
     unreadOnly?: boolean
   }): Promise<NotificationRow[]> {
     const supabase = supabaseAdmin()
+    if (!supabase) {
+      console.error('Supabase admin client not initialized')
+      return []
+    }
 
     let query = supabase
       .from('notifications')
@@ -426,6 +470,10 @@ export class SupabaseNotificationService {
     error?: string
   }> {
     const supabase = supabaseAdmin()
+    if (!supabase) {
+      console.error('Supabase admin client not initialized')
+      return { success: false, notification_count: 0, error: 'Supabase admin client not initialized' }
+    }
 
     try {
       let userIds: string[]
@@ -475,6 +523,10 @@ export class SupabaseNotificationService {
     notificationIds: string[]
   ): Promise<{ success: boolean; updated_count: number; error?: string }> {
     const supabase = supabaseAdmin()
+    if (!supabase) {
+      console.error('Supabase admin client not initialized')
+      return { success: false, updated_count: 0, error: 'Supabase admin client not initialized' }
+    }
 
     const { data, error } = await supabase
       .from('notifications')
@@ -496,6 +548,10 @@ export class SupabaseNotificationService {
     notificationIds: string[]
   ): Promise<{ success: boolean; deleted_count: number; error?: string }> {
     const supabase = supabaseAdmin()
+    if (!supabase) {
+      console.error('Supabase admin client not initialized')
+      return { success: false, deleted_count: 0, error: 'Supabase admin client not initialized' }
+    }
 
     const { data, error } = await supabase
       .from('notifications')

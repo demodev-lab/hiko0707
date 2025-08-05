@@ -1,31 +1,38 @@
-import { db } from '@/lib/db/database-service'
-import { User } from '@/lib/db/local/models'
+import { auth, currentUser } from '@clerk/nextjs/server'
+
+// User 타입 정의 (기존 코드와의 호환성을 위해)
+interface User {
+  id: string
+  email: string
+  name: string
+  role: 'guest' | 'member' | 'admin'
+  createdAt: Date
+  updatedAt: Date
+}
 
 // 서버 액션에서 사용할 인증 유틸리티
 export async function getCurrentUser(): Promise<User | null> {
-  // 실제 프로덕션에서는 세션/JWT 토큰 등을 확인해야 함
-  // 개발 환경에서는 localStorage에서 currentUser 확인
-  if (typeof window !== 'undefined') {
-    const savedUser = localStorage.getItem('currentUser')
-    if (savedUser) {
-      try {
-        const user = JSON.parse(savedUser)
-        // DB에서 최신 정보 확인
-        const dbUser = await db.users.findByEmail(user.email)
-        return dbUser
-      } catch (error) {
-        return null
-      }
-    }
+  const { userId } = await auth()
+  
+  if (!userId) {
+    return null
   }
   
-  // 서버 사이드에서는 임시로 admin 계정 반환 (개발용)
-  // TODO: 실제 프로덕션에서는 세션/쿠키 기반 인증 구현 필요
-  if (process.env.NODE_ENV === 'development') {
-    return await db.users.findByEmail('admin@hiko.kr')
+  const user = await currentUser()
+  
+  if (!user) {
+    return null
   }
   
-  return null
+  // Clerk 사용자 정보를 기존 User 타입으로 변환
+  return {
+    id: user.id,
+    email: user.emailAddresses[0]?.emailAddress || '',
+    name: user.firstName ? `${user.firstName} ${user.lastName || ''}`.trim() : user.username || '',
+    role: (user.publicMetadata?.role as User['role']) || 'member',
+    createdAt: new Date(user.createdAt),
+    updatedAt: new Date(user.updatedAt)
+  }
 }
 
 // 인증이 필요한 서버 액션을 위한 래퍼

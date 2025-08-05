@@ -48,8 +48,6 @@ class CrawlerScheduler extends EventEmitter {
     if (job.enabled) {
       const task = cron.schedule(job.schedule, async () => {
         await this.executeCrawl(job.id)
-      }, {
-        scheduled: false
       })
 
       this.jobs.set(job.id, task)

@@ -1,6 +1,7 @@
 import { chromium, Browser, Page, BrowserContext } from 'playwright'
 import type { HotDeal } from '@/types/hotdeal'
 import { HotDealClassificationService } from '@/lib/services/hotdeal-classification-service'
+import type { CrawlResult } from './types'
 
 export interface CrawlerOptions {
   headless?: boolean
@@ -274,7 +275,7 @@ export abstract class BaseHotdealCrawler {
     return stats
   }
 
-  abstract crawl(): Promise<HotDeal[]>
+  abstract crawl(): Promise<CrawlResult>
   
   protected abstract getSourceName(): string
 }

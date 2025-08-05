@@ -4,8 +4,8 @@ import { useEffect, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Card, CardContent } from '@/components/ui/card'
 import { PaymentStatus } from '@/components/features/payment/payment-status'
-import { db } from '@/lib/db/database-service'
-import { Payment } from '@/types/payment'
+import { SupabasePaymentService } from '@/lib/services/supabase-payment-service'
+import { Payment, PaymentProvider } from '@/types/payment'
 import { Button } from '@/components/ui/button'
 import { CheckCircle } from 'lucide-react'
 import Link from 'next/link'
@@ -25,12 +25,31 @@ export default function PaymentSuccessPage() {
       }
 
       try {
-        const paymentData = await db.payments.findById(paymentId)
+        const paymentData = await SupabasePaymentService.getPaymentById(paymentId)
         if (!paymentData) {
           router.push('/404')
           return
         }
-        setPayment(paymentData)
+        
+        // Supabase 데이터를 Payment 타입으로 변환
+        const transformedPayment: Payment = {
+          id: paymentData.id,
+          orderId: paymentData.request_id,
+          userId: paymentData.user_id,
+          amount: paymentData.amount,
+          currency: paymentData.currency,
+          provider: (paymentData.payment_method || 'card') as PaymentProvider,
+          status: paymentData.status as Payment['status'],
+          createdAt: new Date(paymentData.created_at),
+          updatedAt: new Date(paymentData.updated_at),
+          externalPaymentId: paymentData.external_payment_id || undefined,
+          paidAt: paymentData.paid_at ? new Date(paymentData.paid_at) : undefined,
+          metadata: {},
+          paymentRequestId: paymentData.id,
+          paymentMethodId: paymentData.payment_method || 'card'
+        }
+        
+        setPayment(transformedPayment)
       } catch (error) {
         console.error('Failed to load payment:', error)
         router.push('/404')

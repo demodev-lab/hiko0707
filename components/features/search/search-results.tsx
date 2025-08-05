@@ -70,18 +70,18 @@ export function SearchResults({ query, filters }: SearchResultsProps) {
     category: supabaseData.category,
     title: supabaseData.title,
     productComment: supabaseData.description,
-    price: supabaseData.price || 0,
+    price: supabaseData.sale_price || 0,
     seller: supabaseData.seller,
-    originalUrl: supabaseData.url,
+    originalUrl: supabaseData.original_url,
     imageUrl: supabaseData.image_url,
     thumbnailImageUrl: supabaseData.thumbnail_url,
-    viewCount: supabaseData.view_count,
-    likeCount: supabaseData.like_count,
-    commentCount: supabaseData.comment_count,
-    crawledAt: supabaseData.created_at,
+    viewCount: supabaseData.views || 0,
+    likeCount: supabaseData.like_count || 0,
+    commentCount: supabaseData.comment_count || 0,
+    crawledAt: new Date(supabaseData.crawled_at || supabaseData.created_at),
     status: supabaseData.status,
     shipping: {
-      isFree: supabaseData.is_free_shipping
+      isFree: supabaseData.is_free_shipping || false
     }
   })
 

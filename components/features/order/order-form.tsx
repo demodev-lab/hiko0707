@@ -34,11 +34,11 @@ const orderFormSchema = z.object({
   })).min(1, '최소 1개의 상품을 추가해주세요'),
   shippingAddress: z.object({
     fullName: z.string().min(1, '이름을 입력해주세요'),
-    phoneNumber: z.string().min(1, '전화번호를 입력해주세요'),
+    phone: z.string().min(1, '전화번호를 입력해주세요'),
     email: z.string().email('올바른 이메일을 입력해주세요'),
-    postalCode: z.string().min(1, '우편번호를 입력해주세요'),
-    addressLine1: z.string().min(1, '주소를 입력해주세요'),
-    addressLine2: z.string().optional()
+    post_code: z.string().min(1, '우편번호를 입력해주세요'),
+    address: z.string().min(1, '주소를 입력해주세요'),
+    address_detail: z.string().optional()
   }),
   paymentMethod: z.enum(['card', 'bank_transfer']),
   customerNotes: z.string().optional()
@@ -71,11 +71,11 @@ export function OrderForm({ initialData, hotdealId, onSuccess }: OrderFormProps)
       }],
       shippingAddress: initialData?.shippingAddress || {
         fullName: '',
-        phoneNumber: '',
+        phone: '',
         email: '',
-        postalCode: '',
-        addressLine1: '',
-        addressLine2: ''
+        post_code: '',
+        address: '',
+        address_detail: ''
       },
       paymentMethod: initialData?.paymentMethod || 'card',
       customerNotes: initialData?.customerNotes || ''
@@ -282,16 +282,16 @@ export function OrderForm({ initialData, hotdealId, onSuccess }: OrderFormProps)
             </div>
 
             <div>
-              <Label htmlFor="shippingAddress.phoneNumber">
+              <Label htmlFor="shippingAddress.phone">
                 전화번호 *
               </Label>
               <Input
-                {...form.register('shippingAddress.phoneNumber')}
+                {...form.register('shippingAddress.phone')}
                 placeholder="010-1234-5678"
               />
-              {form.formState.errors.shippingAddress?.phoneNumber && (
+              {form.formState.errors.shippingAddress?.phone && (
                 <p className="text-sm text-red-500 mt-1">
-                  {form.formState.errors.shippingAddress.phoneNumber.message}
+                  {form.formState.errors.shippingAddress.phone.message}
                 </p>
               )}
             </div>
@@ -314,42 +314,42 @@ export function OrderForm({ initialData, hotdealId, onSuccess }: OrderFormProps)
 
 
             <div>
-              <Label htmlFor="shippingAddress.postalCode">
+              <Label htmlFor="shippingAddress.post_code">
                 우편번호 *
               </Label>
               <Input
-                {...form.register('shippingAddress.postalCode')}
+                {...form.register('shippingAddress.post_code')}
                 placeholder="12345"
               />
-              {form.formState.errors.shippingAddress?.postalCode && (
+              {form.formState.errors.shippingAddress?.post_code && (
                 <p className="text-sm text-red-500 mt-1">
-                  {form.formState.errors.shippingAddress.postalCode.message}
+                  {form.formState.errors.shippingAddress.post_code.message}
                 </p>
               )}
             </div>
           </div>
 
           <div>
-            <Label htmlFor="shippingAddress.addressLine1">
+            <Label htmlFor="shippingAddress.address">
               주소 *
             </Label>
             <Input
-              {...form.register('shippingAddress.addressLine1')}
+              {...form.register('shippingAddress.address')}
               placeholder="서울시 강남구 테헤란로 123"
             />
-            {form.formState.errors.shippingAddress?.addressLine1 && (
+            {form.formState.errors.shippingAddress?.address && (
               <p className="text-sm text-red-500 mt-1">
-                {form.formState.errors.shippingAddress.addressLine1.message}
+                {form.formState.errors.shippingAddress.address.message}
               </p>
             )}
           </div>
 
           <div>
-            <Label htmlFor="shippingAddress.addressLine2">
+            <Label htmlFor="shippingAddress.address_detail">
               상세 주소
             </Label>
             <Input
-              {...form.register('shippingAddress.addressLine2')}
+              {...form.register('shippingAddress.address_detail')}
               placeholder="101동 202호"
             />
           </div>

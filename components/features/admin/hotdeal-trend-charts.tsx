@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo } from 'react'
+import React, { useMemo, ReactElement } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { 
   AreaChart, 
@@ -124,7 +124,7 @@ export function HotDealTrendCharts({ refreshKey }: TrendChartsProps) {
   }
 
   const RADIAN = Math.PI / 180
-  const renderCustomizedLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent }: any): JSX.Element | null => {
+  const renderCustomizedLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent }: any): ReactElement | null => {
     if (percent < 0.05) return null // 5% 미만은 라벨 숨김
     
     const radius = innerRadius + (outerRadius - innerRadius) * 0.5

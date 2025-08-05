@@ -62,12 +62,10 @@ const mockLocalHotDeal: HotDeal = {
   id: 'test-' + Date.now(),
   title: '테스트 상품 - 갤럭시 버즈3 프로 50% 할인',
   price: 150000,
-  originalPrice: 300000,
-  discountRate: 50,
   source: 'ppomppu',
-  sourceId: 'test-source-' + Date.now(),
+  sourcePostId: 'test-source-' + Date.now(),
   originalUrl: 'https://www.ppomppu.co.kr/test',
-  thumbnailUrl: 'https://example.com/image.jpg',
+  thumbnailImageUrl: 'https://example.com/image.jpg',
   category: 'electronics',
   seller: '삼성전자',
   viewCount: 100,
@@ -77,15 +75,12 @@ const mockLocalHotDeal: HotDeal = {
   isPopular: true,
   isHot: false,
   crawledAt: new Date(),
-  endDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
   status: 'active',
   userId: 'test-user',
   shipping: {
-    isFree: true,
-    fee: 0,
-    estimatedDays: 3
+    isFree: true
   },
-  ranking: null
+  ranking: undefined
 }
 
 async function testDataTransformation() {
@@ -97,11 +92,11 @@ async function testDataTransformation() {
     const supabaseData = transformLocalToSupabase(mockLocalHotDeal)
     
     assert(supabaseData.sale_price === mockLocalHotDeal.price, 'price → sale_price 변환')
-    assert(supabaseData.original_price === mockLocalHotDeal.originalPrice, 'originalPrice → original_price 변환')
-    assert(supabaseData.discount_rate === mockLocalHotDeal.discountRate, 'discountRate → discount_rate 변환')
-    assert(supabaseData.thumbnail_url === mockLocalHotDeal.thumbnailUrl, 'thumbnailUrl → thumbnail_url 변환')
+    assert(supabaseData.original_price === mockLocalHotDeal.price, 'price → original_price 변환 (동일 값)')
+    assert(supabaseData.discount_rate === 0, 'discount_rate 기본값 0')
+    assert(supabaseData.thumbnail_url === mockLocalHotDeal.thumbnailImageUrl, 'thumbnailImageUrl → thumbnail_url 변환')
     assert(supabaseData.original_url === mockLocalHotDeal.originalUrl, 'originalUrl → original_url 변환')
-    assert(supabaseData.source_id === mockLocalHotDeal.sourceId, 'sourceId → source_id 변환')
+    assert(supabaseData.source_id === mockLocalHotDeal.sourcePostId, 'sourcePostId → source_id 변환')
     assert(supabaseData.is_free_shipping === true, 'shipping.isFree → is_free_shipping 변환')
     
     // Supabase → LocalStorage 역변환 테스트
@@ -109,7 +104,7 @@ async function testDataTransformation() {
     const mockSupabaseRow: HotDealRow = {
       id: supabaseData.id!,
       title: supabaseData.title,
-      description: supabaseData.description,
+      description: supabaseData.description || null,
       original_price: supabaseData.original_price,
       sale_price: supabaseData.sale_price,
       discount_rate: supabaseData.discount_rate,
@@ -119,15 +114,15 @@ async function testDataTransformation() {
       category: supabaseData.category,
       source: supabaseData.source,
       source_id: supabaseData.source_id,
-      seller: supabaseData.seller,
-      is_free_shipping: supabaseData.is_free_shipping,
+      seller: supabaseData.seller || null,
+      is_free_shipping: supabaseData.is_free_shipping || false,
       status: 'active',
-      end_date: supabaseData.end_date,
+      end_date: supabaseData.end_date || new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
       views: 100,
       comment_count: 10,
       like_count: 5,
-      author_name: supabaseData.author_name,
-      shopping_comment: supabaseData.shopping_comment,
+      author_name: supabaseData.author_name || '',
+      shopping_comment: supabaseData.shopping_comment || '',
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
       deleted_at: null
@@ -136,9 +131,8 @@ async function testDataTransformation() {
     const localData = transformSupabaseToLocal(mockSupabaseRow)
     
     assert(localData.price === mockSupabaseRow.sale_price, 'sale_price → price 역변환')
-    assert(localData.originalPrice === mockSupabaseRow.original_price, 'original_price → originalPrice 역변환')
-    assert(localData.thumbnailUrl === mockSupabaseRow.thumbnail_url, 'thumbnail_url → thumbnailUrl 역변환')
-    assert(localData.shipping.isFree === mockSupabaseRow.is_free_shipping, 'is_free_shipping → shipping.isFree 역변환')
+    assert(localData.thumbnailImageUrl === mockSupabaseRow.thumbnail_url, 'thumbnail_url → thumbnailImageUrl 역변환')
+    assert(localData.shipping?.isFree === mockSupabaseRow.is_free_shipping, 'is_free_shipping → shipping.isFree 역변환')
     
   } catch (error) {
     log.fail(`데이터 변환 테스트 오류: ${error}`)
@@ -284,7 +278,7 @@ async function testDuplicateCheck() {
     const testData = transformLocalToSupabase({
       ...mockLocalHotDeal,
       id: 'dup-test-' + Date.now(),
-      sourceId: 'dup-source-' + Date.now()
+      sourcePostId: 'dup-source-' + Date.now()
     })
     
     const created = await SupabaseHotDealService.createHotDeal(testData)
@@ -339,15 +333,15 @@ async function testTranslations() {
       const translation = await SupabaseHotDealService.createTranslation({
         hotdeal_id: createdId,
         language: 'en',
-        translated_title: 'Translation Test Product',
-        translated_description: 'This is a test product for translation',
+        title: 'Translation Test Product',
+        description: 'This is a test product for translation',
         is_auto_translated: true
       })
       
       if (translation) {
         assert(true, '번역 생성 성공')
         assert(translation.language === 'en', '번역 언어 확인')
-        assert(translation.translated_title === 'Translation Test Product', '번역된 제목 확인')
+        assert(translation.title === 'Translation Test Product', '번역된 제목 확인')
       } else {
         assert(false, '번역 생성 실패')
       }

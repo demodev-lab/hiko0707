@@ -16,7 +16,6 @@
  */
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { db } from '@/lib/db/database-service'
 import { useLanguage } from '@/lib/i18n/context'
 import { Translation, Language } from '@/types/hotdeal'
 
@@ -31,25 +30,12 @@ export function useHotDealTranslation(hotDealId: string) {
         return null
       }
       
-      const translation = await db.translations.findByHotDealAndLanguage(hotDealId, language)
-      
-      // 번역이 없거나 실패/대기 상태면 번역 시작
-      if (!translation || translation.status === 'failed' || translation.status === 'pending') {
-        // 번역 작업 시작 (실제로는 백엔드 API 호출)
-        await startTranslation(hotDealId, language)
-      }
-      
-      return translation
+      // Deprecated - LocalStorage removed
+      console.warn('useHotDealTranslation is deprecated. Use useSupabaseTranslations instead.')
+      return null
     },
     enabled: !!hotDealId && language !== 'ko',
-    refetchInterval: (query) => {
-      // 번역 중인 경우 3초마다 다시 확인
-      const translation = query.state.data
-      if (translation?.status === 'translating' || translation?.status === 'pending') {
-        return 3000
-      }
-      return false
-    }
+    refetchInterval: false // Deprecated hook doesn't refetch
   })
 }
 
@@ -57,7 +43,9 @@ export function useTranslationStatus(hotDealId: string) {
   return useQuery({
     queryKey: ['translation-status', hotDealId],
     queryFn: async () => {
-      return await db.translations.getTranslationStatus(hotDealId)
+      // Deprecated - LocalStorage removed
+      console.warn('useTranslationStatus is deprecated. Use useSupabaseTranslations instead.')
+      return {}
     },
     enabled: !!hotDealId
   })
@@ -65,43 +53,10 @@ export function useTranslationStatus(hotDealId: string) {
 
 // 번역 시뮬레이션 함수 (실제로는 API 호출)
 async function startTranslation(hotDealId: string, language: Language) {
-  const existingTranslation = await db.translations.findByHotDealAndLanguage(hotDealId, language)
-  
-  if (existingTranslation?.status === 'translating') {
-    return // 이미 번역 중
-  }
-  
-  const hotdeal = await db.hotdeals.findById(hotDealId)
-  if (!hotdeal) return
-  
-  // 번역 시작
-  let translationId: string
-  
-  if (existingTranslation) {
-    await db.translations.updateTranslationStatus(existingTranslation.id, 'translating')
-    translationId = existingTranslation.id
-  } else {
-    const newTranslation = await db.translations.createTranslation({
-      hotDealId,
-      language,
-      status: 'translating'
-    })
-    translationId = newTranslation.id
-  }
-  
-  // 3초 후에 번역 완료 시뮬레이션
-  setTimeout(async () => {
-    const translations = getSimulatedTranslation(hotdeal.title, hotdeal.productComment, language)
-    
-    await db.translations.updateTranslationStatus(
-      translationId,
-      'completed',
-      {
-        title: translations.title,
-        description: translations.description
-      }
-    )
-  }, 3000)
+  // Deprecated - LocalStorage removed
+  console.warn('startTranslation is deprecated. Use useSupabaseTranslations instead.')
+  // This function is no longer functional due to LocalStorage removal
+  return
 }
 
 // 시뮬레이션용 번역 함수
@@ -135,14 +90,13 @@ export function useCreateTranslation() {
       title: string
       description?: string
     }) => {
-      return await db.translations.createTranslation({
-        ...data,
-        status: 'completed'
-      })
+      // Deprecated - LocalStorage removed
+      console.warn('useCreateTranslation is deprecated. Use useSupabaseTranslations instead.')
+      throw new Error('LocalStorage translations is no longer supported. Please use Supabase.')
     },
-    onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: ['translation', data.hotDealId, data.language] })
-      queryClient.invalidateQueries({ queryKey: ['translation-status', data.hotDealId] })
+    onSuccess: () => {
+      // Since this is deprecated and always throws an error, this won't be called
+      // but TypeScript still checks it
     }
   })
 }
@@ -160,13 +114,13 @@ export function useUpdateTranslation() {
       status: Translation['status']
       data?: { title?: string; description?: string; error?: string }
     }) => {
-      return await db.translations.updateTranslationStatus(id, status, data)
+      // Deprecated - LocalStorage removed
+      console.warn('useUpdateTranslation is deprecated. Use useSupabaseTranslations instead.')
+      throw new Error('LocalStorage translations is no longer supported. Please use Supabase.')
     },
-    onSuccess: (data) => {
-      if (data) {
-        queryClient.invalidateQueries({ queryKey: ['translation', data.hotDealId, data.language] })
-        queryClient.invalidateQueries({ queryKey: ['translation-status', data.hotDealId] })
-      }
+    onSuccess: () => {
+      // Since this is deprecated and always throws an error, this won't be called
+      // but TypeScript still checks it
     }
   })
 }

@@ -8,7 +8,7 @@ import { EmptyState } from '@/components/ui/error'
 import { ProtectedRoute } from '@/components/features/auth/protected-route'
 import { Package, Clock, CheckCircle, XCircle, TrendingUp, ShoppingBag } from 'lucide-react'
 import Link from 'next/link'
-import { db } from '@/lib/db/database-service'
+import { SupabaseOrderService } from '@/lib/services/supabase-order-service'
 import { formatDate } from '@/lib/utils'
 import { ServiceJsonLd } from '@/components/seo/json-ld'
 
@@ -18,7 +18,9 @@ export const metadata: Metadata = {
 }
 
 async function OrderStats() {
-  const orders = await db.orders.findAll()
+  // Supabase에서 사용자의 주문 내역을 가져옴 (현재 사용자 ID가 필요)
+  // TODO: 현재 사용자 ID 가져오기 로직 필요
+  const orders = await SupabaseOrderService.getOrdersByUser('temp-user-id') // 임시
   
   const stats = [
     {
@@ -30,14 +32,14 @@ async function OrderStats() {
     },
     {
       title: '진행중',
-      value: orders.filter(o => o.status === 'purchasing' || o.status === 'shipping').length,
+      value: orders.filter(o => o.status === 'confirmed' || o.status === 'in_progress').length,
       icon: Clock,
       color: 'text-yellow-600',
       bgColor: 'bg-yellow-100',
     },
     {
       title: '완료',
-      value: orders.filter(o => o.status === 'delivered').length,
+      value: orders.filter(o => o.status === 'completed').length,
       icon: CheckCircle,
       color: 'text-green-600',
       bgColor: 'bg-green-100',
@@ -73,8 +75,10 @@ async function OrderStats() {
 }
 
 async function OrderList() {
-  const orders = await db.orders.findAll()
-  const sortedOrders = orders.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+  // Supabase에서 사용자의 주문 내역을 가져옴 (현재 사용자 ID가 필요)
+  // TODO: 현재 사용자 ID 가져오기 로직 필요
+  const orders = await SupabaseOrderService.getOrdersByUser('temp-user-id') // 임시
+  const sortedOrders = orders.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
 
   if (orders.length === 0) {
     return (
@@ -116,45 +120,55 @@ async function OrderList() {
                 </div>
 
                 <h3 className="font-medium text-lg mb-2">
-                  {order.items[0]?.productName || '상품 정보'}
+                  {(() => {
+                    try {
+                      const productInfo = typeof order.product_info === 'string' ? JSON.parse(order.product_info) : order.product_info;
+                      return productInfo?.productName || '상품 정보';
+                    } catch {
+                      return '상품 정보';
+                    }
+                  })()}
                 </h3>
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-gray-600">
                   <div>
-                    <p><strong>상품 URL:</strong> {order.items[0]?.productUrl || 'N/A'}</p>
-                    <p><strong>수량:</strong> {order.items[0]?.quantity || 1}</p>
-                    {order.items[0]?.options && (
-                      <p><strong>옵션:</strong> {JSON.stringify(order.items[0].options)}</p>
+                    <p><strong>상품 URL:</strong> {(() => {
+                      try {
+                        const productInfo = typeof order.product_info === 'string' ? JSON.parse(order.product_info) : order.product_info;
+                        return productInfo?.productUrl || 'N/A';
+                      } catch {
+                        return 'N/A';
+                      }
+                    })()}</p>
+                    <p><strong>수량:</strong> {order.quantity || 1}</p>
+                    {order.option && (
+                      <p><strong>옵션:</strong> {order.option}</p>
                     )}
                   </div>
                   <div>
-                    <p><strong>주문일:</strong> {formatDate(order.createdAt)}</p>
-                    <p><strong>배송지:</strong> {order.shippingAddress.addressLine1}</p>
-                    {order.customerNotes && (
-                      <p><strong>특별 요청:</strong> {order.customerNotes}</p>
+                    <p><strong>주문일:</strong> {formatDate(new Date(order.created_at))}</p>
+                    <p><strong>주문번호:</strong> {order.order_number}</p>
+                    {order.special_requests && (
+                      <p><strong>특별 요청:</strong> {order.special_requests}</p>
                     )}
                   </div>
                 </div>
 
-                {order.adminNotes && (
-                  <div className="mt-4 p-3 bg-blue-50 rounded-md">
-                    <p className="text-sm text-blue-800">
-                      <strong>관리자 메모:</strong> {order.adminNotes}
-                    </p>
-                  </div>
-                )}
               </div>
 
               <div className="flex flex-col items-end gap-2 ml-4">
                 <div className="text-right">
                   <p className="text-lg font-bold text-green-600">
-                    ₩{order.totalAmount.toLocaleString()}
+                    {(() => {
+                      try {
+                        const productInfo = typeof order.product_info === 'string' ? JSON.parse(order.product_info) : order.product_info;
+                        const total = productInfo?.totalAmount || productInfo?.price || 0;
+                        return `₩${total.toLocaleString()}`;
+                      } catch {
+                        return '₩0';
+                      }
+                    })()}
                   </p>
-                  {order.subtotal !== order.totalAmount && (
-                    <p className="text-sm text-gray-500 line-through">
-                      ₩{order.subtotal.toLocaleString()}
-                    </p>
-                  )}
                 </div>
                 
                 <Button asChild size="sm" variant="outline">

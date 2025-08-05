@@ -87,14 +87,57 @@ export async function importCrawledData(crawledFilePath: string) {
     
     const hotDeals = convertCrawledDataToHotDeals(crawledFilePath);
     
-    // 데이터베이스에 저장 (기존 mock 데이터에 추가)
-    const { db } = await import('@/lib/db/database-service');
+    // Supabase에 저장
+    const { SupabaseHotDealService } = await import('@/lib/services/supabase-hotdeal-service');
+    
+    let savedCount = 0;
+    let skippedCount = 0;
     
     for (const deal of hotDeals) {
-      await db.hotdeals.create(deal);
+      try {
+        // 중복 확인
+        const isDuplicate = await SupabaseHotDealService.checkDuplicate(deal.source, deal.sourcePostId);
+        
+        if (isDuplicate) {
+          console.log(`⏭️  중복 건너뛰기: ${deal.source} - ${deal.sourcePostId}`);
+          skippedCount++;
+        } else {
+          // Supabase 형식으로 변환
+          const supabaseData = {
+            title: deal.title,
+            description: deal.productComment || null,
+            original_price: deal.price || 0,
+            sale_price: deal.price || 0,
+            discount_rate: 0, // crawled data에는 없음
+            thumbnail_url: deal.imageUrl || '',
+            image_url: deal.imageUrl || '',
+            original_url: deal.originalUrl || '',
+            category: deal.category || 'general',
+            source: deal.source,
+            source_id: deal.sourcePostId,
+            seller: deal.seller || null,
+            is_free_shipping: deal.shipping?.isFree || false,
+            status: 'active' as const,
+            end_date: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+            views: deal.viewCount || 0,
+            comment_count: deal.communityCommentCount || 0,
+            like_count: 0,
+            author_name: deal.userId || 'Unknown',
+            shopping_comment: '',
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          };
+          
+          // Supabase에 저장
+          await SupabaseHotDealService.createHotDeal(supabaseData);
+          savedCount++;
+        }
+      } catch (error) {
+        console.error(`❌ 핫딜 저장 실패 (${deal.title}):`, error);
+      }
     }
     
-    console.log(`✅ ${hotDeals.length}개의 핫딜이 성공적으로 가져와졌습니다.`);
+    console.log(`✅ ${savedCount}개의 핫딜이 성공적으로 가져와졌습니다. (${skippedCount}개 중복 건너뜀)`);
     return hotDeals;
     
   } catch (error) {

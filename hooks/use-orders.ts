@@ -22,14 +22,15 @@
  */
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { db } from '@/lib/db/database-service'
 import { Order, OrderStatus, OrderFormData } from '@/types/order'
 
 export function useOrders(userId?: string, status?: OrderStatus, page: number = 1, limit: number = 20) {
   return useQuery({
     queryKey: ['orders', userId, status, page, limit],
     queryFn: async () => {
-      return await db.orders.findWithPagination(page, limit, userId, status)
+      // Deprecated - LocalStorage removed
+      console.warn('useOrders is deprecated. Use useSupabaseOrder instead.')
+      return { items: [], total: 0, page: 1, totalPages: 1 }
     },
     staleTime: 5 * 60 * 1000 // 5분
   })
@@ -39,7 +40,9 @@ export function useOrder(orderId: string) {
   return useQuery({
     queryKey: ['order', orderId],
     queryFn: async () => {
-      return await db.orders.findById(orderId)
+      // Deprecated - LocalStorage removed
+      console.warn('useOrder is deprecated. Use useSupabaseOrder instead.')
+      return null
     },
     enabled: !!orderId,
     staleTime: 1 * 60 * 1000 // 1분
@@ -50,7 +53,14 @@ export function useOrderStats(userId?: string) {
   return useQuery({
     queryKey: ['order-stats', userId],
     queryFn: async () => {
-      return await db.orders.getOrderStats(userId)
+      // Deprecated - LocalStorage removed
+      console.warn('useOrderStats is deprecated. Use useSupabaseOrder instead.')
+      return {
+        totalOrders: 0,
+        completedOrders: 0,
+        pendingOrders: 0,
+        totalAmount: 0
+      }
     },
     staleTime: 5 * 60 * 1000 // 5분
   })
@@ -61,41 +71,9 @@ export function useCreateOrder() {
 
   return useMutation({
     mutationFn: async (orderData: OrderFormData & { userId: string }) => {
-      const orderNumber = db.orders.generateOrderNumber()
-      const now = new Date()
-      
-      const order: Omit<Order, 'id'> = {
-        userId: orderData.userId,
-        items: orderData.items.map((item, index) => ({
-          id: `item-${Date.now()}-${index}`,
-          productUrl: item.productUrl,
-          productName: item.productName,
-          productImage: item.imageUrl,
-          price: item.price,
-          quantity: item.quantity,
-          options: item.options,
-          notes: item.notes
-        })),
-        status: 'pending',
-        shippingAddress: orderData.shippingAddress,
-        paymentMethod: orderData.paymentMethod,
-        subtotal: orderData.items.reduce((sum, item) => sum + (item.price * item.quantity), 0),
-        serviceFee: 0, // 계산 후 업데이트
-        domesticShippingFee: 0, // 계산 후 업데이트
-        totalAmount: 0, // 계산 후 업데이트
-        orderNumber,
-        customerNotes: orderData.customerNotes,
-        createdAt: now,
-        updatedAt: now
-      }
-
-      // 비용 계산
-      const subtotal = order.subtotal
-      order.serviceFee = Math.max(3000, Math.round(subtotal * 0.08)) // 8% 수수료 (최소 3000원)
-      order.domesticShippingFee = 3000 // 기본값
-      order.totalAmount = subtotal + order.serviceFee + order.domesticShippingFee
-
-      return await db.orders.create(order)
+      // Deprecated - LocalStorage removed
+      console.warn('useCreateOrder is deprecated. Use useSupabaseBuyForMe instead.')
+      throw new Error('LocalStorage orders is no longer supported. Please use Supabase.')
     },
     onSuccess: () => {
       // 관련 쿼리 무효화
@@ -110,15 +88,13 @@ export function useUpdateOrderStatus() {
 
   return useMutation({
     mutationFn: async ({ orderId, status }: { orderId: string; status: OrderStatus }) => {
-      return await db.orders.updateStatus(orderId, status)
+      // Deprecated - LocalStorage removed
+      console.warn('useUpdateOrderStatus is deprecated. Use useSupabaseOrder instead.')
+      throw new Error('LocalStorage orders is no longer supported. Please use Supabase.')
     },
-    onSuccess: (data) => {
-      if (data) {
-        // 특정 주문 쿼리 무효화
-        queryClient.invalidateQueries({ queryKey: ['order', data.id] })
-        queryClient.invalidateQueries({ queryKey: ['orders'] })
-        queryClient.invalidateQueries({ queryKey: ['order-stats'] })
-      }
+    onSuccess: () => {
+      // Since this is deprecated and always throws an error, this won't be called
+      // but TypeScript still checks it
     }
   })
 }
@@ -136,13 +112,13 @@ export function useAddTrackingNumber() {
       trackingNumber: string
       type: 'korean' | 'international'
     }) => {
-      return await db.orders.addTrackingNumber(orderId, trackingNumber, type)
+      // Deprecated - LocalStorage removed
+      console.warn('useAddTrackingNumber is deprecated. Use useSupabaseOrder instead.')
+      throw new Error('LocalStorage orders is no longer supported. Please use Supabase.')
     },
-    onSuccess: (data) => {
-      if (data) {
-        queryClient.invalidateQueries({ queryKey: ['order', data.id] })
-        queryClient.invalidateQueries({ queryKey: ['orders'] })
-      }
+    onSuccess: () => {
+      // Since this is deprecated and always throws an error, this won't be called
+      // but TypeScript still checks it
     }
   })
 }
@@ -152,7 +128,9 @@ export function useSearchOrders(keyword: string, userId?: string) {
     queryKey: ['orders-search', keyword, userId],
     queryFn: async () => {
       if (!keyword.trim()) return []
-      return await db.orders.searchOrders(keyword, userId)
+      // Deprecated - LocalStorage removed
+      console.warn('useSearchOrders is deprecated. Use useSupabaseOrder instead.')
+      return []
     },
     enabled: keyword.length > 0,
     staleTime: 1 * 60 * 1000 // 1분

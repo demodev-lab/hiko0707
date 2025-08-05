@@ -1,9 +1,41 @@
-import { User, Post, Comment } from './local/models'
-import { LocalStorage } from './storage'
+// This file is deprecated and kept only for debugging purposes
+// All data is now managed through Supabase
+
 import { HotDeal } from '@/types/hotdeal'
 import hotDealMockData from './hotdeal-mock-data.json'
 // import { extendedRealHotDeals } from './extended-real-data' // 추후 크롤러 개발 시 사용
 import imageMappingData from './image-mapping.json'
+
+// 임시 타입 정의 (LocalStorage 제거 후)
+interface User {
+  id: string
+  email: string
+  name: string
+  role?: 'guest' | 'member' | 'admin'
+  avatar?: string
+  createdAt: Date
+  updatedAt: Date
+}
+
+interface Post {
+  id: string
+  title: string
+  content: string
+  authorId: string
+  tags: string[]
+  status: 'draft' | 'published'
+  createdAt: Date
+  updatedAt: Date
+}
+
+interface Comment {
+  id: string
+  content: string
+  postId: string
+  authorId: string
+  createdAt: Date
+  updatedAt: Date
+}
 
 // 이미지 URL 생성 함수
 function getImageUrl(deal: any, index: number): string {
@@ -155,45 +187,15 @@ export const mockComments: Comment[] = [
 ]
 
 export function initializeMockData(): void {
-  const storage = LocalStorage.getInstance()
-  
-  // 사용자, 게시글, 댓글 데이터만 초기화 (없을 경우에만)
-  if (!storage.get('users')) {
-    storage.set('users', mockUsers)
-  }
-  if (!storage.get('posts')) {
-    storage.set('posts', mockPosts)
-  }
-  if (!storage.get('comments')) {
-    storage.set('comments', mockComments)
-  }
-  
-  // 핫딜 데이터는 초기화하지 않음 (크롤링 데이터 보존)
-  const existingHotDeals = storage.get<HotDeal[]>('hotdeals') || []
-  if (!existingHotDeals || existingHotDeals.length === 0) {
-    // 빈 배열로 초기화하여 오류 방지
-    storage.set('hotdeals', [])
-    console.log('✅ HotDeals initialized as empty array for crawled data')
-  } else {
-    console.log(`✅ Existing HotDeals preserved: ${existingHotDeals.length} items`)
-  }
-  
-  console.log('✅ Mock data initialization complete')
+  // Deprecated - all data is now in Supabase
+  console.log('✅ Mock data initialization skipped - using Supabase')
 }
 
-// 강제로 모든 데이터를 다시 초기화하는 함수
+// 강제로 모든 데이터를 다시 초기화하는 함수 (디버그 목적)
 export function forceInitializeMockData(): void {
-  const storage = LocalStorage.getInstance()
-  
-  storage.set('users', mockUsers)
-  storage.set('posts', mockPosts)
-  storage.set('comments', mockComments)
-  // 핫딜은 초기화하지 않음
-  
-  console.log(`✅ Mock data force initialized (excluding hotdeals)`)
-  console.log(`- Users: ${mockUsers.length} items`)
-  console.log(`- Posts: ${mockPosts.length} items`)
-  console.log(`- Comments: ${mockComments.length} items`)
+  // Deprecated - all data is now in Supabase
+  console.log('✅ Mock data initialization skipped - using Supabase')
+  console.log('ℹ️ To initialize data, use Supabase dashboard or migration scripts')
 }
 
 // 핫딜 데이터를 완전히 지우는 함수

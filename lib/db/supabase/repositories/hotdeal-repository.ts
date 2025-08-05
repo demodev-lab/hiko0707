@@ -208,8 +208,7 @@ export class SupabaseHotDealRepository {
       likeCount: row.like_count || 0,
       commentCount: row.comment_count || 0,
       shipping: {
-        isFree: row.is_free_shipping || false,
-        fee: row.is_free_shipping ? 0 : null
+        isFree: row.is_free_shipping || false
       },
       userId: row.author_name || 'Unknown'
     }

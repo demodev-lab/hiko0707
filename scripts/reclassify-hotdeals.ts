@@ -44,6 +44,11 @@ async function reclassifyAllHotdeals(dryRun: boolean = false): Promise<Reclassif
   }
 
   try {
+    // supabase null 체크
+    if (!supabase) {
+      throw new Error('Supabase 클라이언트가 초기화되지 않았습니다')
+    }
+
     // 1. 전체 핫딜 개수 확인
     const { count: totalCount, error: countError } = await supabase
       .from('hot_deals')
@@ -71,7 +76,7 @@ async function reclassifyAllHotdeals(dryRun: boolean = false): Promise<Reclassif
       // 배치 데이터 조회
       const { data: hotdeals, error: batchError } = await supabase
         .from('hot_deals')
-        .select('id, title, category, description, shopping_comment')
+        .select('id, title, category, description, shopping_comment, sale_price, original_price, original_url, seller, source, source_id, views, crawled_at')
         .range(startIndex, endIndex)
         .order('created_at', { ascending: false })
 
@@ -89,16 +94,23 @@ async function reclassifyAllHotdeals(dryRun: boolean = false): Promise<Reclassif
           // 현재 카테고리 정규화
           const currentCategory = HotDealClassificationService.normalizeCategory(hotdeal.category)
           
-          // HotDeal 객체 구성 (분류에 필요한 정보만)
+          // HotDeal 객체 구성 (Supabase 데이터를 HotDeal 타입으로 변환)
           const hotdealForClassification = {
             id: hotdeal.id,
             title: hotdeal.title,
             category: currentCategory,
+            price: hotdeal.sale_price || hotdeal.original_price || 0,
+            originalUrl: hotdeal.original_url || '',
+            seller: hotdeal.seller || '',
+            source: hotdeal.source || 'unknown',
+            sourcePostId: hotdeal.source_id || '',
+            viewCount: hotdeal.views || 0,
+            crawledAt: hotdeal.crawled_at || new Date().toISOString(),
             productComment: hotdeal.shopping_comment || hotdeal.description || ''
           }
 
           // 새로운 카테고리 결정
-          const newCategory = HotDealClassificationService.reclassifyHotDeal(hotdealForClassification)
+          const newCategory = HotDealClassificationService.reclassifyHotDeal(hotdealForClassification as any)
 
           if (newCategory !== currentCategory) {
             // 카테고리 변경이 필요한 경우
@@ -195,6 +207,11 @@ function printStatistics(stats: ReclassificationStats, dryRun: boolean) {
  * 현재 카테고리 분포 조회
  */
 async function getCurrentCategoryDistribution(): Promise<Record<string, number>> {
+  if (!supabase) {
+    console.error('Supabase 클라이언트가 초기화되지 않았습니다')
+    return {}
+  }
+  
   const { data, error } = await supabase
     .from('hot_deals')
     .select('category')

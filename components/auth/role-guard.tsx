@@ -49,7 +49,7 @@ export function RoleGuard({
   }
   
   // 권한 확인
-  const userRole = isAdmin ? 'admin' : (currentUser.role || 'guest')
+  const userRole: UserRole = isAdmin ? 'admin' : (currentUser.role as UserRole || 'guest')
   const hasPermission = allowedRoles.includes(userRole)
   
   if (!hasPermission) {

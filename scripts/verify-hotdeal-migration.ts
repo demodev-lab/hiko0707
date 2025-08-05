@@ -78,7 +78,7 @@ async function compareDataSources(): Promise<ValidationResult> {
     const supabaseMap = new Map<string, HotDeal>()
     
     localDeals.forEach(deal => {
-      const key = `${deal.source}-${deal.sourceId}`
+      const key = `${deal.source}-${deal.sourcePostId}`
       localMap.set(key, deal)
     })
     
@@ -103,9 +103,8 @@ async function compareDataSources(): Promise<ValidationResult> {
         const fieldsMatch = 
           localDeal.title === supabaseDeal.title &&
           localDeal.price === supabaseDeal.price &&
-          localDeal.originalPrice === supabaseDeal.originalPrice &&
           localDeal.source === supabaseDeal.source &&
-          localDeal.sourceId === supabaseDeal.sourceId
+          localDeal.sourcePostId === supabaseDeal.sourcePostId
         
         if (fieldsMatch) {
           result.matchedDeals++
@@ -169,7 +168,12 @@ async function verifyFunctionality() {
       author_name: 'Tester',
       is_free_shipping: true,
       shopping_comment: '테스트 댓글',
-      status: 'active' as const
+      status: 'active' as const,
+      created_at: new Date().toISOString(),
+      discount_rate: 50,
+      end_date: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+      image_url: 'https://example.com/test.jpg',
+      updated_at: new Date().toISOString()
     }
     
     const created = await SupabaseHotDealService.createHotDeal(testHotDeal)

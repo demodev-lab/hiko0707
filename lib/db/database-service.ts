@@ -1,50 +1,52 @@
-import { UserRepository } from './local/repositories/user-repository'
-import { PostRepository } from './local/repositories/post-repository'
-import { CommentRepository } from './local/repositories/comment-repository'
-import { HotDealRepository } from './local/repositories/hotdeal-repository'
-import { HotDealCommentRepository } from './local/repositories/hotdeal-comment-repository'
-import { OrderRepository } from './local/repositories/order-repository'
-import { PaymentRepository, PaymentRequestRepository } from './local/repositories/payment-repository'
-import { FavoriteRepository } from './local/repositories/favorite-repository'
-import { BuyForMeRepository } from './local/repositories/buy-for-me-repository'
-import { TranslationRepository } from './local/repositories/translation-repository'
-import { AddressRepository } from './local/repositories/address-repository'
-import { initializeMockData } from './mock-data'
-import { LocalStorage } from './storage'
+/**
+ * @deprecated This file is deprecated and will be removed soon.
+ * All LocalStorage functionality has been migrated to Supabase.
+ * 
+ * This is a dummy file to prevent import errors during the migration period.
+ * Please use Supabase services instead:
+ * - SupabaseHotDealService
+ * - SupabaseOrderService
+ * - SupabasePaymentService
+ * - SupabaseProfileService
+ * - etc.
+ */
 
+// Dummy interface to prevent TypeScript errors
+interface DummyRepository {
+  findAll: () => Promise<any[]>
+  findById: (id: string) => Promise<any | null>
+  create: (data: any) => Promise<any>
+  update: (id: string, data: any) => Promise<any>
+  delete: (id: string) => Promise<boolean>
+  deleteAll: () => Promise<void>
+  findByUserId?: (userId: string) => Promise<any[]>
+  findDefaultByUserId?: (userId: string) => Promise<any | null>
+  findByEmail?: (email: string) => Promise<any | null>
+  findByExternalTransactionId?: (id: string) => Promise<any | null>
+  updateStatus?: (id: string, status: string, metadata?: any) => Promise<any>
+  getNestedComments?: (id: string) => Promise<any[]>
+  toggleLike?: (commentId: string, userId: string) => Promise<boolean>
+}
+
+// Dummy DatabaseService class
 export class DatabaseService {
   private static instance: DatabaseService
   
-  public users: UserRepository
-  public posts: PostRepository
-  public comments: CommentRepository
-  public hotdeals: HotDealRepository
-  public hotdealComments: HotDealCommentRepository
-  public orders: OrderRepository
-  public payments: PaymentRepository
-  public paymentRequests: PaymentRequestRepository
-  public favorites: FavoriteRepository
-  public buyForMeRequests: BuyForMeRepository
-  public translations: TranslationRepository
-  public addresses: AddressRepository
+  public users: DummyRepository = createDummyRepository('users')
+  public posts: DummyRepository = createDummyRepository('posts')
+  public comments: DummyRepository = createDummyRepository('comments')
+  public hotdeals: DummyRepository = createDummyRepository('hotdeals')
+  public hotdealComments: DummyRepository = createDummyRepository('hotdealComments')
+  public orders: DummyRepository = createDummyRepository('orders')
+  public payments: DummyRepository = createDummyRepository('payments')
+  public paymentRequests: DummyRepository = createDummyRepository('paymentRequests')
+  public favorites: DummyRepository = createDummyRepository('favorites')
+  public buyForMeRequests: DummyRepository = createDummyRepository('buyForMeRequests')
+  public translations: DummyRepository = createDummyRepository('translations')
+  public addresses: DummyRepository = createDummyRepository('addresses')
 
   private constructor() {
-    this.users = new UserRepository()
-    this.posts = new PostRepository()
-    this.comments = new CommentRepository()
-    this.hotdeals = new HotDealRepository()
-    this.hotdealComments = new HotDealCommentRepository()
-    this.orders = new OrderRepository()
-    this.payments = new PaymentRepository()
-    this.paymentRequests = new PaymentRequestRepository()
-    this.favorites = new FavoriteRepository()
-    this.buyForMeRequests = new BuyForMeRepository()
-    this.translations = new TranslationRepository()
-    this.addresses = new AddressRepository()
-    
-    if (typeof window !== 'undefined') {
-      initializeMockData()
-    }
+    console.warn('DatabaseService is deprecated. Please use Supabase services instead.')
   }
 
   static getInstance(): DatabaseService {
@@ -55,56 +57,72 @@ export class DatabaseService {
   }
 
   async clearAllData(): Promise<void> {
-    await this.users.deleteAll()
-    await this.posts.deleteAll()
-    await this.comments.deleteAll()
-    await this.hotdeals.deleteAll()
-    await this.hotdealComments.deleteAll()
-    await this.orders.deleteAll()
-    await this.payments.deleteAll()
-    await this.paymentRequests.deleteAll()
-    await this.favorites.deleteAll()
-    await this.buyForMeRequests.deleteAll()
-    await this.addresses.deleteAll()
+    console.warn('clearAllData is deprecated')
   }
 
   async backup(): Promise<string> {
-    const data = {
-      users: await this.users.findAll(),
-      posts: await this.posts.findAll(),
-      comments: await this.comments.findAll(),
-      hotdeals: await this.hotdeals.findAll(),
-      orders: await this.orders.findAll(),
-      payments: await this.payments.findAll(),
-      paymentRequests: await this.paymentRequests.findAll(),
-      favorites: await this.favorites.findAll(),
-      buyForMeRequests: await this.buyForMeRequests.findAll(),
-      timestamp: new Date().toISOString()
-    }
-    return JSON.stringify(data, null, 2)
+    console.warn('backup is deprecated')
+    return '{}'
   }
 
   async restore(backupData: string): Promise<void> {
-    try {
-      const data = JSON.parse(backupData)
-      
-      await this.clearAllData()
-      
-      const storage = LocalStorage.getInstance()
-      storage.set('users', data.users)
-      storage.set('posts', data.posts)
-      storage.set('comments', data.comments)
-      storage.set('hotdeals', data.hotdeals)
-      storage.set('orders', data.orders)
-      storage.set('payments', data.payments)
-      storage.set('payment_requests', data.paymentRequests)
-      storage.set('favorites', data.favorites || [])
-      storage.set('buyForMeRequests', data.buyForMeRequests || [])
-      
-      console.log('Data restored successfully')
-    } catch (error) {
-      console.error('Failed to restore data:', error)
-      throw error
+    console.warn('restore is deprecated')
+  }
+}
+
+// Helper function to create dummy repositories
+function createDummyRepository(name: string): DummyRepository {
+  return {
+    findAll: async () => {
+      console.warn(`${name}.findAll() is deprecated. Use Supabase services.`)
+      return []
+    },
+    findById: async (id: string) => {
+      console.warn(`${name}.findById() is deprecated. Use Supabase services.`)
+      return null
+    },
+    create: async (data: any) => {
+      console.warn(`${name}.create() is deprecated. Use Supabase services.`)
+      return { id: 'dummy', ...data }
+    },
+    update: async (id: string, data: any) => {
+      console.warn(`${name}.update() is deprecated. Use Supabase services.`)
+      return { id, ...data }
+    },
+    delete: async (id: string) => {
+      console.warn(`${name}.delete() is deprecated. Use Supabase services.`)
+      return true
+    },
+    deleteAll: async () => {
+      console.warn(`${name}.deleteAll() is deprecated. Use Supabase services.`)
+    },
+    findByUserId: async (userId: string) => {
+      console.warn(`${name}.findByUserId() is deprecated. Use Supabase services.`)
+      return []
+    },
+    findDefaultByUserId: async (userId: string) => {
+      console.warn(`${name}.findDefaultByUserId() is deprecated. Use Supabase services.`)
+      return null
+    },
+    findByEmail: async (email: string) => {
+      console.warn(`${name}.findByEmail() is deprecated. Use Supabase services.`)
+      return null
+    },
+    findByExternalTransactionId: async (id: string) => {
+      console.warn(`${name}.findByExternalTransactionId() is deprecated. Use Supabase services.`)
+      return null
+    },
+    updateStatus: async (id: string, status: string, metadata?: any) => {
+      console.warn(`${name}.updateStatus() is deprecated. Use Supabase services.`)
+      return { id, status, ...metadata }
+    },
+    getNestedComments: async (id: string) => {
+      console.warn(`${name}.getNestedComments() is deprecated. Use Supabase services.`)
+      return []
+    },
+    toggleLike: async (commentId: string, userId: string) => {
+      console.warn(`${name}.toggleLike() is deprecated. Use Supabase services.`)
+      return true
     }
   }
 }
