@@ -26,6 +26,11 @@ export const supabaseAdmin = () => {
     const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
     
     if (!supabaseUrl || !supabaseServiceKey) {
+      console.error('Supabase Admin Client 초기화 실패:', {
+        supabaseUrl: supabaseUrl ? '설정됨' : '누락',
+        supabaseServiceKey: supabaseServiceKey ? '설정됨' : '누락',
+        nodeEnv: process.env.NODE_ENV
+      })
       return null
     }
     

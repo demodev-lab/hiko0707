@@ -9,8 +9,10 @@ import { ProtectedRoute } from '@/components/features/auth/protected-route'
 import { Package, Clock, CheckCircle, XCircle, TrendingUp, ShoppingBag } from 'lucide-react'
 import Link from 'next/link'
 import { SupabaseOrderService } from '@/lib/services/supabase-order-service'
+import { SupabaseUserService } from '@/lib/services/supabase-user-service'
 import { formatDate } from '@/lib/utils'
 import { ServiceJsonLd } from '@/components/seo/json-ld'
+import { getCurrentUser } from '@/lib/auth'
 
 export const metadata: Metadata = {
   title: '주문 내역 - HiKo',
@@ -18,9 +20,20 @@ export const metadata: Metadata = {
 }
 
 async function OrderStats() {
-  // Supabase에서 사용자의 주문 내역을 가져옴 (현재 사용자 ID가 필요)
-  // TODO: 현재 사용자 ID 가져오기 로직 필요
-  const orders = await SupabaseOrderService.getOrdersByUser('temp-user-id') // 임시
+  // 현재 사용자 정보 가져오기
+  const currentUser = await getCurrentUser()
+  if (!currentUser) {
+    return null
+  }
+  
+  // Clerk ID로 Supabase 사용자 조회
+  const supabaseUser = await SupabaseUserService.getUserByClerkId(currentUser.id)
+  if (!supabaseUser) {
+    return null
+  }
+  
+  // Supabase에서 사용자의 주문 내역을 가져옴
+  const orders = await SupabaseOrderService.getOrdersByUser(supabaseUser.id)
   
   const stats = [
     {
@@ -75,9 +88,25 @@ async function OrderStats() {
 }
 
 async function OrderList() {
-  // Supabase에서 사용자의 주문 내역을 가져옴 (현재 사용자 ID가 필요)
-  // TODO: 현재 사용자 ID 가져오기 로직 필요
-  const orders = await SupabaseOrderService.getOrdersByUser('temp-user-id') // 임시
+  // 현재 사용자 정보 가져오기
+  const currentUser = await getCurrentUser()
+  if (!currentUser) {
+    return <EmptyState
+      title="로그인이 필요합니다"
+      message="주문 내역을 보려면 로그인이 필요합니다."
+    />
+  }
+  
+  // Clerk ID로 Supabase 사용자 조회
+  const supabaseUser = await SupabaseUserService.getUserByClerkId(currentUser.id)
+  if (!supabaseUser) {
+    return <EmptyState
+      title="사용자 정보를 찾을 수 없습니다"
+      message="사용자 정보를 확인할 수 없습니다. 다시 시도해주세요."
+    />
+  }
+  
+  const orders = await SupabaseOrderService.getOrdersByUser(supabaseUser.id)
   const sortedOrders = orders.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
 
   if (orders.length === 0) {
