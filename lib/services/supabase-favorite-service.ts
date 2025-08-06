@@ -1,11 +1,9 @@
 import { supabaseAdmin } from '@/lib/supabase/client'
-import type { Database } from '@/database.types'
-
-// Supabase 테이블 타입 정의
-type UserFavoriteHotDealRow = Database['public']['Tables']['user_favorite_hotdeals']['Row']
-type UserFavoriteHotDealInsert = Database['public']['Tables']['user_favorite_hotdeals']['Insert']
-
-type HotDealRow = Database['public']['Tables']['hot_deals']['Row']
+import type { 
+  UserFavoriteHotDealRow, 
+  UserFavoriteHotDealInsert, 
+  HotDealRow 
+} from '@/lib/types/supabase'
 
 /**
  * Supabase 즐겨찾기 관리 서비스

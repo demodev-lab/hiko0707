@@ -32,7 +32,7 @@ export function useSupabaseCurrency(options: UseSupabaseCurrencyOptions = {}) {
   const { data: selectedCurrency = defaultCurrency } = useQuery({
     queryKey: [CURRENCY_QUERY_KEY, user?.id],
     queryFn: async () => {
-      const currency = await supabaseSettingsService.getSetting<string>('preferred-currency', defaultCurrency)
+      const currency = await supabaseSettingsService.getSetting<string>('preferred-currency', defaultCurrency, user?.id)
       return currency || defaultCurrency
     },
     staleTime: 1000 * 60 * 10, // 10분
@@ -43,7 +43,7 @@ export function useSupabaseCurrency(options: UseSupabaseCurrencyOptions = {}) {
   // 선택된 통화 변경 (React Query Mutation + Supabase)
   const currencyMutation = useMutation({
     mutationFn: async (currencyCode: string) => {
-      const success = await supabaseSettingsService.setSetting('preferred-currency', currencyCode)
+      const success = await supabaseSettingsService.setSetting('preferred-currency', currencyCode, user?.id)
       if (!success) {
         throw new Error('통화 설정 저장에 실패했습니다')
       }

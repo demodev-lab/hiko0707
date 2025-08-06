@@ -31,7 +31,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { Payment, PaymentStatus } from '@/types/payment'
-import { usePayments, useCancelPayment, useRefundPayment } from '@/hooks/use-payments'
+// import { usePayments, useCancelPayment, useRefundPayment } from '@/hooks/use-payments' // DEPRECATED - 제거됨
 import { useLanguage } from '@/lib/i18n/context'
 import { formatDate } from '@/lib/utils'
 import { toast } from 'sonner'
@@ -44,9 +44,12 @@ interface PaymentHistoryProps {
 
 export function PaymentHistory({ userId, orderId, onViewPayment }: PaymentHistoryProps) {
   const { t } = useLanguage()
-  const { data: payments = [], isLoading, refetch } = usePayments(userId)
-  const cancelPayment = useCancelPayment()
-  const refundPayment = useRefundPayment()
+  // const { data: payments = [], isLoading, refetch } = usePayments(userId) // DEPRECATED - 제거됨
+  // const cancelPayment = useCancelPayment() // DEPRECATED - 제거됨
+  // const refundPayment = useRefundPayment() // DEPRECATED - 제거됨
+  
+  const payments: Payment[] = [] // 빈 배열로 대체
+  const isLoading = false
 
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState<PaymentStatus | 'all'>('all')
@@ -121,12 +124,10 @@ export function PaymentHistory({ userId, orderId, onViewPayment }: PaymentHistor
 
   const handleCancelPayment = async (paymentId: string) => {
     try {
-      await cancelPayment.mutateAsync({
-        paymentId,
-        reason: '사용자 요청에 의한 취소'
-      })
-      toast.success('결제가 취소되었습니다')
-      refetch()
+      // DEPRECATED: LocalStorage 기반 결제 시스템은 제거됨
+      // TODO: Supabase 기반 결제 시스템으로 교체 필요
+      console.warn('결제 취소 기능은 현재 개발 중입니다. Supabase 마이그레이션 필요')
+      toast.error('결제 취소 기능은 현재 개발 중입니다')
     } catch (error) {
       toast.error('결제 취소에 실패했습니다')
     }
@@ -134,13 +135,10 @@ export function PaymentHistory({ userId, orderId, onViewPayment }: PaymentHistor
 
   const handleRefundPayment = async (payment: Payment) => {
     try {
-      await refundPayment.mutateAsync({
-        paymentId: payment.id,
-        amount: payment.paidAmount || payment.amount,
-        reason: '사용자 요청에 의한 환불'
-      })
-      toast.success('환불이 요청되었습니다')
-      refetch()
+      // DEPRECATED: LocalStorage 기반 결제 시스템은 제거됨  
+      // TODO: Supabase 기반 결제 시스템으로 교체 필요
+      console.warn('환불 기능은 현재 개발 중입니다. Supabase 마이그레이션 필요')
+      toast.error('환불 기능은 현재 개발 중입니다')
     } catch (error) {
       toast.error('환불 요청에 실패했습니다')
     }

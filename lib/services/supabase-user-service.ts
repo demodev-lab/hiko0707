@@ -1,8 +1,5 @@
 import { supabase as getSupabaseClient } from '@/lib/supabase/client'
-import type { Database } from '@/database.types'
-
-type UserRow = Database['public']['Tables']['users']['Row']
-type UserUpdate = Database['public']['Tables']['users']['Update']
+import type { UserRow, UserUpdate, UserProfileRow } from '@/lib/types/supabase'
 
 export class SupabaseUserService {
   /**
@@ -162,7 +159,7 @@ export class SupabaseUserService {
   /**
    * 사용자 추가 프로필 정보 조회 (user_profiles 테이블)
    */
-  static async getUserProfile(userId: string): Promise<Database['public']['Tables']['user_profiles']['Row'] | null> {
+  static async getUserProfile(userId: string): Promise<UserProfileRow | null> {
     const supabase = getSupabaseClient()
     const { data, error } = await supabase
       .from('user_profiles')

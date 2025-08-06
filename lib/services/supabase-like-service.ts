@@ -1,12 +1,10 @@
 import { supabaseAdmin } from '@/lib/supabase/client'
-import type { Database } from '@/database.types'
-
-// Supabase 테이블 타입 정의
-type HotDealLikeRow = Database['public']['Tables']['hot_deal_likes']['Row']
-type HotDealLikeInsert = Database['public']['Tables']['hot_deal_likes']['Insert']
-
-type HotDealRow = Database['public']['Tables']['hot_deals']['Row']
-type HotDealUpdate = Database['public']['Tables']['hot_deals']['Update']
+import type { 
+  HotDealLikeRow, 
+  HotDealLikeInsert, 
+  HotDealRow, 
+  HotDealUpdate 
+} from '@/lib/types/supabase'
 
 /**
  * Supabase 핫딜 좋아요 관리 서비스

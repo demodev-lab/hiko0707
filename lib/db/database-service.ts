@@ -46,7 +46,10 @@ export class DatabaseService {
   public addresses: DummyRepository = createDummyRepository('addresses')
 
   private constructor() {
-    console.warn('DatabaseService is deprecated. Please use Supabase services instead.')
+    // 개발 환경에서만 경고 출력
+    if (process.env.NODE_ENV === 'development') {
+      console.warn('DatabaseService is deprecated. Please use Supabase services instead.')
+    }
   }
 
   static getInstance(): DatabaseService {
@@ -70,58 +73,64 @@ export class DatabaseService {
   }
 }
 
-// Helper function to create dummy repositories
+// Helper function to create dummy repositories  
 function createDummyRepository(name: string): DummyRepository {
+  const warnIfDev = (methodName: string) => {
+    if (process.env.NODE_ENV === 'development') {
+      console.warn(`${name}.${methodName}() is deprecated. Use Supabase services.`)
+    }
+  }
+
   return {
     findAll: async () => {
-      console.warn(`${name}.findAll() is deprecated. Use Supabase services.`)
+      warnIfDev('findAll')
       return []
     },
     findById: async (id: string) => {
-      console.warn(`${name}.findById() is deprecated. Use Supabase services.`)
+      warnIfDev('findById')
       return null
     },
     create: async (data: any) => {
-      console.warn(`${name}.create() is deprecated. Use Supabase services.`)
+      warnIfDev('create')
       return { id: 'dummy', ...data }
     },
     update: async (id: string, data: any) => {
-      console.warn(`${name}.update() is deprecated. Use Supabase services.`)
+      warnIfDev('update')
       return { id, ...data }
     },
     delete: async (id: string) => {
-      console.warn(`${name}.delete() is deprecated. Use Supabase services.`)
+      warnIfDev('delete')
       return true
     },
     deleteAll: async () => {
-      console.warn(`${name}.deleteAll() is deprecated. Use Supabase services.`)
+      warnIfDev('deleteAll')
     },
     findByUserId: async (userId: string) => {
-      console.warn(`${name}.findByUserId() is deprecated. Use Supabase services.`)
+      warnIfDev('findByUserId')
       return []
     },
     findDefaultByUserId: async (userId: string) => {
-      console.warn(`${name}.findDefaultByUserId() is deprecated. Use Supabase services.`)
+      warnIfDev('findDefaultByUserId')
       return null
     },
     findByEmail: async (email: string) => {
-      console.warn(`${name}.findByEmail() is deprecated. Use Supabase services.`)
+      warnIfDev('findByEmail')
       return null
     },
     findByExternalTransactionId: async (id: string) => {
-      console.warn(`${name}.findByExternalTransactionId() is deprecated. Use Supabase services.`)
+      warnIfDev('findByExternalTransactionId')
       return null
     },
     updateStatus: async (id: string, status: string, metadata?: any) => {
-      console.warn(`${name}.updateStatus() is deprecated. Use Supabase services.`)
+      warnIfDev('updateStatus')
       return { id, status, ...metadata }
     },
     getNestedComments: async (id: string) => {
-      console.warn(`${name}.getNestedComments() is deprecated. Use Supabase services.`)
+      warnIfDev('getNestedComments')
       return []
     },
     toggleLike: async (commentId: string, userId: string) => {
-      console.warn(`${name}.toggleLike() is deprecated. Use Supabase services.`)
+      warnIfDev('toggleLike')
       return true
     }
   }

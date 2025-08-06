@@ -8,18 +8,17 @@ import { SupabasePaymentService } from '@/lib/services/supabase-payment-service'
 import { SupabaseAddressService } from '@/lib/services/supabase-address-service'
 import { SupabaseNotificationService } from '@/lib/services/supabase-notification-service'
 import { SupabaseAdminLogService } from '@/lib/services/supabase-admin-log-service'
-import type { Database } from '@/database.types'
+import type { 
+  ProxyPurchaseRequestRow, 
+  ProxyPurchaseRequestInsert, 
+  PaymentRow, 
+  UserAddressRow, 
+  ProxyPurchaseQuoteRow, 
+  OrderStatusHistoryRow 
+} from '@/lib/types/supabase'
 import type { BuyForMeRequest, CreateBuyForMeRequestData, BuyForMeStatus } from '@/types/buy-for-me'
 import { useSupabaseUser } from './use-supabase-user'
 import { toast } from 'sonner'
-
-// Supabase 테이블 타입 정의
-type ProxyPurchaseRequestRow = Database['public']['Tables']['proxy_purchases_request']['Row']
-type ProxyPurchaseRequestInsert = Database['public']['Tables']['proxy_purchases_request']['Insert']
-type PaymentRow = Database['public']['Tables']['payments']['Row']
-type UserAddressRow = Database['public']['Tables']['user_addresses']['Row']
-type ProxyPurchaseQuoteRow = Database['public']['Tables']['proxy_purchase_quotes']['Row']
-type OrderStatusHistoryRow = Database['public']['Tables']['order_status_history']['Row']
 
 // 참고: proxy_purchase_addresses 테이블은 레거시 테이블로 현재 사용하지 않음
 // 현재 아키텍처: proxy_purchases_request.shipping_address_id -> user_addresses.id

@@ -10,6 +10,13 @@ export default defineConfig({
     setupFiles: './tests/setup.ts',
     css: true,
     reporters: ['verbose'],
+    exclude: [
+      '**/node_modules/**',
+      '**/dist/**',
+      '**/.{idea,git,cache,output,temp}/**',
+      '**/{karma,rollup,webpack,vite,vitest,jest,ava,babel,nyc,cypress,tsup,build}.config.*',
+      'e2e/**/*.spec.ts',  // Exclude Playwright E2E tests
+    ],
     coverage: {
       reporter: ['text', 'json', 'html'],
       exclude: [
@@ -21,6 +28,7 @@ export default defineConfig({
         '**/*.d.ts',
         '**/*.config.*',
         '**/mockServiceWorker.js',
+        'e2e/**',
       ]
     }
   },

@@ -3,11 +3,7 @@ import { useEffect } from 'react'
 import { supabase } from '@/lib/supabase/client'
 import { SupabaseHotDealService } from '@/lib/services/supabase-hotdeal-service'
 import type { HotDeal } from '@/types/hotdeal'
-import type { Database } from '@/database.types'
-
-type HotDealRow = Database['public']['Tables']['hot_deals']['Row']
-type HotDealInsert = Database['public']['Tables']['hot_deals']['Insert']
-type HotDealUpdate = Database['public']['Tables']['hot_deals']['Update']
+import type { HotDealRow, HotDealInsert, HotDealUpdate } from '@/lib/types/supabase'
 
 interface UseHotDealsOptions {
   source?: string

@@ -4,8 +4,9 @@ import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Heart } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { useToggleFavorite, useIsFavorited, useFavoriteCount } from '@/hooks/use-favorites'
+import { useToggleFavoriteHotDeal, useUserFavoriteHotDeals } from '@/hooks/use-supabase-hotdeals'
 import { useClerkRole } from '@/hooks/use-clerk-role'
+import { useSupabaseUser } from '@/hooks/use-supabase-user'
 import { useRouter } from 'next/navigation'
 
 // Favorite 타입 정의 (LocalStorage 의존성 제거)
@@ -44,20 +45,25 @@ export function FavoriteButton({
 }: FavoriteButtonProps) {
   const router = useRouter()
   const { isAuthenticated } = useClerkRole()
-  const { data: isFavorited = false } = useIsFavorited(itemId, itemType)
-  const { data: favoriteCount = 0 } = useFavoriteCount(itemId, itemType)
-  const toggleFavorite = useToggleFavorite()
+  const { user } = useSupabaseUser()
+  const { data: userFavorites = [] } = useUserFavoriteHotDeals(user?.id || '')
+  const toggleFavorite = useToggleFavoriteHotDeal()
   const [isAnimating, setIsAnimating] = useState(false)
   
+  // 현재 아이템이 찜 목록에 있는지 확인
+  const isFavorited = userFavorites.some(fav => fav.id === itemId)
+  // favoriteCount 기능은 현재 Supabase 서비스에 없으므로 제거
+  const favoriteCount = 0
+  
   const handleToggle = async () => {
-    if (!isAuthenticated) {
+    if (!isAuthenticated || !user) {
       router.push('/login')
       return
     }
     
     setIsAnimating(true)
     try {
-      await toggleFavorite.mutateAsync({ itemId, itemType, metadata })
+      await toggleFavorite.mutateAsync({ hotdealId: itemId, userId: user.id })
     } finally {
       setTimeout(() => setIsAnimating(false), 300)
     }

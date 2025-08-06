@@ -325,7 +325,4 @@ export class ClienCrawler extends BaseHotdealCrawler {
     return '클리앙'
   }
 
-  private async delay(ms?: number): Promise<void> {
-    await new Promise(resolve => setTimeout(resolve, ms || this.options.delay))
-  }
 }

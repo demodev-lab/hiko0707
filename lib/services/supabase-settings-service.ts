@@ -1,5 +1,4 @@
 import { supabase } from '@/lib/supabase/client'
-import { getCurrentUser } from '@/lib/auth'
 
 export class SupabaseSettingsService {
   private static instance: SupabaseSettingsService
@@ -15,16 +14,14 @@ export class SupabaseSettingsService {
   /**
    * 특정 설정값 조회
    */
-  async getSetting<T = any>(key: string, defaultValue?: T): Promise<T | undefined> {
+  async getSetting<T = any>(key: string, defaultValue?: T, userId?: string): Promise<T | undefined> {
     try {
-      const user = await getCurrentUser()
-      
-      if (user) {
+      if (userId) {
         // Supabase에서 사용자 설정 조회
         const { data, error } = await supabase()
           .from('user_profiles')
           .select('preferences')
-          .eq('user_id', user.id)
+          .eq('user_id', userId)
           .single()
 
         if (error) {
@@ -47,16 +44,14 @@ export class SupabaseSettingsService {
   /**
    * 특정 설정값 저장
    */
-  async setSetting<T = any>(key: string, value: T): Promise<boolean> {
+  async setSetting<T = any>(key: string, value: T, userId?: string): Promise<boolean> {
     try {
-      const user = await getCurrentUser()
-      
-      if (user) {
+      if (userId) {
         // 현재 preferences 조회
         const { data: currentData, error: fetchError } = await supabase()
           .from('user_profiles')
           .select('preferences')
-          .eq('user_id', user.id)
+          .eq('user_id', userId)
           .single()
 
         if (fetchError) {
@@ -83,7 +78,7 @@ export class SupabaseSettingsService {
             preferences: updatedPreferences,
             updated_at: new Date().toISOString()
           })
-          .eq('user_id', user.id)
+          .eq('user_id', userId)
 
         if (updateError) {
           console.error('설정 업데이트 오류:', updateError)
@@ -107,16 +102,14 @@ export class SupabaseSettingsService {
   /**
    * 모든 설정 조회
    */
-  async getSettings(): Promise<Record<string, any>> {
+  async getSettings(userId?: string): Promise<Record<string, any>> {
     try {
-      const user = await getCurrentUser()
-      
-      if (user) {
+      if (userId) {
         // Supabase에서 모든 설정 조회
         const { data, error } = await supabase()
           .from('user_profiles')
           .select('preferences')
-          .eq('user_id', user.id)
+          .eq('user_id', userId)
           .single()
 
         if (error) {
@@ -138,16 +131,14 @@ export class SupabaseSettingsService {
   /**
    * 여러 설정값 한번에 업데이트
    */
-  async updateSettings(newSettings: Record<string, any>): Promise<boolean> {
+  async updateSettings(newSettings: Record<string, any>, userId?: string): Promise<boolean> {
     try {
-      const user = await getCurrentUser()
-      
-      if (user) {
+      if (userId) {
         // 현재 preferences 조회
         const { data: currentData, error: fetchError } = await supabase()
           .from('user_profiles')
           .select('preferences')
-          .eq('user_id', user.id)
+          .eq('user_id', userId)
           .single()
 
         if (fetchError) {
@@ -174,7 +165,7 @@ export class SupabaseSettingsService {
             preferences: updatedPreferences,
             updated_at: new Date().toISOString()
           })
-          .eq('user_id', user.id)
+          .eq('user_id', userId)
 
         if (updateError) {
           console.error('설정 대량 업데이트 오류:', updateError)
@@ -198,16 +189,14 @@ export class SupabaseSettingsService {
   /**
    * 특정 설정 제거
    */
-  async removeSetting(key: string): Promise<boolean> {
+  async removeSetting(key: string, userId?: string): Promise<boolean> {
     try {
-      const user = await getCurrentUser()
-      
-      if (user) {
+      if (userId) {
         // 현재 preferences 조회
         const { data: currentData, error: fetchError } = await supabase()
           .from('user_profiles')
           .select('preferences')
-          .eq('user_id', user.id)
+          .eq('user_id', userId)
           .single()
 
         if (fetchError) {
@@ -233,7 +222,7 @@ export class SupabaseSettingsService {
             preferences: updatedPreferences,
             updated_at: new Date().toISOString()
           })
-          .eq('user_id', user.id)
+          .eq('user_id', userId)
 
         if (updateError) {
           console.error('설정 제거 오류:', updateError)
@@ -257,16 +246,14 @@ export class SupabaseSettingsService {
   /**
    * 모든 설정 초기화
    */
-  async clearSettings(): Promise<boolean> {
+  async clearSettings(userId?: string): Promise<boolean> {
     try {
-      const user = await getCurrentUser()
-      
-      if (user) {
+      if (userId) {
         // Supabase에서 settings만 초기화
         const { data: currentData, error: fetchError } = await supabase()
           .from('user_profiles')
           .select('preferences')
-          .eq('user_id', user.id)
+          .eq('user_id', userId)
           .single()
 
         if (fetchError) {
@@ -288,7 +275,7 @@ export class SupabaseSettingsService {
             preferences: updatedPreferences,
             updated_at: new Date().toISOString()
           })
-          .eq('user_id', user.id)
+          .eq('user_id', userId)
 
         if (updateError) {
           console.error('설정 전체 초기화 오류:', updateError)

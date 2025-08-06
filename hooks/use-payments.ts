@@ -39,7 +39,9 @@ export function usePayments(userId?: string) {
     queryKey: ['payments', userId],
     queryFn: async () => {
       // Deprecated - LocalStorage removed
-      console.warn('usePayments is deprecated. Use useSupabaseOrder instead.')
+      if (process.env.NODE_ENV === 'development') {
+        console.warn('usePayments is deprecated. Use useSupabaseOrder instead.')
+      }
       return [] as Payment[]
     },
     staleTime: 1000 * 60 * 5, // 5분
@@ -52,7 +54,9 @@ export function usePayment(paymentId: string) {
     queryKey: ['payment', paymentId],
     queryFn: () => {
       // Deprecated - LocalStorage removed
-      console.warn('usePayment is deprecated. Use useSupabaseOrder instead.')
+      if (process.env.NODE_ENV === 'development') {
+        console.warn('usePayment is deprecated. Use useSupabaseOrder instead.')
+      }
       return null
     },
     enabled: !!paymentId,
@@ -66,7 +70,9 @@ export function usePaymentsByOrder(orderId: string) {
     queryKey: ['payments', 'order', orderId],
     queryFn: () => {
       // Deprecated - LocalStorage removed
-      console.warn('usePaymentsByOrder is deprecated. Use useSupabaseOrder instead.')
+      if (process.env.NODE_ENV === 'development') {
+        console.warn('usePaymentsByOrder is deprecated. Use useSupabaseOrder instead.')
+      }
       return []
     },
     enabled: !!orderId,
@@ -95,7 +101,9 @@ export function useCreatePayment() {
       metadata?: Record<string, any>
     }) => {
       // Deprecated - LocalStorage removed
-      console.warn('useCreatePayment is deprecated. Use useSupabaseOrder instead.')
+      if (process.env.NODE_ENV === 'development') {
+        console.warn('useCreatePayment is deprecated. Use useSupabaseOrder instead.')
+      }
       throw new Error('LocalStorage payments is no longer supported. Please use Supabase.')
     },
     onSuccess: () => {
@@ -119,7 +127,9 @@ export function useUpdatePaymentStatus() {
       metadata?: Record<string, any>
     }) => {
       // Deprecated - LocalStorage removed
-      console.warn('useUpdatePaymentStatus is deprecated. Use useSupabaseOrder instead.')
+      if (process.env.NODE_ENV === 'development') {
+        console.warn('useUpdatePaymentStatus is deprecated. Use useSupabaseOrder instead.')
+      }
       throw new Error('LocalStorage payments is no longer supported. Please use Supabase.')
     },
     onSuccess: () => {
@@ -136,7 +146,9 @@ export function useCancelPayment() {
   return useMutation({
     mutationFn: async (data: { paymentId: string; reason: string }) => {
       // Deprecated - LocalStorage removed
-      console.warn('useCancelPayment is deprecated. Use useSupabaseOrder instead.')
+      if (process.env.NODE_ENV === 'development') {
+        console.warn('useCancelPayment is deprecated. Use useSupabaseOrder instead.')
+      }
       throw new Error('LocalStorage payments is no longer supported. Please use Supabase.')
     },
     onSuccess: () => {
@@ -157,7 +169,9 @@ export function useRefundPayment() {
       reason: string 
     }) => {
       // Deprecated - LocalStorage removed
-      console.warn('useRefundPayment is deprecated. Use useSupabaseOrder instead.')
+      if (process.env.NODE_ENV === 'development') {
+        console.warn('useRefundPayment is deprecated. Use useSupabaseOrder instead.')
+      }
       throw new Error('LocalStorage payments is no longer supported. Please use Supabase.')
     },
     onSuccess: () => {
@@ -182,7 +196,9 @@ export function usePaymentStats(dateFrom?: Date, dateTo?: Date) {
     queryKey: ['payment-stats', dateFrom, dateTo],
     queryFn: () => {
       // Deprecated - LocalStorage removed
-      console.warn('usePaymentStats is deprecated. Use useSupabaseOrder instead.')
+      if (process.env.NODE_ENV === 'development') {
+        console.warn('usePaymentStats is deprecated. Use useSupabaseOrder instead.')
+      }
       return null
     },
     enabled: !!(dateFrom && dateTo),
@@ -196,7 +212,9 @@ export function usePaymentStatsByProvider() {
     queryKey: ['payment-stats-by-provider'],
     queryFn: () => {
       // Deprecated - LocalStorage removed
-      console.warn('usePaymentStatsByProvider is deprecated. Use useSupabaseOrder instead.')
+      if (process.env.NODE_ENV === 'development') {
+        console.warn('usePaymentStatsByProvider is deprecated. Use useSupabaseOrder instead.')
+      }
       return {}
     },
     staleTime: 1000 * 60 * 10,
@@ -209,7 +227,9 @@ export function useUserPaymentTotal(userId: string) {
     queryKey: ['user-payment-total', userId],
     queryFn: () => {
       // Deprecated - LocalStorage removed
-      console.warn('useUserPaymentTotal is deprecated. Use useSupabaseOrder instead.')
+      if (process.env.NODE_ENV === 'development') {
+        console.warn('useUserPaymentTotal is deprecated. Use useSupabaseOrder instead.')
+      }
       return 0
     },
     enabled: !!userId,
@@ -227,7 +247,9 @@ export function usePaymentsLocal(userId?: string) {
     try {
       setLoading(true)
       // Deprecated - LocalStorage removed
-      console.warn('usePaymentsLocal is deprecated. Use useSupabaseOrder instead.')
+      if (process.env.NODE_ENV === 'development') {
+        console.warn('usePaymentsLocal is deprecated. Use useSupabaseOrder instead.')
+      }
       setPayments([])
       setError(null)
     } catch (err) {
@@ -245,7 +267,9 @@ export function usePaymentsLocal(userId?: string) {
   const createPayment = useCallback(async (paymentData: Omit<Payment, 'id' | 'createdAt' | 'updatedAt'>) => {
     try {
       // Deprecated - LocalStorage removed
-      console.warn('usePaymentsLocal.createPayment is deprecated. Use useSupabaseOrder instead.')
+      if (process.env.NODE_ENV === 'development') {
+        console.warn('usePaymentsLocal.createPayment is deprecated. Use useSupabaseOrder instead.')
+      }
       throw new Error('LocalStorage payments is no longer supported. Please use Supabase.')
     } catch (err) {
       console.error('Failed to create payment:', err)
@@ -256,7 +280,9 @@ export function usePaymentsLocal(userId?: string) {
   const updatePaymentStatus = useCallback(async (paymentId: string, status: PaymentStatus, metadata?: Record<string, any>) => {
     try {
       // Deprecated - LocalStorage removed
-      console.warn('usePaymentsLocal.updatePaymentStatus is deprecated. Use useSupabaseOrder instead.')
+      if (process.env.NODE_ENV === 'development') {
+        console.warn('usePaymentsLocal.updatePaymentStatus is deprecated. Use useSupabaseOrder instead.')
+      }
       throw new Error('LocalStorage payments is no longer supported. Please use Supabase.')
     } catch (err) {
       console.error('Failed to update payment status:', err)
@@ -267,7 +293,9 @@ export function usePaymentsLocal(userId?: string) {
   const cancelPayment = useCallback(async (paymentId: string, reason: string) => {
     try {
       // Deprecated - LocalStorage removed
-      console.warn('usePaymentsLocal.cancelPayment is deprecated. Use useSupabaseOrder instead.')
+      if (process.env.NODE_ENV === 'development') {
+        console.warn('usePaymentsLocal.cancelPayment is deprecated. Use useSupabaseOrder instead.')
+      }
       throw new Error('LocalStorage payments is no longer supported. Please use Supabase.')
     } catch (err) {
       console.error('Failed to cancel payment:', err)
@@ -278,7 +306,9 @@ export function usePaymentsLocal(userId?: string) {
   const refundPayment = useCallback(async (paymentId: string, amount: number, reason: string) => {
     try {
       // Deprecated - LocalStorage removed
-      console.warn('usePaymentsLocal.refundPayment is deprecated. Use useSupabaseOrder instead.')
+      if (process.env.NODE_ENV === 'development') {
+        console.warn('usePaymentsLocal.refundPayment is deprecated. Use useSupabaseOrder instead.')
+      }
       throw new Error('LocalStorage payments is no longer supported. Please use Supabase.')
     } catch (err) {
       console.error('Failed to refund payment:', err)

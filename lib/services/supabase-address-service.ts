@@ -1,14 +1,12 @@
 import { supabaseAdmin } from '@/lib/supabase/client'
-import type { Database } from '@/database.types'
-
-// Supabase 테이블 타입 정의
-type UserAddressRow = Database['public']['Tables']['user_addresses']['Row']
-type UserAddressInsert = Database['public']['Tables']['user_addresses']['Insert']
-type UserAddressUpdate = Database['public']['Tables']['user_addresses']['Update']
-
-type ProxyPurchaseAddressRow = Database['public']['Tables']['proxy_purchase_addresses']['Row']
-type ProxyPurchaseAddressInsert = Database['public']['Tables']['proxy_purchase_addresses']['Insert']
-type ProxyPurchaseAddressUpdate = Database['public']['Tables']['proxy_purchase_addresses']['Update']
+import type { 
+  UserAddressRow, 
+  UserAddressInsert, 
+  UserAddressUpdate,
+  ProxyPurchaseAddressRow,
+  ProxyPurchaseAddressInsert,
+  ProxyPurchaseAddressUpdate
+} from '@/lib/types/supabase'
 
 /**
  * Supabase 주소 관리 서비스

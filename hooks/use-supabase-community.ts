@@ -6,14 +6,14 @@ import { supabase } from '@/lib/supabase/client'
 import { SupabaseCommentService } from '@/lib/services/supabase-comment-service'
 import { SupabaseLikeService } from '@/lib/services/supabase-like-service'
 import { SupabaseFavoriteService } from '@/lib/services/supabase-favorite-service'
-import type { Database } from '@/database.types'
-
-// 타입 정의
-type CommentRow = Database['public']['Tables']['hot_deal_comments']['Row']
-type CommentInsert = Database['public']['Tables']['hot_deal_comments']['Insert']
-type HotDealLikeRow = Database['public']['Tables']['hot_deal_likes']['Row']
-type UserFavoriteHotDealRow = Database['public']['Tables']['user_favorite_hotdeals']['Row']
-type HotDealRow = Database['public']['Tables']['hot_deals']['Row']
+import type { 
+  CommentRow, 
+  CommentInsert, 
+  CommentUpdate,
+  HotDealLikeRow, 
+  UserFavoriteHotDealRow, 
+  HotDealRow 
+} from '@/lib/types/supabase'
 
 // Query Keys
 const COMMUNITY_KEYS = {
@@ -179,7 +179,7 @@ export function useUpdateComment() {
   return useMutation({
     mutationFn: ({ commentId, updates }: { 
       commentId: string
-      updates: Pick<Database['public']['Tables']['hot_deal_comments']['Update'], 'content'>
+      updates: Pick<CommentUpdate, 'content'>
     }) => SupabaseCommentService.updateComment(commentId, updates),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['comments'] })

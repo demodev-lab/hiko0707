@@ -26,7 +26,7 @@ import {
   Home,
   Building
 } from 'lucide-react'
-import { useAddresses } from '@/hooks/use-addresses'
+// import { useAddresses } from '@/hooks/use-addresses' // DEPRECATED - 제거됨
 import { toast } from 'sonner'
 
 // Address 타입 정의 (LocalStorage 의존성 제거)
@@ -64,7 +64,7 @@ interface AddressFormProps {
 }
 
 function AddressForm({ address, onSuccess }: AddressFormProps) {
-  const { createAddress, updateAddress } = useAddresses()
+  // const { createAddress, updateAddress } = useAddresses() // DEPRECATED - 제거됨
   const [isSubmitting, setIsSubmitting] = useState(false)
   
   const form = useForm<AddressFormData>({
@@ -85,16 +85,16 @@ function AddressForm({ address, onSuccess }: AddressFormProps) {
     try {
       setIsSubmitting(true)
       
-      if (address) {
-        await updateAddress(address.id, data)
-      } else {
-        await createAddress(data)
-      }
+      // DEPRECATED: LocalStorage 기반 배송지 시스템은 제거됨
+      // TODO: Supabase 기반 배송지 관리 시스템으로 교체 필요
+      console.warn('배송지 관리 기능은 현재 개발 중입니다. Supabase 마이그레이션 필요')
+      toast.error('배송지 관리 기능은 현재 개발 중입니다')
       
-      form.reset()
-      onSuccess()
+      // form.reset()
+      // onSuccess()
     } catch (error) {
       console.error('Address save failed:', error)
+      toast.error('배송지 저장에 실패했습니다')
     } finally {
       setIsSubmitting(false)
     }
@@ -213,18 +213,24 @@ function AddressForm({ address, onSuccess }: AddressFormProps) {
 }
 
 export function AddressManagement() {
-  const { addresses, deleteAddress, setAsDefault, loading } = useAddresses()
+  // const { addresses, deleteAddress, setAsDefault, loading } = useAddresses() // DEPRECATED - 제거됨
+  const addresses: Address[] = [] // 빈 배열로 대체
+  const loading = false
   const [editingAddress, setEditingAddress] = useState<Address | null>(null)
   const [isDialogOpen, setIsDialogOpen] = useState(false)
 
   const handleDelete = async (addressId: string) => {
     if (confirm('이 배송지를 삭제하시겠습니까?')) {
-      await deleteAddress(addressId)
+      // await deleteAddress(addressId) // DEPRECATED - 제거됨
+      console.warn('배송지 삭제 기능은 현재 개발 중입니다')
+      toast.error('배송지 삭제 기능은 현재 개발 중입니다')
     }
   }
 
   const handleSetDefault = async (addressId: string) => {
-    await setAsDefault(addressId)
+    // await setAsDefault(addressId) // DEPRECATED - 제거됨
+    console.warn('기본 배송지 설정 기능은 현재 개발 중입니다')
+    toast.error('기본 배송지 설정 기능은 현재 개발 중입니다')
   }
 
   const handleEdit = (address: Address) => {

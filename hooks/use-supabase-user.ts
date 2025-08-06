@@ -5,11 +5,7 @@ import { SupabaseUserService } from '@/lib/services/supabase-user-service'
 import { SupabaseNotificationService } from '@/lib/services/supabase-notification-service'
 import { useAuth } from '@clerk/nextjs'
 import { toast } from 'sonner'
-import type { Database } from '@/database.types'
-
-type UserRow = Database['public']['Tables']['users']['Row']
-type UserProfileRow = Database['public']['Tables']['user_profiles']['Row']
-type NotificationRow = Database['public']['Tables']['notifications']['Row']
+import type { UserRow, UserProfileRow, NotificationRow } from '@/lib/types/supabase'
 
 export function useSupabaseUser() {
   const { userId: clerkUserId } = useAuth()

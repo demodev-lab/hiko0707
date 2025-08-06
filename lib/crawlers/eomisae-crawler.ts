@@ -335,8 +335,4 @@ export class EomisaeCrawler extends BaseHotdealCrawler {
   protected getSourceName(): string {
     return '어미새'
   }
-
-  private async delay(ms?: number): Promise<void> {
-    await new Promise(resolve => setTimeout(resolve, ms || this.options.delay))
-  }
 }

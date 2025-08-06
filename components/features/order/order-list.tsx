@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { useOrders, useOrderStats } from '@/hooks/use-orders'
+import { useSupabaseBuyForMe } from '@/hooks/use-supabase-buy-for-me'
 import { OrderCard } from './order-card'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -11,10 +11,66 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Loader2, Search, Package, Clock, CheckCircle, XCircle } from 'lucide-react'
 import { useLanguage } from '@/lib/i18n/context'
 import { Order, OrderStatus } from '@/types/order'
+import { BuyForMeRequest, BuyForMeStatus } from '@/types/buy-for-me'
 
 interface OrderListProps {
   userId?: string
   showStats?: boolean
+}
+
+// BuyForMeRequest를 Order로 변환하는 어댑터 함수
+function buyForMeRequestToOrder(request: BuyForMeRequest): Order {
+  // BuyForMeStatus를 OrderStatus로 매핑
+  const statusMapping: Record<BuyForMeStatus, OrderStatus> = {
+    'pending_review': 'pending',
+    'quote_sent': 'pending',
+    'quote_approved': 'confirmed',
+    'payment_pending': 'confirmed',
+    'payment_completed': 'confirmed',
+    'purchasing': 'purchasing',
+    'shipping': 'shipping',
+    'delivered': 'delivered',
+    'cancelled': 'cancelled'
+  }
+
+  return {
+    id: request.id,
+    userId: request.userId,
+    items: [{
+      id: `${request.id}-item`,
+      productName: request.productInfo.title,
+      productUrl: request.productInfo.originalUrl,
+      productImage: request.productInfo.imageUrl,
+      price: request.productInfo.originalPrice,
+      quantity: request.quantity,
+      notes: request.productOptions,
+      hotdealId: request.hotdealId
+    }],
+    status: statusMapping[request.status],
+    shippingAddress: {
+      fullName: request.shippingInfo.name,
+      phone: request.shippingInfo.phone,
+      email: request.shippingInfo.email,
+      post_code: request.shippingInfo.postalCode,
+      address: request.shippingInfo.address,
+      address_detail: request.shippingInfo.detailAddress
+    },
+    paymentMethod: 'card', // 기본값
+    
+    subtotal: request.productInfo.originalPrice * request.quantity,
+    serviceFee: request.estimatedServiceFee,
+    domesticShippingFee: request.productInfo.shippingFee,
+    totalAmount: request.estimatedTotalAmount,
+    
+    orderNumber: request.id.slice(0, 8).toUpperCase(),
+    koreanTrackingNumber: request.orderInfo?.trackingNumber,
+    
+    customerNotes: request.specialRequests,
+    
+    createdAt: request.requestDate,
+    updatedAt: request.updatedAt,
+    deliveredAt: request.status === 'delivered' ? request.updatedAt : undefined
+  } as Order
 }
 
 export function OrderList({ userId, showStats = true }: OrderListProps) {
@@ -23,20 +79,32 @@ export function OrderList({ userId, showStats = true }: OrderListProps) {
   const [statusFilter, setStatusFilter] = useState<OrderStatus | 'all'>('all')
   const [searchQuery, setSearchQuery] = useState('')
 
-  // 주문 통계
-  const { data: stats } = useOrderStats(userId)
+  // Supabase Buy for Me 요청 목록을 Order로 변환
+  const { requests, isLoading } = useSupabaseBuyForMe()
+  const orders = requests.map(buyForMeRequestToOrder)
+  
+  // 통계 계산
+  const stats = {
+    totalOrders: orders.length,
+    completedOrders: orders.filter(o => o.status === 'delivered').length,
+    pendingOrders: orders.filter(o => ['pending', 'confirmed', 'purchasing', 'shipping'].includes(o.status)).length,
+    totalAmount: orders.reduce((sum, o) => sum + o.totalAmount, 0)
+  }
 
-  // 주문 목록
-  const { 
-    data: ordersData, 
-    isLoading, 
-    error 
-  } = useOrders(
-    userId,
-    statusFilter === 'all' ? undefined : statusFilter,
-    currentPage,
-    20
-  )
+  // 필터링된 주문 목록
+  const filteredOrders = orders.filter(order => {
+    if (statusFilter !== 'all') {
+      if (order.status !== statusFilter) return false
+    }
+
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase()
+      return order.items[0]?.productName.toLowerCase().includes(query) ||
+             order.orderNumber.toLowerCase().includes(query)
+    }
+
+    return true
+  })
 
   const handleStatusFilter = (status: string) => {
     setStatusFilter(status as OrderStatus | 'all')
@@ -55,16 +123,12 @@ export function OrderList({ userId, showStats = true }: OrderListProps) {
     )
   }
 
-  if (error) {
-    return (
-      <div className="text-center py-12">
-        <p className="text-red-500">{t('common.error')}</p>
-      </div>
-    )
-  }
-
-  const orders: Order[] = ordersData?.items || []
-  const totalPages = ordersData?.totalPages || 1
+  // 페이지네이션 계산
+  const itemsPerPage = 20
+  const totalPages = Math.ceil(filteredOrders.length / itemsPerPage)
+  const startIndex = (currentPage - 1) * itemsPerPage
+  const endIndex = startIndex + itemsPerPage  
+  const paginatedOrders = filteredOrders.slice(startIndex, endIndex)
 
   return (
     <div className="space-y-6">
@@ -158,7 +222,7 @@ export function OrderList({ userId, showStats = true }: OrderListProps) {
 
           {/* 주문 목록 */}
           <div className="space-y-4">
-            {orders.length === 0 ? (
+            {paginatedOrders.length === 0 ? (
               <div className="text-center py-12">
                 <Package className="w-12 h-12 text-gray-300 mx-auto mb-4" />
                 <p className="text-gray-500">주문 내역이 없습니다</p>
@@ -167,7 +231,7 @@ export function OrderList({ userId, showStats = true }: OrderListProps) {
                 </Button>
               </div>
             ) : (
-              orders.map((order) => (
+              paginatedOrders.map((order) => (
                 <OrderCard 
                   key={order.id} 
                   order={order}

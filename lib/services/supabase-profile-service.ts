@@ -1,5 +1,5 @@
 import { supabase as getSupabaseClient } from '@/lib/supabase/client'
-import type { Database } from '@/database.types'
+import type { AddressRow, AddressInsert, AddressUpdate } from '@/lib/types/supabase'
 import type { UserProfile, UserAddress } from '@/types/user'
 
 // profiles 테이블이 아직 존재하지 않으므로 임시 타입 정의
@@ -38,9 +38,6 @@ type ProfileUpdate = {
   updated_at?: string
 }
 
-type AddressRow = Database['public']['Tables']['user_addresses']['Row']
-type AddressInsert = Database['public']['Tables']['user_addresses']['Insert']
-type AddressUpdate = Database['public']['Tables']['user_addresses']['Update']
 
 export class SupabaseProfileService {
   /**

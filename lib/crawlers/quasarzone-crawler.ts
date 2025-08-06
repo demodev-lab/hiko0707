@@ -369,8 +369,4 @@ export class QuasarzoneCrawler extends BaseHotdealCrawler {
   protected getSourceName(): string {
     return '퀘이사존'
   }
-
-  private async delay(ms?: number): Promise<void> {
-    await new Promise(resolve => setTimeout(resolve, ms || this.options.delay))
-  }
 }

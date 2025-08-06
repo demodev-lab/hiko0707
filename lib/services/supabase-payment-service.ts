@@ -1,10 +1,5 @@
 import { supabaseAdmin } from '@/lib/supabase/client'
-import type { Database } from '@/database.types'
-
-// Supabase 테이블 타입 정의
-type PaymentRow = Database['public']['Tables']['payments']['Row']
-type PaymentInsert = Database['public']['Tables']['payments']['Insert']
-type PaymentUpdate = Database['public']['Tables']['payments']['Update']
+import type { PaymentRow, PaymentInsert, PaymentUpdate } from '@/lib/types/supabase'
 
 /**
  * Supabase 결제 서비스

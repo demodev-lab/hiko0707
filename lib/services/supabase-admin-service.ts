@@ -1,9 +1,5 @@
 import { supabase as getSupabaseClient } from '@/lib/supabase/client'
-import type { Database } from '@/database.types'
-
-type UserRow = Database['public']['Tables']['users']['Row']
-type OrderRow = Database['public']['Tables']['proxy_purchases_request']['Row']
-type HotDealRow = Database['public']['Tables']['hot_deals']['Row']
+import type { UserRow, OrderRow, HotDealRow } from '@/lib/types/supabase'
 
 // 통계 타입 정의
 export interface AdminStatistics {

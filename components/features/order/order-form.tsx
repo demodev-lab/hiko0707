@@ -14,7 +14,7 @@ import { Separator } from '@/components/ui/separator'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Plus, Minus, Package, Truck, CreditCard, Link, Info } from 'lucide-react'
 import { useLanguage } from '@/lib/i18n/context'
-import { useCreateOrder } from '@/hooks/use-orders'
+import { useSupabaseBuyForMe } from '@/hooks/use-supabase-buy-for-me'
 import { OrderFormData, ShippingMethod, PaymentMethod, calculateServiceFee } from '@/types/order'
 import { toast } from 'sonner'
 import { useSupabaseUser } from '@/hooks/use-supabase-user'
@@ -54,7 +54,7 @@ export function OrderForm({ initialData, hotdealId, onSuccess }: OrderFormProps)
   const { t } = useLanguage()
   const router = useRouter()
   const { user: currentUser } = useSupabaseUser()
-  const createOrder = useCreateOrder()
+  const { createRequest, isCreating } = useSupabaseBuyForMe()
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [showUrlParser, setShowUrlParser] = useState(false)
 
@@ -105,26 +105,60 @@ export function OrderForm({ initialData, hotdealId, onSuccess }: OrderFormProps)
       return
     }
 
+    if (!hotdealId) {
+      toast.error('핫딜 정보가 없습니다')
+      return
+    }
+
+    // OrderFormData를 CreateBuyForMeRequestData로 변환
+    // 현재는 첫 번째 아이템만 처리 (향후 여러 아이템 지원 시 개선 필요)
+    const firstItem = data.items[0]
+    if (!firstItem) {
+      toast.error('상품 정보를 입력해주세요')
+      return
+    }
+
     setIsSubmitting(true)
     try {
-      const result = await createOrder.mutateAsync({
-        ...data,
-        userId: currentUser.id
-      })
+      const buyForMeData = {
+        userId: currentUser.id,
+        hotdealId: hotdealId,
+        productInfo: {
+          title: firstItem.productName,
+          originalPrice: firstItem.price,
+          discountedPrice: firstItem.price, // 할인 정보가 없으므로 동일하게 설정
+          discountRate: 0,
+          shippingFee: domesticShippingFee,
+          imageUrl: firstItem.imageUrl,
+          originalUrl: firstItem.productUrl,
+          siteName: '핫딜 사이트'
+        },
+        quantity: firstItem.quantity,
+        productOptions: firstItem.notes || undefined,
+        shippingInfo: {
+          name: data.shippingAddress.fullName,
+          phone: data.shippingAddress.phone,
+          email: data.shippingAddress.email,
+          postalCode: data.shippingAddress.post_code,
+          address: data.shippingAddress.address,
+          detailAddress: data.shippingAddress.address_detail || ''
+        },
+        specialRequests: data.customerNotes || undefined,
+        estimatedServiceFee: serviceFee,
+        estimatedTotalAmount: totalAmount
+      }
 
-      toast.success('대리 구매 요청이 접수되었습니다!')
+      createRequest(buyForMeData)
       
       // 알림 추가
-      if (result) {
-        notificationService.info(
-          '대리 구매 요청 완료',
-          `대리 구매 요청이 접수되었습니다. 곧 견적서를 보내드리겠습니다.`,
-          `/mypage`
-        )
-        
-        // 마이페이지로 리다이렉트
-        router.push('/mypage')
-      }
+      notificationService.info(
+        '대리 구매 요청 완료',
+        `대리 구매 요청이 접수되었습니다. 곧 견적서를 보내드리겠습니다.`,
+        `/mypage`
+      )
+      
+      // 마이페이지로 리다이렉트
+      router.push('/mypage')
     } catch (error) {
       console.error('Order creation error:', error)
       toast.error('대리 구매 요청 중 오류가 발생했습니다.')
@@ -387,9 +421,9 @@ export function OrderForm({ initialData, hotdealId, onSuccess }: OrderFormProps)
         <Button
           type="submit"
           className="flex-1"
-          disabled={isSubmitting}
+          disabled={isSubmitting || isCreating}
         >
-          {isSubmitting ? '요청 중...' : '구매 요청하기'}
+          {isSubmitting || isCreating ? '요청 중...' : '구매 요청하기'}
         </Button>
       </div>
     </form>

@@ -56,19 +56,20 @@
 - 충돌, 오류, 누락, 미스매치가 발생하지 않도록 100% 완벽한 데이터 매핑 필수
 
 ## **📚 Supabase 마이그레이션 참조**
-**Supabase 마이그레이션 작업 시 반드시 아래 문서를 참조하세요:**
+**Supabase 마이그레이션이 완료되었습니다! 아래 문서를 참조하세요:**
 - **마이그레이션 마스터 플랜**: `docs/supabase-migration-optimized.md`
-- **현재 진행률**: 95% 완료 (3개 파일만 남음)
-- **남은 작업**: search-results.tsx, dashboard-stats.tsx, recent-posts.tsx
+- **현재 진행률**: 100% 완료 ✅
+- **완료 상태**: 모든 LocalStorage 의존성 제거, deprecated hooks 정리, 중복 타입 정의 정리 완료
+- **새로운 타입 시스템**: `lib/types/supabase.ts` - 중앙화된 Supabase 타입 정의
 
 ## **⚠️ 필수 문서 참조 지침 (MANDATORY)**
 **문서 참조 시 혼동을 방지하기 위한 필수 지침입니다.**
 
 ### 유일한 기준 문서
 - ✅ **`docs/supabase-migration-optimized.md`** - 현재 상태의 유일한 정확한 문서
-  - 최종 업데이트: 2025-08-04
-  - 현재 진행률: 95% 완료
-  - 남은 작업: 3개 파일만 (search-results.tsx, dashboard-stats.tsx, recent-posts.tsx)
+  - 최종 업데이트: 2025-08-05
+  - 현재 진행률: 100% 완료 ✅
+  - 완료 상태: 모든 마이그레이션 작업 완료, 프로덕션 준비
 
 ### 참조 금지 문서들 (DEPRECATED)
 다음 문서들은 오래된 정보를 포함하고 있어 혼동을 유발합니다:
@@ -78,7 +79,7 @@
 - ❌ **`docs/supabase-migration-master-plan.md`** - 아카이브됨 (과도하게 상세한 과거 계획)
 - ⚠️ **`docs/supabase-migration-phase1-summary.md`** - 완료된 단계 (현재 Phase 5 진행 중)
 
-**중요**: 위 문서들을 참조하면 현재 상태(95% 완료)와 맞지 않는 정보로 인해 심각한 혼동이 발생합니다!
+**중요**: 위 문서들을 참조하면 현재 상태(100% 완료)와 맞지 않는 정보로 인해 심각한 혼동이 발생합니다!
 
 ## 🔧 프로젝트 환경 설정
 
@@ -191,13 +192,14 @@ This is a Next.js 15 application using App Router with a custom local storage da
 ```
 
 ### Database Layer
-- **BaseRepository** (`lib/db/local/repositories/base-repository.ts`): Abstract base class providing CRUD operations
-- **Entity Repositories**: Extend BaseRepository for User, Post, Comment, HotDeal, Order, Payment entities
-- **Database Service** (`lib/db/database-service.ts`): Singleton that exports repository instances
-- **Storage Layer** (`lib/db/storage.ts`): LocalStorage wrapper (임시 사용 중, 향후 제거 예정)
-- **Auto-initialization**: Mock data automatically initializes on first load via `initializeMockData()`
-- **Supabase Services**: New services in `lib/services/supabase-*.ts` for migrated features
-- **🔗 Supabase 마이그레이션**: 상세 정보는 `docs/supabase-migration-optimized.md` 참조
+- **Supabase Services**: Production services in `lib/services/supabase-*.ts` - 모든 데이터 연동 완료 ✅
+- **중앙화된 타입 시스템**: `lib/types/supabase.ts` - 모든 데이터베이스 타입 중앙 관리
+- **Deprecated Legacy Services**: 
+  - `BaseRepository` (`lib/db/local/repositories/base-repository.ts`): Deprecated - 개발환경에서만 경고 표시
+  - `Database Service` (`lib/db/database-service.ts`): Deprecated - Supabase 서비스 사용 권장
+  - `Storage Layer` (`lib/db/storage.ts`): Deprecated - LocalStorage 의존성 완전 제거
+- **실시간 데이터**: TanStack Query + Supabase Realtime 구독으로 실시간 업데이트
+- **🔗 Supabase 마이그레이션**: 100% 완료 - `docs/supabase-migration-optimized.md` 참조
 
 ### State Management Architecture
 - **Global State**: Jotai atoms in `states/` directory (auth, UI state)
@@ -212,10 +214,10 @@ This is a Next.js 15 application using App Router with a custom local storage da
 - **Feature Components**: Domain-specific components in `components/features/`
 
 ### Data Flow Pattern
-1. **Server Components** fetch data directly from repositories
-2. **Client Components** use custom hooks (`use-local-db.ts`) for data operations
+1. **Server Components** fetch data directly from Supabase services
+2. **Client Components** use Supabase hooks (`use-supabase-*.ts`) for data operations
 3. **Forms** use React Hook Form + Zod for validation
-4. **State Updates** trigger re-fetches through TanStack Query
+4. **State Updates** trigger re-fetches through TanStack Query with Supabase Realtime
 
 ## HiKo Project Context
 
@@ -230,8 +232,8 @@ HiKo is a platform helping foreigners shop online in Korea:
 
 ### Key Technical Decisions
 - **No API Routes**: Use Server Actions in `actions/` directory instead
-- **Database Migration**: LocalStorage → Supabase 전환 진행 중 (상세 진행 상황은 `docs/supabase-migration-optimized.md` 참조)
-- **Repository Pattern**: Enables easy database transition
+- **Database Migration**: LocalStorage → Supabase 전환 완료 ✅ (100% 완료, 프로덕션 준비)
+- **Repository Pattern**: Enables easy database transition (완료됨)
 - **Server Components**: For SEO-critical pages (hot deals list, detail pages)
 - **Image Optimization**: Next.js Image with external domain support and 7-day caching
 
@@ -255,15 +257,18 @@ HiKo is a platform helping foreigners shop online in Korea:
 - Window APIs mocked (matchMedia, IntersectionObserver)
 - Run specific tests with: `pnpm test [filename]`
 
-### Local Storage Database Usage
+### Supabase Database Usage
 ```typescript
 // Server Component usage
-import { db } from '@/lib/db/database-service'
-const posts = await db.posts.findAll()
+import { SupabaseHotDealService } from '@/lib/services/supabase-hotdeal-service'
+const hotdeals = await SupabaseHotDealService.getHotDeals()
 
 // Client Component usage
-import { usePosts } from '@/hooks/use-local-db'
-const { posts, loading, createPost } = usePosts()
+import { useSupabaseHotDeals } from '@/hooks/use-supabase-hotdeals'
+const { data: hotdeals, isLoading, error } = useSupabaseHotDeals()
+
+// 중앙화된 타입 사용
+import type { HotDealRow, UserRow } from '@/lib/types/supabase'
 ```
 
 ### Form Validation Pattern
@@ -291,12 +296,48 @@ const { t } = useTranslation()
 // Use buy-for-me-modal.tsx for order creation
 ```
 
+## 중앙화된 타입 시스템
+
+### 타입 정의 파일: `lib/types/supabase.ts`
+모든 Supabase 데이터베이스 테이블의 타입들을 중앙화하여 관리합니다.
+
+```typescript
+// 기본 타입 사용 예시
+import type { 
+  HotDealRow, 
+  UserRow, 
+  PaymentRow,
+  OrderRow,
+  CommentRow 
+} from '@/lib/types/supabase'
+
+// Insert/Update 타입 사용
+import type { 
+  HotDealInsert, 
+  HotDealUpdate,
+  UserInsert,
+  UserUpdate 
+} from '@/lib/types/supabase'
+```
+
+### 타입 시스템의 장점
+- **중복 제거**: 11개 파일에서 중복 정의되던 타입을 1개 파일로 통합
+- **일관성 보장**: 모든 서비스에서 동일한 타입 사용
+- **유지보수성**: 스키마 변경 시 한 곳만 수정
+- **별칭 지원**: 기존 코드 호환성을 위한 별칭 타입 제공
+
+### 사용 규칙
+- ✅ `lib/types/supabase.ts`에서 타입 import
+- ❌ 개별 파일에서 `Database['public']['Tables']['...']` 직접 사용 금지
+- ❌ 중복 타입 정의 금지
+
 ## Performance Considerations
 
 - Server Components are used by default for better performance
 - Images should use Next.js Image component with proper dimensions
-- Local storage operations are synchronous - consider pagination for large datasets
+- Supabase queries optimized with appropriate stale times and caching
 - TanStack Query configured with 5-minute stale time
+- Realtime subscriptions with page visibility optimization
 - Implement loading states for all async operations
 - Use Suspense boundaries for better UX
 - Image domains whitelisted in next.config.js for optimization
@@ -309,7 +350,7 @@ const { t } = useTranslation()
 4. **Forms**: Always validate with Zod schemas
 5. **Authentication**: Check user role/auth state before protected operations
 6. **Translations**: All user-facing text must use i18n system
-7. **Mock Data**: Automatically initializes on first load - check localStorage before testing
+7. **Data Source**: All data comes from Supabase - no mock data or localStorage dependency
 8. **Image Management**: Use provided pnpm scripts for image operations
 
 ## Testing Configuration
@@ -344,9 +385,10 @@ const { t } = useTranslation()
 ### Architecture Constraints
 - **No API Routes**: Use Server Actions in `actions/` directory instead
 - **Component Types**: Server Components by default, Client Components only for interactivity
-- **Database Access**: Repository pattern only, no direct LocalStorage access
+- **Database Access**: Supabase services only, no deprecated repository/LocalStorage access
 - **State Management**: Jotai for global state, TanStack Query for server state
 - **Forms**: React Hook Form + Zod resolver pattern required
+- **타입 시스템**: `lib/types/supabase.ts`의 중앙화된 타입만 사용
 
 ### Korean Context Requirements
 - **HiKo Project**: Shopping assistant platform for foreigners in Korea

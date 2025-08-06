@@ -35,7 +35,7 @@ import { useHotDeals } from '@/hooks/use-supabase-hotdeals'
 import { SupabaseHotDealService } from '@/lib/services/supabase-hotdeal-service'
 import { useBackendCrawler } from '@/hooks/use-backend-crawler'
 import { CrawlerSource } from '@/lib/crawlers/crawler-manager'
-
+import type { HotDealInsert } from '@/lib/types/supabase'
 
 // 크롤링 히스토리 타입
 interface CrawlHistory {
@@ -226,7 +226,7 @@ export default function HotDealManagerPage() {
         }
         
         // 데이터 형식 변환 및 저장
-        const supabaseDeal = {
+        const supabaseDeal: HotDealInsert = {
           title: deal.title,
           original_url: deal.originalUrl || deal.original_url,
           seller: deal.seller,
@@ -234,14 +234,21 @@ export default function HotDealManagerPage() {
           image_url: deal.imageUrl || deal.image_url,
           category: deal.category,
           source: deal.source || 'imported',
-          source_post_id: deal.sourceId || deal.source_post_id || deal.id,
-          post_date: deal.postDate || deal.post_date || new Date().toISOString(),
+          source_id: deal.sourceId || deal.source_post_id || deal.id,
           views: deal.viewCount || deal.views || 0,
+          original_price: deal.originalPrice || deal.original_price || deal.price || deal.sale_price || 0,
+          thumbnail_url: deal.thumbnailUrl || deal.thumbnail_url || deal.imageUrl || deal.image_url || '',
+          updated_at: deal.updatedAt || deal.updated_at || new Date().toISOString(),
           comment_count: deal.communityCommentCount || deal.comment_count || 0,
           like_count: deal.communityRecommendCount || deal.like_count || 0,
           status: 'active' as const,
           created_at: deal.crawledAt || deal.created_at || new Date().toISOString(),
-          // ID는 createHotDeal에서 자동 생성되므로 전달하지 않음
+          // 필수 필드 추가
+          author_name: deal.authorName || deal.author_name || '알 수 없음',
+          discount_rate: deal.discountRate || deal.discount_rate || 0,
+          end_date: deal.endDate || deal.end_date || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(), // 기본 30일 후
+          is_free_shipping: deal.isFreeShipping || deal.is_free_shipping || false,
+          shopping_comment: deal.shoppingComment || deal.shopping_comment || ''
         }
         
         const result = await SupabaseHotDealService.createHotDeal(supabaseDeal)
