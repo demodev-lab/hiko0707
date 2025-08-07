@@ -1,4 +1,4 @@
-import { supabase, supabaseAdmin } from '@/lib/supabase/client'
+import { supabase } from '@/lib/supabase/client'
 import type { Database } from '@/database.types'
 import { 
   type HotDeal,
@@ -37,13 +37,9 @@ export class SupabaseHotDealService {
    */
   static async createHotDeal(data: HotDealInsert): Promise<HotDeal | null> {
     try {
-      const supabase = supabaseAdmin()
-      if (!supabase) {
-        console.error('Supabase admin client not initialized')
-        return null
-      }
+      const supabaseClient = supabase()
       
-      const { data: hotdeal, error } = await supabase
+      const { data: hotdeal, error } = await supabaseClient
         .from('hot_deals')
         .insert(data)
         .select()
@@ -84,7 +80,8 @@ export class SupabaseHotDealService {
       const offset = (page - 1) * limit
 
       // 기본 쿼리 빌더
-      let query = supabase()
+      const supabaseClient = supabase()
+      let query = supabaseClient
         .from('hot_deals')
         .select('*', { count: 'exact' })
         .is('deleted_at', null)
@@ -132,7 +129,8 @@ export class SupabaseHotDealService {
    */
   static async getHotDealById(id: string): Promise<HotDeal | null> {
     try {
-      const { data, error } = await supabase()
+      const supabaseClient = supabase()
+      const { data, error } = await supabaseClient
         .from('hot_deals')
         .select('*')
         .eq('id', id)
@@ -157,13 +155,13 @@ export class SupabaseHotDealService {
    */
   static async updateHotDeal(id: string, updates: HotDealUpdate): Promise<boolean> {
     try {
-      const supabase = supabaseAdmin()
-      if (!supabase) {
-        console.error('Supabase admin client not initialized')
+      const supabaseClient = supabase()
+      if (!supabaseClient) {
+        console.error('Supabase client not initialized')
         return false
       }
       
-      const { error } = await supabase
+      const { error } = await supabaseClient
         .from('hot_deals')
         .update({
           ...updates,
@@ -189,13 +187,13 @@ export class SupabaseHotDealService {
    */
   static async deleteHotDeal(id: string): Promise<boolean> {
     try {
-      const supabase = supabaseAdmin()
-      if (!supabase) {
-        console.error('Supabase admin client not initialized')
+      const supabaseClient = supabase()
+      if (!supabaseClient) {
+        console.error('Supabase client not initialized')
         return false
       }
       
-      const { error } = await supabase
+      const { error } = await supabaseClient
         .from('hot_deals')
         .update({
           deleted_at: new Date().toISOString(),
@@ -268,7 +266,8 @@ export class SupabaseHotDealService {
    */
   static async checkDuplicate(source: string, sourceId: string): Promise<boolean> {
     try {
-      const { count } = await supabase()
+      const supabaseClient = supabase()
+      const { count } = await supabaseClient
         .from('hot_deals')
         .select('id', { count: 'exact', head: true })
         .eq('source', source)
@@ -286,7 +285,8 @@ export class SupabaseHotDealService {
    */
   private static async updateExistingHotDeal(source: string, crawledData: any): Promise<boolean> {
     try {
-      const { data: existing } = await supabase()
+      const supabaseClient = supabase()
+      const { data: existing } = await supabaseClient
         .from('hot_deals')
         .select('id')
         .eq('source', source)
@@ -343,7 +343,8 @@ export class SupabaseHotDealService {
    */
   static async getTranslation(hotdealId: string, language: string): Promise<TranslationRow | null> {
     try {
-      const { data, error } = await supabase()
+      const supabaseClient = supabase()
+      const { data, error } = await supabaseClient
         .from('hotdeal_translations')
         .select('*')
         .eq('hotdeal_id', hotdealId)
@@ -367,13 +368,9 @@ export class SupabaseHotDealService {
    */
   static async createTranslation(data: TranslationInsert): Promise<TranslationRow | null> {
     try {
-      const supabase = supabaseAdmin()
-      if (!supabase) {
-        console.error('Supabase admin client not initialized')
-        return null
-      }
+      const supabaseClient = supabase()
       
-      const { data: translation, error } = await supabase
+      const { data: translation, error } = await supabaseClient
         .from('hotdeal_translations')
         .insert(data)
         .select()
@@ -416,7 +413,8 @@ export class SupabaseHotDealService {
       const offset = (page - 1) * limit
 
       // 한 번의 쿼리로 핫딜과 번역 데이터를 함께 가져오기
-      let query = supabase()
+      const supabaseClient = supabase()
+      let query = supabaseClient
         .from('hot_deals')
         .select(`
           *,
@@ -489,32 +487,26 @@ export class SupabaseHotDealService {
    */
   static async incrementViews(id: string): Promise<void> {
     try {
-      const supabase = supabaseAdmin()
+      const supabaseClient = supabase()
       if (!supabase) {
         console.error('Supabase admin client not initialized')
         return
       }
       
-      const { error } = await supabase
+      const { error } = await supabaseClient
         .rpc('increment_views', { hotdeal_id: id })
 
       if (error) {
         // RPC 함수가 없는 경우 직접 업데이트
-        const supabaseAdmin2 = supabaseAdmin()
-        if (!supabaseAdmin2) {
-          console.error('Supabase admin client not initialized')
-          return
-        }
-        
         // 현재 조회수를 가져와서 증가시키기
-        const { data: hotdeal } = await supabaseAdmin2
+        const { data: hotdeal } = await supabaseClient
           .from('hot_deals')
           .select('views')
           .eq('id', id)
           .single()
           
         if (hotdeal) {
-          await supabaseAdmin2
+          await supabaseClient
             .from('hot_deals')
             .update({ views: (hotdeal.views || 0) + 1 })
             .eq('id', id)
@@ -530,27 +522,22 @@ export class SupabaseHotDealService {
    */
   static async updateCounts(id: string): Promise<void> {
     try {
+      const supabaseClient = supabase()
       // 댓글 수 계산
-      const { count: commentCount } = await supabase()
+      const { count: commentCount } = await supabaseClient
         .from('hot_deal_comments')
         .select('id', { count: 'exact', head: true })
         .eq('hotdeal_id', id)
         .is('is_deleted', false)
 
       // 좋아요 수 계산
-      const { count: likeCount } = await supabase()
+      const { count: likeCount } = await supabaseClient
         .from('hot_deal_likes')
         .select('id', { count: 'exact', head: true })
         .eq('hot_deal_id', id)
 
       // 업데이트
-      const supabaseAdminClient = supabaseAdmin()
-      if (!supabaseAdminClient) {
-        console.error('Supabase admin client not initialized')
-        return
-      }
-      
-      await supabaseAdminClient
+      await supabaseClient
         .from('hot_deals')
         .update({
           comment_count: commentCount || 0,
@@ -578,8 +565,9 @@ export class SupabaseHotDealService {
       // 하나의 복합 쿼리로 최적화
       const today = new Date()
       const todayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate()).toISOString()
+      const supabaseClient = supabase()
       
-      let query = supabase()
+      let query = supabaseClient
         .from('hot_deals')
         .select('*')
         .is('deleted_at', null)
@@ -638,7 +626,8 @@ export class SupabaseHotDealService {
       const tomorrow = new Date()
       tomorrow.setDate(tomorrow.getDate() + 1)
 
-      const { data, error } = await supabase()
+      const supabaseClient = supabase()
+      const { data, error } = await supabaseClient
         .from('hot_deals')
         .select('*')
         .is('deleted_at', null)
@@ -666,13 +655,13 @@ export class SupabaseHotDealService {
    */
   static async updateExpiredDeals(): Promise<number> {
     try {
-      const supabase = supabaseAdmin()
+      const supabaseClient = supabase()
       if (!supabase) {
         console.error('Supabase admin client not initialized')
         return 0
       }
       
-      const { data, error } = await supabase
+      const { data, error } = await supabaseClient
         .from('hot_deals')
         .update({ status: 'expired' })
         .eq('status', 'active')
@@ -696,7 +685,8 @@ export class SupabaseHotDealService {
    */
   static async getActiveDeals(): Promise<HotDeal[]> {
     try {
-      const { data, error } = await supabase()
+      const supabaseClient = supabase()
+      const { data, error } = await supabaseClient
         .from('hot_deals')
         .select('*')
         .is('deleted_at', null)
@@ -721,7 +711,8 @@ export class SupabaseHotDealService {
    */
   static async getCategoryCounts(): Promise<Record<string, number>> {
     try {
-      const { data, error } = await supabase()
+      const supabaseClient = supabase()
+      const { data, error } = await supabaseClient
         .from('hot_deals')
         .select('category')
         .is('deleted_at', null)
@@ -751,8 +742,9 @@ export class SupabaseHotDealService {
    */
   static async toggleLike(hotdealId: string, userId: string): Promise<boolean> {
     try {
+      const supabaseClient = supabase()
       // 이미 좋아요했는지 확인
-      const { data: existing, error: checkError } = await supabase()
+      const { data: existing, error: checkError } = await supabaseClient
         .from('hot_deal_likes')
         .select('id')
         .eq('hot_deal_id', hotdealId)
@@ -765,7 +757,7 @@ export class SupabaseHotDealService {
 
       if (existing) {
         // 좋아요 취소
-        const { error } = await supabase()
+        const { error } = await supabaseClient
           .from('hot_deal_likes')
           .delete()
           .eq('id', existing.id)
@@ -775,7 +767,7 @@ export class SupabaseHotDealService {
         return false
       } else {
         // 좋아요 추가
-        const { error } = await supabase()
+        const { error } = await supabaseClient
           .from('hot_deal_likes')
           .insert({
             hot_deal_id: hotdealId,
@@ -797,7 +789,8 @@ export class SupabaseHotDealService {
    */
   static async hasUserLiked(hotdealId: string, userId: string): Promise<boolean> {
     try {
-      const { data, error } = await supabase()
+      const supabaseClient = supabase()
+      const { data, error } = await supabaseClient
         .from('hot_deal_likes')
         .select('id')
         .eq('hot_deal_id', hotdealId)
@@ -820,7 +813,8 @@ export class SupabaseHotDealService {
    */
   static async getUserFavorites(userId: string): Promise<HotDeal[]> {
     try {
-      const { data, error } = await supabase()
+      const supabaseClient = supabase()
+      const { data, error } = await supabaseClient
         .from('user_favorite_hotdeals')
         .select(`
           hot_deals (*)
@@ -842,8 +836,9 @@ export class SupabaseHotDealService {
    */
   static async toggleFavorite(hotdealId: string, userId: string): Promise<boolean> {
     try {
+      const supabaseClient = supabase()
       // 이미 즐겨찾기했는지 확인
-      const { data: existing, error: checkError } = await supabase()
+      const { data: existing, error: checkError } = await supabaseClient
         .from('user_favorite_hotdeals')
         .select('id')
         .eq('hotdeal_id', hotdealId)
@@ -856,7 +851,7 @@ export class SupabaseHotDealService {
 
       if (existing) {
         // 즐겨찾기 제거
-        const { error } = await supabase()
+        const { error } = await supabaseClient
           .from('user_favorite_hotdeals')
           .delete()
           .eq('id', existing.id)
@@ -865,7 +860,7 @@ export class SupabaseHotDealService {
         return false
       } else {
         // 즐겨찾기 추가
-        const { error } = await supabase()
+        const { error } = await supabaseClient
           .from('user_favorite_hotdeals')
           .insert({
             hotdeal_id: hotdealId,
@@ -886,7 +881,8 @@ export class SupabaseHotDealService {
    */
   static async searchHotDeals(searchTerm: string, options: HotDealQueryOptions = {}): Promise<{ data: HotDeal[], count: number }> {
     try {
-      let query = supabase()
+      const supabaseClient = supabase()
+      let query = supabaseClient
         .from('hot_deals')
         .select('*', { count: 'exact' })
         .is('deleted_at', null)
@@ -951,7 +947,8 @@ export class SupabaseHotDealService {
           break
       }
 
-      let query = supabase()
+      const supabaseClient = supabase()
+      let query = supabaseClient
         .from('hot_deals')
         .select('id, status, category, source, views, like_count, created_at')
         .is('deleted_at', null)
@@ -999,7 +996,8 @@ export class SupabaseHotDealService {
    * 번역 상태 조회
    */
   static async getTranslationStatus(hotdealId: string): Promise<Record<string, TranslationRow>> {
-    const { data, error } = await supabase()
+    const supabaseClient = supabase()
+    const { data, error } = await supabaseClient
       .from('hotdeal_translations')
       .select('*')
       .eq('hotdeal_id', hotdealId)
@@ -1038,7 +1036,8 @@ export class SupabaseHotDealService {
     
     if (existing) {
       // 이미 번역이 있으면 업데이트
-      const { data, error } = await supabase()
+      const supabaseClient = supabase()
+      const { data, error } = await supabaseClient
         .from('hotdeal_translations')
         .update({
           updated_at: new Date().toISOString()
@@ -1072,7 +1071,8 @@ export class SupabaseHotDealService {
    */
   static async updateTranslation(id: string, updates: Partial<TranslationRow>): Promise<TranslationRow | null> {
     try {
-      const { data, error } = await supabase()
+      const supabaseClient = supabase()
+      const { data, error } = await supabaseClient
         .from('hotdeal_translations')
         .update({
           ...updates,
@@ -1140,7 +1140,8 @@ export class SupabaseHotDealService {
       const basic = await this.getHotDealStats(period)
       
       // 상위 성과 핫딜 (조회수 기준)
-      const { data: topPerformers } = await supabase()
+      const supabaseClient = supabase()
+      const { data: topPerformers } = await supabaseClient
         .from('hot_deals')
         .select('*')
         .is('deleted_at', null)
@@ -1152,7 +1153,7 @@ export class SupabaseHotDealService {
       const tomorrow = new Date()
       tomorrow.setDate(tomorrow.getDate() + 1)
       
-      const { data: expiringDeals } = await supabase()
+      const { data: expiringDeals } = await supabaseClient
         .from('hot_deals')
         .select('*')
         .is('deleted_at', null)
@@ -1166,7 +1167,7 @@ export class SupabaseHotDealService {
       const today = new Date()
       const todayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate())
       
-      const { data: todayDeals } = await supabase()
+      const { data: todayDeals } = await supabaseClient
         .from('hot_deals')
         .select('created_at, views, like_count')
         .is('deleted_at', null)
@@ -1198,7 +1199,7 @@ export class SupabaseHotDealService {
       // 소스별 성과 계산
       const sourcePerformance = await Promise.all(
         Object.entries(basic.bySource).map(async ([source, dealCount]) => {
-          const { data: sourceDeals } = await supabase()
+          const { data: sourceDeals } = await supabaseClient
             .from('hot_deals')
             .select('views')
             .is('deleted_at', null)
@@ -1256,7 +1257,8 @@ export class SupabaseHotDealService {
     try {
       // 최근 1시간 이내의 새 핫딜
       const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000)
-      const { data: newDeals } = await supabase()
+      const supabaseClient = supabase()
+      const { data: newDeals } = await supabaseClient
         .from('hot_deals')
         .select('id, title, created_at, views, like_count')
         .is('deleted_at', null)
@@ -1265,7 +1267,7 @@ export class SupabaseHotDealService {
         .limit(10)
 
       // 조회수 급상승 핫딜 (임시로 높은 조회수 기준)
-      const { data: trendingDeals } = await supabase()
+      const { data: trendingDeals } = await supabaseClient
         .from('hot_deals')
         .select('id, title, views, like_count, created_at')
         .is('deleted_at', null)

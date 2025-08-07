@@ -29,7 +29,7 @@ export function RoleBasedContent({
   // 로그인 상태 - 역할별 콘텐츠 표시
   if (isAdmin) {
     return <>{admin || member || fallback}</>
-  } else if (currentUser.role === 'customer' || currentUser.role === 'member') {
+  } else if (currentUser.role === 'customer') {
     return <>{member || fallback}</>
   } else {
     return <>{fallback}</>

@@ -162,7 +162,7 @@ export function UserDetailModal({ user, isOpen, onClose }: UserDetailModalProps)
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="guest">게스트</SelectItem>
-                    <SelectItem value="member">회원</SelectItem>
+                    <SelectItem value="customer">고객</SelectItem>
                     <SelectItem value="admin">관리자</SelectItem>
                   </SelectContent>
                 </Select>

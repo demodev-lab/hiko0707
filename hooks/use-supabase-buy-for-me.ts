@@ -131,7 +131,7 @@ function mapLocalToSupabaseFormat(data: CreateBuyForMeRequestData): {
     proxyRequest: {
       user_id: data.userId,
       hot_deal_id: data.hotdealId,
-      order_number: `BFM-${Date.now()}`, // 임시 주문번호 생성
+      // order_number는 SupabaseOrderService에서 생성하므로 제거
       product_info: {
         title: data.productInfo.title,
         original_price: data.productInfo.originalPrice,
@@ -145,7 +145,7 @@ function mapLocalToSupabaseFormat(data: CreateBuyForMeRequestData): {
       quantity: data.quantity,
       option: data.productOptions || null,
       special_requests: data.specialRequests || null,
-      status: 'pending_review'
+      status: 'pending_review' // 테이블 기본값과 일치
     },
     addressData: {
       name: data.shippingInfo.name,
@@ -293,21 +293,28 @@ export function useSupabaseBuyForMe() {
 
       const { proxyRequest, addressData } = mapLocalToSupabaseFormat(data)
       
-      // 1. 주소 정보 생성
-      const address = await SupabaseAddressService.createUserAddress({
-        user_id: currentUser.id,
-        ...addressData
-      })
-      
-      if (!address) throw new Error('주소 정보 생성에 실패했습니다.')
-
-      // 2. 대리구매 요청 생성 (주소 ID 포함)
+      // 1. 대리구매 요청 생성 (주소 ID 없이)
       const createdRequest = await SupabaseOrderService.createOrder({
         ...proxyRequest,
-        shipping_address_id: address.id
+        shipping_address_id: null // proxy_purchase_addresses를 사용하므로 null
       })
       
       if (!createdRequest) throw new Error('대리구매 요청 생성에 실패했습니다.')
+
+      // 2. 프록시 구매 주소 생성 (대리구매 전용 테이블)
+      const proxyAddress = await SupabaseAddressService.createProxyPurchaseAddress({
+        proxy_purchase_id: createdRequest.id,
+        recipient_name: addressData.name,
+        email: data.shippingInfo.email, // email 필드 포함
+        phone_number: addressData.phone,
+        address: addressData.address,
+        detail_address: addressData.address_detail
+      })
+      
+      if (!proxyAddress) {
+        console.error('프록시 구매 주소 생성 실패')
+        // 주소 생성 실패해도 주문은 진행 (추후 수정 가능)
+      }
 
       // 3. 결제 정보 생성 (초기 견적)
       await SupabasePaymentService.createPayment({
@@ -337,7 +344,10 @@ export function useSupabaseBuyForMe() {
         }
       })
 
-      return mapSupabaseToLocalFormat(createdRequest, null, address, null, [])
+      // 6. (선택사항) 사용자가 주소를 저장하기로 선택한 경우만 user_addresses에 저장
+      // 이는 buy-for-me-modal.tsx에서 별도로 처리
+
+      return mapSupabaseToLocalFormat(createdRequest, null, null, null, [])
     },
     onSuccess: (newRequest) => {
       queryClient.invalidateQueries({ queryKey: ['supabaseBuyForMeRequests'] })

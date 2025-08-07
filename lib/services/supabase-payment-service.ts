@@ -1,4 +1,4 @@
-import { supabaseAdmin } from '@/lib/supabase/client'
+import { supabase } from '@/lib/supabase/client'
 import type { PaymentRow, PaymentInsert, PaymentUpdate } from '@/lib/types/supabase'
 
 /**
@@ -10,11 +10,7 @@ export class SupabasePaymentService {
    * 새로운 결제 기록 생성
    */
   static async createPayment(paymentData: Omit<PaymentInsert, 'created_at' | 'updated_at'>): Promise<PaymentRow | null> {
-    const supabase = supabaseAdmin()
-    if (!supabase) {
-      console.error('Supabase admin client not initialized')
-      return null
-    }
+    const supabaseClient = supabase()
     
     const insertData: PaymentInsert = {
       ...paymentData,
@@ -24,7 +20,7 @@ export class SupabasePaymentService {
       updated_at: new Date().toISOString()
     }
 
-    const { data, error } = await supabase
+    const { data, error } = await supabaseClient
       .from('payments')
       .insert(insertData)
       .select()
@@ -47,11 +43,7 @@ export class SupabasePaymentService {
     externalPaymentId?: string,
     paidAt?: string
   ): Promise<PaymentRow | null> {
-    const supabase = supabaseAdmin()
-    if (!supabase) {
-      console.error('Supabase admin client not initialized')
-      return null
-    }
+    const supabaseClient = supabase()
 
     const updateData: PaymentUpdate = {
       status,
@@ -68,7 +60,7 @@ export class SupabasePaymentService {
       updateData.paid_at = new Date().toISOString()
     }
 
-    const { data, error } = await supabase
+    const { data, error } = await supabaseClient
       .from('payments')
       .update(updateData)
       .eq('id', paymentId)
@@ -87,13 +79,9 @@ export class SupabasePaymentService {
    * 주문별 결제 목록 조회
    */
   static async getPaymentsByRequest(requestId: string): Promise<PaymentRow[]> {
-    const supabase = supabaseAdmin()
-    if (!supabase) {
-      console.error('Supabase admin client not initialized')
-      return []
-    }
+    const supabaseClient = supabase()
 
-    const { data, error } = await supabase
+    const { data, error } = await supabaseClient
       .from('payments')
       .select(`
         *,
@@ -127,13 +115,9 @@ export class SupabasePaymentService {
     limit?: number
     offset?: number
   }): Promise<PaymentRow[]> {
-    const supabase = supabaseAdmin()
-    if (!supabase) {
-      console.error('Supabase admin client not initialized')
-      return []
-    }
+    const supabaseClient = supabase()
 
-    let query = supabase
+    let query = supabaseClient
       .from('payments')
       .select(`
         *,
@@ -177,13 +161,9 @@ export class SupabasePaymentService {
    * 결제 ID로 결제 정보 조회
    */
   static async getPaymentById(paymentId: string): Promise<PaymentRow | null> {
-    const supabase = supabaseAdmin()
-    if (!supabase) {
-      console.error('Supabase admin client not initialized')
-      return null
-    }
+    const supabaseClient = supabase()
 
-    const { data, error } = await supabase
+    const { data, error } = await supabaseClient
       .from('payments')
       .select(`
         *,
@@ -234,13 +214,9 @@ export class SupabasePaymentService {
    * 외부 결제 ID로 결제 정보 조회
    */
   static async getPaymentByExternalId(externalPaymentId: string): Promise<PaymentRow | null> {
-    const supabase = supabaseAdmin()
-    if (!supabase) {
-      console.error('Supabase admin client not initialized')
-      return null
-    }
+    const supabaseClient = supabase()
 
-    const { data, error } = await supabase
+    const { data, error } = await supabaseClient
       .from('payments')
       .select('*')
       .eq('external_payment_id', externalPaymentId)
@@ -258,11 +234,7 @@ export class SupabasePaymentService {
    * 결제 정보 업데이트
    */
   static async updatePayment(paymentId: string, updates: PaymentUpdate): Promise<PaymentRow | null> {
-    const supabase = supabaseAdmin()
-    if (!supabase) {
-      console.error('Supabase admin client not initialized')
-      return null
-    }
+    const supabaseClient = supabase()
 
     const updateData: PaymentUpdate = {
       ...updates,
@@ -276,7 +248,7 @@ export class SupabasePaymentService {
       }
     })
 
-    const { data, error } = await supabase
+    const { data, error } = await supabaseClient
       .from('payments')
       .update(updateData)
       .eq('id', paymentId)
@@ -303,13 +275,9 @@ export class SupabasePaymentService {
     limit?: number
     offset?: number
   }): Promise<PaymentRow[]> {
-    const supabase = supabaseAdmin()
-    if (!supabase) {
-      console.error('Supabase admin client not initialized')
-      return []
-    }
+    const supabaseClient = supabase()
 
-    let query = supabase
+    let query = supabaseClient
       .from('payments')
       .select(`
         *,
@@ -386,13 +354,9 @@ export class SupabasePaymentService {
     by_method: { [key: string]: { count: number; amount: number } }
     by_gateway: { [key: string]: { count: number; amount: number } }
   } | null> {
-    const supabase = supabaseAdmin()
-    if (!supabase) {
-      console.error('Supabase admin client not initialized')
-      return null
-    }
+    const supabaseClient = supabase()
 
-    let query = supabase
+    let query = supabaseClient
       .from('payments')
       .select('status, amount, payment_method, payment_gateway')
 
@@ -473,14 +437,10 @@ export class SupabasePaymentService {
     refundAmount?: number,
     reason?: string
   ): Promise<PaymentRow | null> {
-    const supabase = supabaseAdmin()
-    if (!supabase) {
-      console.error('Supabase admin client not initialized')
-      return null
-    }
+    const supabaseClient = supabase()
 
     // 기존 결제 정보 조회
-    const { data: payment } = await supabase
+    const { data: payment } = await supabaseClient
       .from('payments')
       .select('*')
       .eq('id', paymentId)
@@ -498,7 +458,7 @@ export class SupabasePaymentService {
       updated_at: new Date().toISOString()
     }
 
-    const { data, error } = await supabase
+    const { data, error } = await supabaseClient
       .from('payments')
       .update(updateData)
       .eq('id', paymentId)

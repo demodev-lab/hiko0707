@@ -1,4 +1,4 @@
-import { supabaseAdmin } from '@/lib/supabase/client'
+import { supabase } from '@/lib/supabase/client'
 import type { Database } from '@/database.types'
 
 // Supabase 테이블 타입 정의
@@ -22,11 +22,7 @@ export class SupabaseOrderService {
    * 새로운 Buy-for-me 주문 요청 생성
    */
   static async createOrder(orderData: Omit<ProxyPurchaseInsert, 'created_at' | 'updated_at' | 'order_number'>): Promise<ProxyPurchaseRow | null> {
-    const supabase = supabaseAdmin()
-    if (!supabase) {
-      console.error('Supabase admin client not initialized')
-      return null
-    }
+    const supabaseClient = supabase()
     
     // 주문 번호 생성 (HIKO + YYYYMMDD + 4자리 랜덤)
     const orderNumber = `HIKO${new Date().toISOString().slice(0, 10).replace(/-/g, '')}${Math.floor(1000 + Math.random() * 9000)}`
@@ -34,19 +30,25 @@ export class SupabaseOrderService {
     const insertData: ProxyPurchaseInsert = {
       ...orderData,
       order_number: orderNumber,
-      status: orderData.status || 'payment_pending',
+      status: orderData.status || 'pending_review', // 테이블 기본값과 일치하도록 수정
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString()
     }
 
-    const { data, error } = await supabase
+    const { data, error } = await supabaseClient
       .from('proxy_purchases_request')
       .insert(insertData)
       .select()
       .single()
 
     if (error) {
-      console.error('주문 생성 실패:', error)
+      console.error('주문 생성 실패 - 상세 오류:', {
+        message: error.message,
+        details: error.details,
+        hint: error.hint,
+        code: error.code,
+        insertData: insertData
+      })
       return null
     }
 
@@ -66,13 +68,9 @@ export class SupabaseOrderService {
     limit?: number
     offset?: number
   }): Promise<ProxyPurchaseRow[]> {
-    const supabase = supabaseAdmin()
-    if (!supabase) {
-      console.error('Supabase admin client not initialized')
-      return []
-    }
+    const supabaseClient = supabase()
     
-    let query = supabase
+    let query = supabaseClient
       .from('proxy_purchases_request')
       .select(`
         *,
@@ -121,13 +119,9 @@ export class SupabaseOrderService {
    * 주문 상세 조회
    */
   static async getOrderById(orderId: string): Promise<ProxyPurchaseRow | null> {
-    const supabase = supabaseAdmin()
-    if (!supabase) {
-      console.error('Supabase admin client not initialized')
-      return null
-    }
+    const supabaseClient = supabase()
 
-    const { data, error } = await supabase
+    const { data, error } = await supabaseClient
       .from('proxy_purchases_request')
       .select(`
         *,
@@ -200,14 +194,10 @@ export class SupabaseOrderService {
     changedBy: string, 
     notes?: string
   ): Promise<ProxyPurchaseRow | null> {
-    const supabase = supabaseAdmin()
-    if (!supabase) {
-      console.error('Supabase admin client not initialized')
-      return null
-    }
+    const supabaseClient = supabase()
 
     // 현재 상태 조회
-    const { data: currentOrder } = await supabase
+    const { data: currentOrder } = await supabaseClient
       .from('proxy_purchases_request')
       .select('status')
       .eq('id', orderId)
@@ -219,7 +209,7 @@ export class SupabaseOrderService {
     }
 
     // 주문 상태 업데이트
-    const { data, error } = await supabase
+    const { data, error } = await supabaseClient
       .from('proxy_purchases_request')
       .update({
         status: newStatus,
@@ -244,11 +234,7 @@ export class SupabaseOrderService {
    * 주문 정보 업데이트
    */
   static async updateOrder(orderId: string, updates: ProxyPurchaseUpdate): Promise<ProxyPurchaseRow | null> {
-    const supabase = supabaseAdmin()
-    if (!supabase) {
-      console.error('Supabase admin client not initialized')
-      return null
-    }
+    const supabaseClient = supabase()
 
     const updateData: ProxyPurchaseUpdate = {
       ...updates,
@@ -262,7 +248,7 @@ export class SupabaseOrderService {
       }
     })
 
-    const { data, error } = await supabase
+    const { data, error } = await supabaseClient
       .from('proxy_purchases_request')
       .update(updateData)
       .eq('id', orderId)
@@ -287,11 +273,7 @@ export class SupabaseOrderService {
     changedBy: string,
     notes?: string
   ): Promise<OrderStatusHistoryRow | null> {
-    const supabase = supabaseAdmin()
-    if (!supabase) {
-      console.error('Supabase admin client not initialized')
-      return null
-    }
+    const supabaseClient = supabase()
 
     const historyData: OrderStatusHistoryInsert = {
       request_id: requestId,
@@ -302,7 +284,7 @@ export class SupabaseOrderService {
       created_at: new Date().toISOString()
     }
 
-    const { data, error } = await supabase
+    const { data, error } = await supabaseClient
       .from('order_status_history')
       .insert(historyData)
       .select()
@@ -320,11 +302,7 @@ export class SupabaseOrderService {
    * 견적서 생성
    */
   static async createQuote(quoteData: Omit<ProxyPurchaseQuoteInsert, 'created_at'>): Promise<ProxyPurchaseQuoteRow | null> {
-    const supabase = supabaseAdmin()
-    if (!supabase) {
-      console.error('Supabase admin client not initialized')
-      return null
-    }
+    const supabaseClient = supabase()
 
     const insertData: ProxyPurchaseQuoteInsert = {
       ...quoteData,
@@ -332,7 +310,7 @@ export class SupabaseOrderService {
       created_at: new Date().toISOString()
     }
 
-    const { data, error } = await supabase
+    const { data, error } = await supabaseClient
       .from('proxy_purchase_quotes')
       .insert(insertData)
       .select()
@@ -354,11 +332,7 @@ export class SupabaseOrderService {
     approvalState: 'approved' | 'rejected',
     notes?: string
   ): Promise<ProxyPurchaseQuoteRow | null> {
-    const supabase = supabaseAdmin()
-    if (!supabase) {
-      console.error('Supabase admin client not initialized')
-      return null
-    }
+    const supabaseClient = supabase()
 
     const updateData: ProxyPurchaseQuoteUpdate = {
       approval_state: approvalState,
@@ -371,7 +345,7 @@ export class SupabaseOrderService {
       updateData.rejected_at = new Date().toISOString()
     }
 
-    const { data, error } = await supabase
+    const { data, error } = await supabaseClient
       .from('proxy_purchase_quotes')
       .update(updateData)
       .eq('id', quoteId)
@@ -395,11 +369,7 @@ export class SupabaseOrderService {
     limit?: number
     offset?: number
   }): Promise<ProxyPurchaseRow[]> {
-    const supabase = supabaseAdmin()
-    if (!supabase) {
-      console.error('Supabase admin client not initialized')
-      return []
-    }
+    const supabaseClient = supabase()
     
     // 기본값 설정으로 성능 최적화
     const { 
@@ -409,7 +379,7 @@ export class SupabaseOrderService {
       source 
     } = options || {}
 
-    let query = supabase
+    let query = supabaseClient
       .from('proxy_purchases_request')
       .select(`
         *,
@@ -467,13 +437,9 @@ export class SupabaseOrderService {
     completed: number
     cancelled: number
   } | null> {
-    const supabase = supabaseAdmin()
-    if (!supabase) {
-      console.error('Supabase admin client not initialized')
-      return null
-    }
+    const supabaseClient = supabase()
 
-    let query = supabase
+    let query = supabaseClient
       .from('proxy_purchases_request')
       .select('status')
 
@@ -520,13 +486,9 @@ export class SupabaseOrderService {
    * 모든 결제 내역 조회 (관리자용)
    */
   static async getAllPayments(): Promise<Database['public']['Tables']['payments']['Row'][]> {
-    const supabase = supabaseAdmin()
-    if (!supabase) {
-      console.error('Supabase admin client not initialized')
-      return []
-    }
+    const supabaseClient = supabase()
 
-    const { data, error } = await supabase
+    const { data, error } = await supabaseClient
       .from('payments')
       .select(`
         *,

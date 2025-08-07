@@ -5,7 +5,7 @@ interface User {
   id: string
   email: string
   name: string
-  role: 'guest' | 'member' | 'admin'
+  role: 'guest' | 'customer' | 'admin'
   createdAt: Date
   updatedAt: Date
 }
@@ -29,7 +29,7 @@ export async function getCurrentUser(): Promise<User | null> {
     id: user.id,
     email: user.emailAddresses[0]?.emailAddress || '',
     name: user.firstName ? `${user.firstName} ${user.lastName || ''}`.trim() : user.username || '',
-    role: (user.publicMetadata?.role as User['role']) || 'member',
+    role: (user.publicMetadata?.role as User['role']) || 'customer',
     createdAt: new Date(user.createdAt),
     updatedAt: new Date(user.updatedAt)
   }

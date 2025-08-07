@@ -1,5 +1,5 @@
 // User 관련 타입 정의 (LocalStorage 의존성 제거)
-export type UserRole = 'guest' | 'member' | 'admin'
+export type UserRole = 'guest' | 'customer' | 'admin'
 
 export interface User {
   id: string

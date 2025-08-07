@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { renderHook, waitFor } from '@testing-library/react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { ReactNode } from 'react'
+import React, { ReactNode } from 'react'
 
 // Mock 상태 관리를 위한 전역 변수들
 let mockSupabaseHotDealServiceResult: any = null

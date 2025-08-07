@@ -1,4 +1,4 @@
-import { supabaseAdmin } from '@/lib/supabase/client'
+import { supabase } from '@/lib/supabase/client'
 import type { Database } from '@/database.types'
 
 // Supabase 테이블 타입 정의
@@ -21,13 +21,9 @@ export class SupabaseNotificationService {
     sortBy?: 'created_at' | 'is_read'
     sortOrder?: 'asc' | 'desc'
   }): Promise<NotificationRow[]> {
-    const supabase = supabaseAdmin()
-    if (!supabase) {
-      console.error('Supabase admin client not initialized')
-      return []
-    }
+    const supabaseClient = supabase()
     
-    let query = supabase
+    let query = supabaseClient
       .from('notifications')
       .select('*')
       .eq('user_id', userId)
@@ -96,11 +92,7 @@ export class SupabaseNotificationService {
     title: string,
     content: string
   ): Promise<NotificationRow | null> {
-    const supabase = supabaseAdmin()
-    if (!supabase) {
-      console.error('Supabase admin client not initialized')
-      return null
-    }
+    const supabaseClient = supabase()
     
     const notificationData: NotificationInsert = {
       user_id: userId,
@@ -110,7 +102,7 @@ export class SupabaseNotificationService {
       created_at: new Date().toISOString()
     }
 
-    const { data, error } = await supabase
+    const { data, error } = await supabaseClient
       .from('notifications')
       .insert(notificationData)
       .select()
@@ -262,11 +254,7 @@ export class SupabaseNotificationService {
       content: string
     }>
   ): Promise<NotificationRow[]> {
-    const supabase = supabaseAdmin()
-    if (!supabase) {
-      console.error('Supabase admin client not initialized')
-      return []
-    }
+    const supabaseClient = supabase()
     
     const notificationData: NotificationInsert[] = notifications.map(notif => ({
       user_id: notif.user_id,
@@ -276,7 +264,7 @@ export class SupabaseNotificationService {
       created_at: new Date().toISOString()
     }))
 
-    const { data, error } = await supabase
+    const { data, error } = await supabaseClient
       .from('notifications')
       .insert(notificationData)
       .select()
@@ -337,11 +325,7 @@ export class SupabaseNotificationService {
     notifications_by_type: { [key: string]: number }
     recent_notifications: number // 최근 7일
   } | null> {
-    const supabase = supabaseAdmin()
-    if (!supabase) {
-      console.error('Supabase admin client not initialized')
-      return null
-    }
+    const supabaseClient = supabase()
 
     try {
       // 총 알림 수
@@ -421,13 +405,9 @@ export class SupabaseNotificationService {
     offset?: number
     unreadOnly?: boolean
   }): Promise<NotificationRow[]> {
-    const supabase = supabaseAdmin()
-    if (!supabase) {
-      console.error('Supabase admin client not initialized')
-      return []
-    }
+    const supabaseClient = supabase()
 
-    let query = supabase
+    let query = supabaseClient
       .from('notifications')
       .select('*')
       .eq('user_id', userId)
@@ -528,7 +508,7 @@ export class SupabaseNotificationService {
       return { success: false, updated_count: 0, error: 'Supabase admin client not initialized' }
     }
 
-    const { data, error } = await supabase
+    const { data, error } = await supabaseClient
       .from('notifications')
       .update({ is_read: true })
       .in('id', notificationIds)
@@ -553,7 +533,7 @@ export class SupabaseNotificationService {
       return { success: false, deleted_count: 0, error: 'Supabase admin client not initialized' }
     }
 
-    const { data, error } = await supabase
+    const { data, error } = await supabaseClient
       .from('notifications')
       .delete()
       .in('id', notificationIds)

@@ -151,7 +151,7 @@ export function Header() {
           </ShowForRole>
 
           {/* 일반 사용자/회원 네비게이션 */}
-          <ShowForRole roles={['guest', 'member']} includeHigherRoles={false}>
+          <ShowForRole roles={['guest', 'customer']} includeHigherRoles={false}>
             <nav className="hidden md:flex items-center space-x-4 lg:space-x-8 flex-shrink-0">
               <Link href="/hotdeals" className="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 font-medium transition-colors whitespace-nowrap">
                 핫딜
@@ -163,7 +163,7 @@ export function Header() {
           </ShowForRole>
           
           {/* 회원 전용 메뉴 */}
-          <ShowForRole roles={['member']} includeHigherRoles={false}>
+          <ShowForRole roles={['customer']} includeHigherRoles={false}>
             <nav className="hidden md:flex items-center space-x-4 lg:space-x-8 flex-shrink-0">
               <Link href="/mypage" className="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 font-medium transition-colors whitespace-nowrap">
                 마이페이지
@@ -447,7 +447,7 @@ export function Header() {
             </ShowForRole>
             
             {/* 일반 사용자 메뉴 */}
-            <ShowForRole roles={['guest', 'member']} includeHigherRoles={false}>
+            <ShowForRole roles={['guest', 'customer']} includeHigherRoles={false}>
               <div className="space-y-1">
                 <Link
                   href="/hotdeals"

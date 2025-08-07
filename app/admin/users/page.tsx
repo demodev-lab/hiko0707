@@ -17,7 +17,7 @@ export default async function AdminUsersPage() {
     total: users.length,
     active: users.filter((u) => u.status === 'active').length,
     admins: users.filter((u) => u.role === 'admin').length,
-    members: users.filter((u) => u.role === 'member').length,
+    customers: users.filter((u) => u.role === 'customer').length,
     guests: users.filter((u) => u.role === 'guest').length,
   };
 

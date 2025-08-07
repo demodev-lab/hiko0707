@@ -1,4 +1,4 @@
-import { supabaseAdmin } from '@/lib/supabase/client'
+import { supabase } from '@/lib/supabase/client'
 import type { 
   HotDealLikeRow, 
   HotDealLikeInsert, 
@@ -15,14 +15,14 @@ export class SupabaseLikeService {
    * 핫딜 좋아요 추가
    */
   static async likeHotDeal(hotDealId: string, userId: string): Promise<HotDealLikeRow | null> {
-    const supabase = supabaseAdmin()
-    if (!supabase) {
-      console.error('Supabase admin client not initialized')
+    const supabaseClient = supabase()
+    if (!supabaseClient) {
+      console.error('Supabase client not initialized')
       return null
     }
 
     // 이미 좋아요 했는지 확인
-    const { data: existingLike } = await supabase
+    const { data: existingLike } = await supabaseClient
       .from('hot_deal_likes')
       .select('id')
       .eq('hot_deal_id', hotDealId)
@@ -41,7 +41,7 @@ export class SupabaseLikeService {
       created_at: new Date().toISOString()
     }
 
-    const { data: newLike, error: likeError } = await supabase
+    const { data: newLike, error: likeError } = await supabaseClient
       .from('hot_deal_likes')
       .insert(likeData)
       .select()
@@ -62,13 +62,13 @@ export class SupabaseLikeService {
    * 핫딜 좋아요 제거
    */
   static async unlikeHotDeal(hotDealId: string, userId: string): Promise<boolean> {
-    const supabase = supabaseAdmin()
-    if (!supabase) {
-      console.error('Supabase admin client not initialized')
+    const supabaseClient = supabase()
+    if (!supabaseClient) {
+      console.error('Supabase client not initialized')
       return false
     }
 
-    const { data, error } = await supabase
+    const { data, error } = await supabaseClient
       .from('hot_deal_likes')
       .delete()
       .eq('hot_deal_id', hotDealId)
@@ -93,20 +93,20 @@ export class SupabaseLikeService {
    * 핫딜 좋아요 카운트 업데이트
    */
   static async updateHotDealLikeCount(hotDealId: string): Promise<void> {
-    const supabase = supabaseAdmin()
-    if (!supabase) {
-      console.error('Supabase admin client not initialized')
+    const supabaseClient = supabase()
+    if (!supabaseClient) {
+      console.error('Supabase client not initialized')
       return
     }
 
     // 현재 좋아요 수 카운트
-    const { count } = await supabase
+    const { count } = await supabaseClient
       .from('hot_deal_likes')
       .select('id', { count: 'exact' })
       .eq('hot_deal_id', hotDealId)
 
     // 핫딜의 like_count 업데이트
-    await supabase
+    await supabaseClient
       .from('hot_deals')
       .update({ 
         like_count: count || 0,
@@ -119,13 +119,13 @@ export class SupabaseLikeService {
    * 사용자의 핫딜 좋아요 여부 확인
    */
   static async isHotDealLikedByUser(hotDealId: string, userId: string): Promise<boolean> {
-    const supabase = supabaseAdmin()
-    if (!supabase) {
-      console.error('Supabase admin client not initialized')
+    const supabaseClient = supabase()
+    if (!supabaseClient) {
+      console.error('Supabase client not initialized')
       return false
     }
 
-    const { data, error } = await supabase
+    const { data, error } = await supabaseClient
       .from('hot_deal_likes')
       .select('id')
       .eq('hot_deal_id', hotDealId)
@@ -146,13 +146,13 @@ export class SupabaseLikeService {
     limit?: number
     offset?: number
   }): Promise<(HotDealLikeRow & { hot_deal: HotDealRow })[]> {
-    const supabase = supabaseAdmin()
-    if (!supabase) {
-      console.error('Supabase admin client not initialized')
+    const supabaseClient = supabase()
+    if (!supabaseClient) {
+      console.error('Supabase client not initialized')
       return []
     }
     
-    let query = supabase
+    let query = supabaseClient
       .from('hot_deal_likes')
       .select(`
         *,
@@ -205,13 +205,13 @@ export class SupabaseLikeService {
     limit?: number
     offset?: number
   }): Promise<(HotDealLikeRow & { user: { id: string; name: string; email: string } })[]> {
-    const supabase = supabaseAdmin()
-    if (!supabase) {
-      console.error('Supabase admin client not initialized')
+    const supabaseClient = supabase()
+    if (!supabaseClient) {
+      console.error('Supabase client not initialized')
       return []
     }
     
-    let query = supabase
+    let query = supabaseClient
       .from('hot_deal_likes')
       .select(`
         *,
@@ -254,15 +254,15 @@ export class SupabaseLikeService {
       like_count: number
     }
   } | null> {
-    const supabase = supabaseAdmin()
-    if (!supabase) {
-      console.error('Supabase admin client not initialized')
+    const supabaseClient = supabase()
+    if (!supabaseClient) {
+      console.error('Supabase client not initialized')
       return null
     }
 
     try {
       // 전체 좋아요 수
-      let totalQuery = supabase
+      let totalQuery = supabaseClient
         .from('hot_deal_likes')
         .select('id', { count: 'exact' })
 
@@ -274,7 +274,7 @@ export class SupabaseLikeService {
 
       // 최근 24시간 좋아요 수
       const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
-      let recentQuery = supabase
+      let recentQuery = supabaseClient
         .from('hot_deal_likes')
         .select('id', { count: 'exact' })
         .gte('created_at', yesterday)
@@ -288,7 +288,7 @@ export class SupabaseLikeService {
       // 가장 좋아요가 많은 핫딜 (전체 통계일 때만)
       let topLikedHotdeal
       if (!hotDealId) {
-        const { data: topHotdeal } = await supabase
+        const { data: topHotdeal } = await supabaseClient
           .from('hot_deals')
           .select(`
             id,
@@ -327,29 +327,29 @@ export class SupabaseLikeService {
     recent_likes: number // 최근 7일
     favorite_categories: string[]
   } | null> {
-    const supabase = supabaseAdmin()
-    if (!supabase) {
-      console.error('Supabase admin client not initialized')
+    const supabaseClient = supabase()
+    if (!supabaseClient) {
+      console.error('Supabase client not initialized')
       return null
     }
 
     try {
       // 전체 좋아요 수
-      const { count: totalLikes } = await supabase
+      const { count: totalLikes } = await supabaseClient
         .from('hot_deal_likes')
         .select('id', { count: 'exact' })
         .eq('user_id', userId)
 
       // 최근 7일 좋아요 수
       const lastWeek = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
-      const { count: recentLikes } = await supabase
+      const { count: recentLikes } = await supabaseClient
         .from('hot_deal_likes')
         .select('id', { count: 'exact' })
         .eq('user_id', userId)
         .gte('created_at', lastWeek)
 
       // 선호 카테고리 (좋아요 많이 한 카테고리 순)
-      const { data: categoryData } = await supabase
+      const { data: categoryData } = await supabaseClient
         .from('hot_deal_likes')
         .select(`
           hot_deal:hot_deal_id (
@@ -390,13 +390,13 @@ export class SupabaseLikeService {
     category?: string
     timeframe?: 'day' | 'week' | 'month' | 'all'
   }): Promise<HotDealRow[]> {
-    const supabase = supabaseAdmin()
-    if (!supabase) {
-      console.error('Supabase admin client not initialized')
+    const supabaseClient = supabase()
+    if (!supabaseClient) {
+      console.error('Supabase client not initialized')
       return []
     }
     
-    let query = supabase
+    let query = supabaseClient
       .from('hot_deals')
       .select('*')
       .eq('status', 'active')

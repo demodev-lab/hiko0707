@@ -28,7 +28,7 @@ import {
   Package,
   Info,
   ChevronDown,
-  Plus,
+  Plus, 
   BookmarkCheck,
   Search,
   Globe,
@@ -203,7 +203,8 @@ export function BuyForMeModal({ open, onOpenChange, hotdeal }: BuyForMeModalProp
       return
     }
 
-    // 새 배송지 저장 (저장 체크박스가 선택되고 새 배송지인 경우)
+    // 새 배송지를 user_addresses 테이블에 선택적으로 저장 (재사용을 위한 기능)
+    // 주의: 대리구매 주문의 실제 배송지는 proxy_purchase_addresses 테이블에 별도로 저장됨
     console.log('=== 배송지 저장 프로세스 시작 ===')
     console.log('저장 조건:', {
       saveAddress,
@@ -214,7 +215,7 @@ export function BuyForMeModal({ open, onOpenChange, hotdeal }: BuyForMeModalProp
     })
     
     if (saveAddress && (selectedAddressId === 'new' || showNewAddressForm)) {
-      console.log('✅ 배송지 저장 조건 만족 - 저장 시작')
+      console.log('✅ 배송지 저장 조건 만족 - 재사용을 위해 user_addresses에 저장')
       try {
         const addressData = {
           label: addresses.length === 0 ? '기본 배송지' : `배송지 ${addresses.length + 1}`,
@@ -227,26 +228,26 @@ export function BuyForMeModal({ open, onOpenChange, hotdeal }: BuyForMeModalProp
           user_id: currentUser.id
         }
         
-        console.log('💾 저장할 배송지 데이터:', addressData)
+        console.log('💾 저장할 배송지 데이터 (user_addresses):', addressData)
         
         const savedAddress = await createAddressAsync(addressData)
         
         if (!savedAddress) {
           console.error('❌ 배송지 저장 실패: createAddress returned null')
-          toast.error('배송지 저장에 실패했습니다')
-          return
+          // 배송지 저장 실패해도 대리구매 요청은 계속 진행
+          console.log('대리구매 요청은 계속 진행됩니다')
+        } else {
+          console.log('✅ 배송지 저장 완료 (user_addresses):', savedAddress)
+          console.log('📍 현재 addresses 상태:', addresses)
+          toast.success('배송지가 저장되었습니다')
         }
-        
-        console.log('✅ 배송지 저장 완료:', savedAddress)
-        console.log('📍 현재 addresses 상태:', addresses)
-        toast.success('배송지가 저장되었습니다')
       } catch (error) {
         console.error('❌ 배송지 저장 오류:', error)
-        toast.error('배송지 저장 중 오류가 발생했습니다')
-        return
+        // 배송지 저장 실패해도 대리구매 요청은 계속 진행
+        console.log('대리구매 요청은 계속 진행됩니다')
       }
     } else {
-      console.log('❌ 배송지 저장 조건을 만족하지 않음')
+      console.log('❌ 배송지 저장 조건을 만족하지 않음 - 재사용을 위한 저장 건너뜀')
     }
     console.log('=== 배송지 저장 프로세스 완료 ===')
 

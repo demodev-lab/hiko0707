@@ -1,4 +1,4 @@
-import { supabaseAdmin } from '@/lib/supabase/client'
+import { supabase } from '@/lib/supabase/client'
 import type { 
   UserFavoriteHotDealRow, 
   UserFavoriteHotDealInsert, 
@@ -14,14 +14,14 @@ export class SupabaseFavoriteService {
    * 핫딜 즐겨찾기 추가
    */
   static async addToFavorites(hotDealId: string, userId: string): Promise<UserFavoriteHotDealRow | null> {
-    const supabase = supabaseAdmin()
+    const supabaseClient = supabase()
     if (!supabase) {
       console.error('Supabase admin client not initialized')
       return null
     }
 
     // 이미 즐겨찾기에 있는지 확인
-    const { data: existingFavorite } = await supabase
+    const { data: existingFavorite } = await supabaseClient
       .from('user_favorite_hotdeals')
       .select('id')
       .eq('hotdeal_id', hotDealId)
@@ -40,7 +40,7 @@ export class SupabaseFavoriteService {
       created_at: new Date().toISOString()
     }
 
-    const { data: newFavorite, error: favoriteError } = await supabase
+    const { data: newFavorite, error: favoriteError } = await supabaseClient
       .from('user_favorite_hotdeals')
       .insert(favoriteData)
       .select()
@@ -58,13 +58,13 @@ export class SupabaseFavoriteService {
    * 핫딜 즐겨찾기 제거
    */
   static async removeFromFavorites(hotDealId: string, userId: string): Promise<boolean> {
-    const supabase = supabaseAdmin()
+    const supabaseClient = supabase()
     if (!supabase) {
       console.error('Supabase admin client not initialized')
       return false
     }
 
-    const { data, error } = await supabase
+    const { data, error } = await supabaseClient
       .from('user_favorite_hotdeals')
       .delete()
       .eq('hotdeal_id', hotDealId)
@@ -83,13 +83,13 @@ export class SupabaseFavoriteService {
    * 사용자의 핫딜 즐겨찾기 여부 확인
    */
   static async isHotDealFavorited(hotDealId: string, userId: string): Promise<boolean> {
-    const supabase = supabaseAdmin()
+    const supabaseClient = supabase()
     if (!supabase) {
       console.error('Supabase admin client not initialized')
       return false
     }
 
-    const { data, error } = await supabase
+    const { data, error } = await supabaseClient
       .from('user_favorite_hotdeals')
       .select('id')
       .eq('hotdeal_id', hotDealId)
@@ -113,13 +113,13 @@ export class SupabaseFavoriteService {
     sortBy?: 'created_at' | 'hot_deal_created' | 'price' | 'discount'
     sortOrder?: 'asc' | 'desc'
   }): Promise<(UserFavoriteHotDealRow & { hot_deal: HotDealRow })[]> {
-    const supabase = supabaseAdmin()
+    const supabaseClient = supabase()
     if (!supabase) {
       console.error('Supabase admin client not initialized')
       return []
     }
     
-    let query = supabase
+    let query = supabaseClient
       .from('user_favorite_hotdeals')
       .select(`
         *,
@@ -259,7 +259,7 @@ export class SupabaseFavoriteService {
       sale_price: number
     }
   } | null> {
-    const supabase = supabaseAdmin()
+    const supabaseClient = supabase()
     if (!supabase) {
       console.error('Supabase admin client not initialized')
       return null
@@ -362,7 +362,7 @@ export class SupabaseFavoriteService {
     limit?: number
     excludeExpired?: boolean
   }): Promise<HotDealRow[]> {
-    const supabase = supabaseAdmin()
+    const supabaseClient = supabase()
     if (!supabase) {
       console.error('Supabase admin client not initialized')
       return []
@@ -381,7 +381,7 @@ export class SupabaseFavoriteService {
         .map(cat => cat.category)
 
       // 해당 카테고리의 인기 핫딜 조회 (사용자가 즐겨찾기하지 않은 것들)
-      let query = supabase
+      let query = supabaseClient
         .from('hot_deals')
         .select('*')
         .in('category', preferredCategories)
@@ -405,7 +405,7 @@ export class SupabaseFavoriteService {
       }
 
       // 이미 즐겨찾기한 핫딜 제외
-      const { data: userFavorites } = await supabase
+      const { data: userFavorites } = await supabaseClient
         .from('user_favorite_hotdeals')
         .select('hotdeal_id')
         .eq('user_id', userId)
@@ -428,7 +428,7 @@ export class SupabaseFavoriteService {
     removed_expired: number
     removed_deleted: number
   }> {
-    const supabase = supabaseAdmin()
+    const supabaseClient = supabase()
     if (!supabase) {
       console.error('Supabase admin client not initialized')
       return { removed_duplicates: 0, removed_expired: 0, removed_deleted: 0 }
@@ -440,7 +440,7 @@ export class SupabaseFavoriteService {
       let removedDeleted = 0
 
       // 1. 중복 즐겨찾기 제거
-      const { data: duplicates } = await supabase
+      const { data: duplicates } = await supabaseClient
         .from('user_favorite_hotdeals')
         .select('hotdeal_id, id')
         .eq('user_id', userId)
@@ -459,7 +459,7 @@ export class SupabaseFavoriteService {
         }
 
         if (toDelete.length > 0) {
-          const { error: deleteError } = await supabase
+          const { error: deleteError } = await supabaseClient
             .from('user_favorite_hotdeals')
             .delete()
             .in('id', toDelete)
@@ -471,7 +471,7 @@ export class SupabaseFavoriteService {
       }
 
       // 2. 만료된 핫딜 제거
-      const { data: expiredFavorites } = await supabase
+      const { data: expiredFavorites } = await supabaseClient
         .from('user_favorite_hotdeals')
         .select(`
           id,
@@ -492,7 +492,7 @@ export class SupabaseFavoriteService {
           .map(fav => fav.id)
 
         if (expiredIds.length > 0) {
-          const { error: deleteExpiredError } = await supabase
+          const { error: deleteExpiredError } = await supabaseClient
             .from('user_favorite_hotdeals')
             .delete()
             .in('id', expiredIds)
@@ -504,7 +504,7 @@ export class SupabaseFavoriteService {
       }
 
       // 3. 삭제된 핫딜에 대한 즐겨찾기 제거
-      const { data: orphanedFavorites } = await supabase
+      const { data: orphanedFavorites } = await supabaseClient
         .from('user_favorite_hotdeals')
         .select(`
           id,
@@ -515,7 +515,7 @@ export class SupabaseFavoriteService {
       if (orphanedFavorites) {
         const hotDealIds = orphanedFavorites.map(fav => fav.hotdeal_id)
         
-        const { data: existingHotDeals } = await supabase
+        const { data: existingHotDeals } = await supabaseClient
           .from('hot_deals')
           .select('id')
           .in('id', hotDealIds)
@@ -526,7 +526,7 @@ export class SupabaseFavoriteService {
           .map(fav => fav.id)
 
         if (orphanedIds.length > 0) {
-          const { error: deleteOrphanedError } = await supabase
+          const { error: deleteOrphanedError } = await supabaseClient
             .from('user_favorite_hotdeals')
             .delete()
             .in('id', orphanedIds)

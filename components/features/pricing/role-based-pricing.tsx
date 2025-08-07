@@ -29,7 +29,7 @@ export function RoleBasedPricing() {
       href: '/register'
     },
     {
-      role: 'member',
+      role: 'customer',
       name: '멤버',
       price: '무료',
       description: '모든 기본 기능',
@@ -43,7 +43,7 @@ export function RoleBasedPricing() {
       ],
       cta: '현재 플랜',
       href: '/mypage',
-      current: currentUser?.role === 'member'
+      current: currentUser?.role === 'customer'
     },
     {
       role: 'admin',

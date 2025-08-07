@@ -1,4 +1,4 @@
-import { supabaseAdmin } from '@/lib/supabase/client'
+import { supabase } from '@/lib/supabase/client'
 import type { Database } from '@/database.types'
 
 // Supabase 테이블 타입 정의
@@ -38,14 +38,14 @@ export class SupabaseSystemSettingsService {
     default_value?: any
     updated_by: string
   }): Promise<SystemSettingRow | null> {
-    const supabase = supabaseAdmin()
-    if (!supabase) {
-      console.error('Supabase admin client not initialized')
+    const supabaseClient = supabase()
+    if (!supabaseClient) {
+      console.error('Supabase client not initialized')
       return null
     }
 
     // 중복 키 확인
-    const { data: existing } = await supabase
+    const { data: existing } = await supabaseClient
       .from('system_settings')
       .select('key')
       .eq('key', data.key)
@@ -71,7 +71,7 @@ export class SupabaseSystemSettingsService {
       updated_at: new Date().toISOString()
     }
 
-    const { data: createdSetting, error } = await supabase
+    const { data: createdSetting, error } = await supabaseClient
       .from('system_settings')
       .insert(settingData)
       .select()
@@ -89,13 +89,13 @@ export class SupabaseSystemSettingsService {
    * 시스템 설정 값 조회
    */
   static async getSetting<T = any>(key: string): Promise<T | null> {
-    const supabase = supabaseAdmin()
-    if (!supabase) {
-      console.error('Supabase admin client not initialized')
+    const supabaseClient = supabase()
+    if (!supabaseClient) {
+      console.error('Supabase client not initialized')
       return null
     }
 
-    const { data, error } = await supabase
+    const { data, error } = await supabaseClient
       .from('system_settings')
       .select('value, data_type')
       .eq('key', key)
@@ -113,13 +113,13 @@ export class SupabaseSystemSettingsService {
    * 시스템 설정 상세 정보 조회
    */
   static async getSettingDetail(key: string): Promise<SystemSettingRow | null> {
-    const supabase = supabaseAdmin()
-    if (!supabase) {
-      console.error('Supabase admin client not initialized')
+    const supabaseClient = supabase()
+    if (!supabaseClient) {
+      console.error('Supabase client not initialized')
       return null
     }
 
-    const { data, error } = await supabase
+    const { data, error } = await supabaseClient
       .from('system_settings')
       .select('*')
       .eq('key', key)
@@ -137,13 +137,13 @@ export class SupabaseSystemSettingsService {
    * 공개 설정만 조회 (클라이언트용)
    */
   static async getPublicSettings(): Promise<{ [key: string]: any }> {
-    const supabase = supabaseAdmin()
-    if (!supabase) {
-      console.error('Supabase admin client not initialized')
+    const supabaseClient = supabase()
+    if (!supabaseClient) {
+      console.error('Supabase client not initialized')
       return {}
     }
 
-    const { data, error } = await supabase
+    const { data, error } = await supabaseClient
       .from('system_settings')
       .select('key, value')
       .eq('is_public', true)
@@ -168,13 +168,13 @@ export class SupabaseSystemSettingsService {
     category: string,
     includePrivate: boolean = false
   ): Promise<SystemSettingRow[]> {
-    const supabase = supabaseAdmin()
-    if (!supabase) {
-      console.error('Supabase admin client not initialized')
+    const supabaseClient = supabase()
+    if (!supabaseClient) {
+      console.error('Supabase client not initialized')
       return []
     }
 
-    let query = supabase
+    let query = supabaseClient
       .from('system_settings')
       .select('*')
       .eq('category', category)
@@ -206,13 +206,13 @@ export class SupabaseSystemSettingsService {
     limit?: number
     offset?: number
   }): Promise<SystemSettingRow[]> {
-    const supabase = supabaseAdmin()
-    if (!supabase) {
-      console.error('Supabase admin client not initialized')
+    const supabaseClient = supabase()
+    if (!supabaseClient) {
+      console.error('Supabase client not initialized')
       return []
     }
 
-    let query = supabase
+    let query = supabaseClient
       .from('system_settings')
       .select('*')
 
@@ -263,9 +263,9 @@ export class SupabaseSystemSettingsService {
     updatedBy: string,
     validateValue: boolean = true
   ): Promise<SystemSettingRow | null> {
-    const supabase = supabaseAdmin()
-    if (!supabase) {
-      console.error('Supabase admin client not initialized')
+    const supabaseClient = supabase()
+    if (!supabaseClient) {
+      console.error('Supabase client not initialized')
       return null
     }
 
@@ -299,7 +299,7 @@ export class SupabaseSystemSettingsService {
       updated_at: new Date().toISOString()
     }
 
-    const { data: updatedSetting, error } = await supabase
+    const { data: updatedSetting, error } = await supabaseClient
       .from('system_settings')
       .update(updateData)
       .eq('key', key)
@@ -348,9 +348,9 @@ export class SupabaseSystemSettingsService {
    * 시스템 설정 삭제
    */
   static async deleteSetting(key: string): Promise<boolean> {
-    const supabase = supabaseAdmin()
-    if (!supabase) {
-      console.error('Supabase admin client not initialized')
+    const supabaseClient = supabase()
+    if (!supabaseClient) {
+      console.error('Supabase client not initialized')
       return false
     }
 
@@ -366,7 +366,7 @@ export class SupabaseSystemSettingsService {
       return false
     }
 
-    const { error } = await supabase
+    const { error } = await supabaseClient
       .from('system_settings')
       .delete()
       .eq('key', key)
@@ -383,13 +383,13 @@ export class SupabaseSystemSettingsService {
    * 설정 카테고리 목록 조회
    */
   static async getCategories(): Promise<{ category: string; count: number }[]> {
-    const supabase = supabaseAdmin()
-    if (!supabase) {
-      console.error('Supabase admin client not initialized')
+    const supabaseClient = supabase()
+    if (!supabaseClient) {
+      console.error('Supabase client not initialized')
       return []
     }
 
-    const { data, error } = await supabase
+    const { data, error } = await supabaseClient
       .from('system_settings')
       .select('category')
 

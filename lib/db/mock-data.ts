@@ -11,7 +11,7 @@ interface User {
   id: string
   email: string
   name: string
-  role?: 'guest' | 'member' | 'admin'
+  role?: 'guest' | 'customer' | 'admin'
   avatar?: string
   createdAt: Date
   updatedAt: Date
@@ -94,7 +94,7 @@ export const mockUsers: User[] = [
     id: '1',
     email: 'john@example.com',
     name: 'John Doe',
-    role: 'member',
+    role: 'customer',
     avatar: 'https://avatar.vercel.sh/john',
     createdAt: new Date('2024-01-01'),
     updatedAt: new Date('2024-01-01')
@@ -103,7 +103,7 @@ export const mockUsers: User[] = [
     id: '2',
     email: 'jane@example.com',
     name: 'Jane Smith',
-    role: 'member',
+    role: 'customer',
     avatar: 'https://avatar.vercel.sh/jane',
     createdAt: new Date('2024-01-02'),
     updatedAt: new Date('2024-01-02')
@@ -113,7 +113,7 @@ export const mockUsers: User[] = [
     id: '3',
     email: 'david@example.com',
     name: 'David Wang',
-    role: 'member',
+    role: 'customer',
     avatar: 'https://avatar.vercel.sh/david',
     createdAt: new Date('2024-01-05'),
     updatedAt: new Date('2024-01-05')
@@ -122,7 +122,7 @@ export const mockUsers: User[] = [
     id: '4',
     email: 'maria@example.com',
     name: 'Maria Garcia',
-    role: 'member',
+    role: 'customer',
     avatar: 'https://avatar.vercel.sh/maria',
     createdAt: new Date('2024-01-10'),
     updatedAt: new Date('2024-01-10')
@@ -131,7 +131,7 @@ export const mockUsers: User[] = [
     id: '5',
     email: 'nguyen@example.com',
     name: 'Nguyen Tran',
-    role: 'member',
+    role: 'customer',
     avatar: 'https://avatar.vercel.sh/nguyen',
     createdAt: new Date('2024-01-15'),
     updatedAt: new Date('2024-01-15')

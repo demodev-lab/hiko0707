@@ -15,7 +15,7 @@ interface AdminUsersClientProps {
     total: number
     active: number
     admins: number
-    members: number
+    customers: number
     guests: number
   }
 }
@@ -33,8 +33,8 @@ export function AdminUsersClient({ users, stats }: AdminUsersClientProps) {
     switch (role) {
       case 'admin':
         return <Badge className="bg-red-600">관리자</Badge>
-      case 'member':
-        return <Badge variant="secondary">회원</Badge>
+      case 'customer':
+        return <Badge variant="secondary">고객</Badge>
       case 'guest':
         return <Badge variant="outline">게스트</Badge>
       default:
@@ -97,8 +97,8 @@ export function AdminUsersClient({ users, stats }: AdminUsersClientProps) {
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600">회원</p>
-                <p className="text-2xl font-bold">{stats.members}</p>
+                <p className="text-sm text-gray-600">고객</p>
+                <p className="text-2xl font-bold">{stats.customers}</p>
               </div>
               <Users className="w-8 h-8 text-purple-600" />
             </div>

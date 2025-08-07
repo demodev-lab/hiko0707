@@ -1,3 +1,6 @@
+// ⚠️ DEPRECATED: profiles 테이블이 Supabase에 존재하지 않음
+// 이 훅은 사용하지 마세요. 프로필 정보는 users 테이블에서 관리됩니다.
+
 'use client'
 
 import { useState, useEffect } from 'react'
@@ -7,6 +10,10 @@ import { SupabaseProfileService } from '@/lib/services/supabase-profile-service'
 import type { UserProfile, UserAddress } from '@/types/user'
 import { toast } from 'sonner'
 
+/**
+ * @deprecated profiles/user_profiles 테이블이 존재하지 않으므로 이 훅을 사용하지 마세요
+ * 대신 useSupabaseUser 훅을 사용하세요
+ */
 export function useSupabaseProfile(userId: string | null) {
   const queryClient = useQueryClient()
 
@@ -122,21 +129,10 @@ export function useSupabaseProfile(userId: string | null) {
     const setupSubscription = () => {
       if (!isVisible()) return
       
+      // ⚠️ profiles/user_profiles 테이블이 존재하지 않으므로 실시간 구독 비활성화
+      // user_addresses 테이블만 실시간 구독
       channel = supabase()
-        .channel(`profile-realtime-${userId}`)
-        .on(
-          'postgres_changes',
-          {
-            event: '*',
-            schema: 'public',
-            table: 'user_profiles',
-            filter: `user_id=eq.${userId}`
-          },
-          (payload) => {
-            console.log('프로필 실시간 업데이트:', payload)
-            queryClient.invalidateQueries({ queryKey: ['supabase-profile', userId] })
-          }
-        )
+        .channel(`address-realtime-${userId}`)
         .on(
           'postgres_changes',
           {

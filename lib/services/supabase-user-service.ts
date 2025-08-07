@@ -110,69 +110,26 @@ export class SupabaseUserService {
   }
 
   /**
-   * 사용자 프로필 사진 업데이트 (user_profiles 테이블 사용)
+   * @deprecated user_profiles 테이블이 존재하지 않음 - 사용 금지
+   * 대신 users 테이블의 avatar_url 필드를 직접 업데이트하세요
    */
   static async updateAvatar(userId: string, avatarUrl: string): Promise<boolean> {
     const supabase = getSupabaseClient()
     
-    // user_profiles 테이블에 레코드가 있는지 확인
-    const { data: existing } = await supabase
-      .from('user_profiles')
-      .select('id')
-      .eq('user_id', userId)
-      .single()
-
-    if (existing) {
-      // 업데이트
-      const { error } = await supabase
-        .from('user_profiles')
-        .update({ 
-          avatar_url: avatarUrl,
-          updated_at: new Date().toISOString()
-        })
-        .eq('user_id', userId)
-
-      if (error) {
-        console.error('아바타 업데이트 실패:', error)
-        return false
-      }
-    } else {
-      // 생성
-      const { error } = await supabase
-        .from('user_profiles')
-        .insert({
-          user_id: userId,
-          avatar_url: avatarUrl,
-          date_of_birth: '', // 필수 필드이므로 빈 문자열로 설정
-          gender: '' // 필수 필드이므로 빈 문자열로 설정
-        })
-
-      if (error) {
-        console.error('아바타 생성 실패:', error)
-        return false
-      }
-    }
-
-    return true
+    // ⚠️ user_profiles 테이블이 존재하지 않으므로 항상 false 반환
+    console.warn('updateAvatar: user_profiles 테이블이 존재하지 않습니다. users 테이블을 직접 업데이트하세요.')
+    return false
   }
 
   /**
-   * 사용자 추가 프로필 정보 조회 (user_profiles 테이블)
+   * @deprecated user_profiles 테이블이 존재하지 않음 - 사용 금지
+   * 프로필 정보는 users 테이블에서 직접 조회하세요
    */
   static async getUserProfile(userId: string): Promise<UserProfileRow | null> {
     const supabase = getSupabaseClient()
-    const { data, error } = await supabase
-      .from('user_profiles')
-      .select('*')
-      .eq('user_id', userId)
-      .single()
-
-    if (error && error.code !== 'PGRST116') { // PGRST116: no rows
-      console.error('프로필 조회 실패:', error)
-      return null
-    }
-
-    return data
+    // ⚠️ user_profiles 테이블이 존재하지 않으므로 항상 null 반환
+    console.warn('getUserProfile: user_profiles 테이블이 존재하지 않습니다. users 테이블을 직접 조회하세요.')
+    return null
   }
 
   /**

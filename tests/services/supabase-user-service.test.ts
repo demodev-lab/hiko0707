@@ -57,7 +57,7 @@ describe('SupabaseUserService', () => {
         clerk_user_id: 'clerk-123',
         email: 'test@example.com',
         name: '테스트 사용자',
-        role: 'member',
+        role: 'customer',
         preferred_language: 'ko',
         created_at: '2024-01-01T00:00:00Z',
         updated_at: '2024-01-01T00:00:00Z'
@@ -95,7 +95,7 @@ describe('SupabaseUserService', () => {
         clerk_user_id: 'clerk-123',
         email: 'test@example.com',
         name: '테스트 사용자',
-        role: 'member',
+        role: 'customer',
         preferred_language: 'ko',
         created_at: '2024-01-01T00:00:00Z',
         updated_at: '2024-01-01T00:00:00Z'
@@ -131,7 +131,7 @@ describe('SupabaseUserService', () => {
         clerk_user_id: 'clerk-123',
         email: 'test@example.com',
         name: '테스트 사용자',
-        role: 'member',
+        role: 'customer',
         preferred_language: 'ko',
         created_at: '2024-01-01T00:00:00Z',
         updated_at: '2024-01-01T00:00:00Z'
@@ -167,7 +167,7 @@ describe('SupabaseUserService', () => {
         clerk_user_id: 'clerk-123',
         email: 'test@example.com',
         name: '업데이트된 사용자',
-        role: 'member',
+        role: 'customer',
         preferred_language: 'en',
         phone: '010-1234-5678',
         created_at: '2024-01-01T00:00:00Z',
@@ -264,45 +264,11 @@ describe('SupabaseUserService', () => {
   })
 
   describe('updateAvatar', () => {
-    it('should update existing user avatar successfully', async () => {
-      // Mock response for existing profile check (returns existing profile)
-      mockQueryResult = {
-        data: { id: 'profile-1' },
-        error: null
-      }
-
+    it('should always return false since user_profiles table does not exist', async () => {
       const result = await SupabaseUserService.updateAvatar('user-1', 'https://example.com/avatar.jpg')
-
-      expect(result).toBe(true)
-      expect(mockSupabaseClient.from).toHaveBeenCalledWith('user_profiles')
-    })
-
-    it('should create new user profile if not exists', async () => {
-      // Mock response for non-existing profile check (first call returns null)
-      // then successful insert (second call returns success)
-      mockQueryResult = {
-        data: null,
-        error: null  // No error for successful insert operation
-      }
-
-      const result = await SupabaseUserService.updateAvatar('user-1', 'https://example.com/avatar.jpg')
-
-      expect(result).toBe(true)
-      expect(mockSupabaseClient.from).toHaveBeenCalledWith('user_profiles')
-    })
-
-    it('should handle avatar database error', async () => {
-      // Mock error during profile operations (both select and update/insert will fail)
-      mockQueryResult = {
-        data: null,
-        error: { message: 'Database connection failed' }
-      }
-
-      const result = await SupabaseUserService.updateAvatar('user-1', 'https://example.com/avatar.jpg')
-
-      // When database errors occur during insert/update, method returns false
+      
+      // user_profiles 테이블이 존재하지 않으므로 항상 false 반환
       expect(result).toBe(false)
-      expect(mockSupabaseClient.from).toHaveBeenCalledWith('user_profiles')
     })
   })
 })

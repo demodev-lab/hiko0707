@@ -1,4 +1,4 @@
-import { supabaseAdmin } from '@/lib/supabase/client'
+import { supabase } from '@/lib/supabase/client'
 import type { 
   UserAddressRow, 
   UserAddressInsert, 
@@ -17,11 +17,7 @@ export class SupabaseAddressService {
    * 사용자 주소 생성
    */
   static async createUserAddress(addressData: Omit<UserAddressInsert, 'created_at' | 'updated_at'>): Promise<UserAddressRow | null> {
-    const supabase = supabaseAdmin()
-    if (!supabase) {
-      console.error('Supabase admin client not initialized')
-      return null
-    }
+    const supabaseClient = supabase()
     
     const insertData: UserAddressInsert = {
       ...addressData,
@@ -35,7 +31,7 @@ export class SupabaseAddressService {
       await this.clearDefaultAddress(addressData.user_id)
     }
 
-    const { data, error } = await supabase
+    const { data, error } = await supabaseClient
       .from('user_addresses')
       .insert(insertData)
       .select()
@@ -53,13 +49,9 @@ export class SupabaseAddressService {
    * 사용자별 주소 목록 조회
    */
   static async getUserAddresses(userId: string): Promise<UserAddressRow[]> {
-    const supabase = supabaseAdmin()
-    if (!supabase) {
-      console.error('Supabase admin client not initialized')
-      return []
-    }
+    const supabaseClient = supabase()
 
-    const { data, error } = await supabase
+    const { data, error } = await supabaseClient
       .from('user_addresses')
       .select('*')
       .eq('user_id', userId)
@@ -78,13 +70,9 @@ export class SupabaseAddressService {
    * 기본 주소 조회
    */
   static async getDefaultAddress(userId: string): Promise<UserAddressRow | null> {
-    const supabase = supabaseAdmin()
-    if (!supabase) {
-      console.error('Supabase admin client not initialized')
-      return null
-    }
+    const supabaseClient = supabase()
 
-    const { data, error } = await supabase
+    const { data, error } = await supabaseClient
       .from('user_addresses')
       .select('*')
       .eq('user_id', userId)
@@ -103,13 +91,9 @@ export class SupabaseAddressService {
    * 주소 ID로 주소 정보 조회
    */
   static async getUserAddressById(addressId: string): Promise<UserAddressRow | null> {
-    const supabase = supabaseAdmin()
-    if (!supabase) {
-      console.error('Supabase admin client not initialized')
-      return null
-    }
+    const supabaseClient = supabase()
 
-    const { data, error } = await supabase
+    const { data, error } = await supabaseClient
       .from('user_addresses')
       .select('*')
       .eq('id', addressId)
@@ -127,11 +111,7 @@ export class SupabaseAddressService {
    * 사용자 주소 업데이트
    */
   static async updateUserAddress(addressId: string, updates: UserAddressUpdate): Promise<UserAddressRow | null> {
-    const supabase = supabaseAdmin()
-    if (!supabase) {
-      console.error('Supabase admin client not initialized')
-      return null
-    }
+    const supabaseClient = supabase()
 
     const updateData: UserAddressUpdate = {
       ...updates,
@@ -140,7 +120,7 @@ export class SupabaseAddressService {
 
     // 기본 주소로 변경하는 경우, 기존 기본 주소 해제
     if (updateData.is_default) {
-      const { data: currentAddress } = await supabase
+      const { data: currentAddress } = await supabaseClient
         .from('user_addresses')
         .select('user_id')
         .eq('id', addressId)
@@ -158,7 +138,7 @@ export class SupabaseAddressService {
       }
     })
 
-    const { data, error } = await supabase
+    const { data, error } = await supabaseClient
       .from('user_addresses')
       .update(updateData)
       .eq('id', addressId)
@@ -177,13 +157,9 @@ export class SupabaseAddressService {
    * 사용자 주소 삭제
    */
   static async deleteUserAddress(addressId: string): Promise<boolean> {
-    const supabase = supabaseAdmin()
-    if (!supabase) {
-      console.error('Supabase admin client not initialized')
-      return false
-    }
+    const supabaseClient = supabase()
 
-    const { error } = await supabase
+    const { error } = await supabaseClient
       .from('user_addresses')
       .delete()
       .eq('id', addressId)
@@ -200,13 +176,9 @@ export class SupabaseAddressService {
    * 기존 기본 주소 해제
    */
   private static async clearDefaultAddress(userId: string): Promise<void> {
-    const supabase = supabaseAdmin()
-    if (!supabase) {
-      console.error('Supabase admin client not initialized')
-      return
-    }
+    const supabaseClient = supabase()
 
-    await supabase
+    await supabaseClient
       .from('user_addresses')
       .update({ is_default: false, updated_at: new Date().toISOString() })
       .eq('user_id', userId)
@@ -217,14 +189,10 @@ export class SupabaseAddressService {
    * 기본 주소로 설정
    */
   static async setDefaultAddress(addressId: string): Promise<UserAddressRow | null> {
-    const supabase = supabaseAdmin()
-    if (!supabase) {
-      console.error('Supabase admin client not initialized')
-      return null
-    }
+    const supabaseClient = supabase()
 
     // 먼저 해당 주소의 사용자 ID 조회
-    const { data: address } = await supabase
+    const { data: address } = await supabaseClient
       .from('user_addresses')
       .select('user_id')
       .eq('id', addressId)
@@ -244,15 +212,12 @@ export class SupabaseAddressService {
 
   /**
    * 프록시 구매 주소 생성 (주문 전용 배송지)
+   * proxy_purchase_addresses 테이블은 email 필드를 포함
    */
   static async createProxyPurchaseAddress(addressData: ProxyPurchaseAddressInsert): Promise<ProxyPurchaseAddressRow | null> {
-    const supabase = supabaseAdmin()
-    if (!supabase) {
-      console.error('Supabase admin client not initialized')
-      return null
-    }
+    const supabaseClient = supabase()
 
-    const { data, error } = await supabase
+    const { data, error } = await supabaseClient
       .from('proxy_purchase_addresses')
       .insert(addressData)
       .select()
@@ -270,13 +235,9 @@ export class SupabaseAddressService {
    * 프록시 구매 주소 조회 (주문별)
    */
   static async getProxyPurchaseAddress(proxyPurchaseId: string): Promise<ProxyPurchaseAddressRow | null> {
-    const supabase = supabaseAdmin()
-    if (!supabase) {
-      console.error('Supabase admin client not initialized')
-      return null
-    }
+    const supabaseClient = supabase()
 
-    const { data, error } = await supabase
+    const { data, error } = await supabaseClient
       .from('proxy_purchase_addresses')
       .select('*')
       .eq('proxy_purchase_id', proxyPurchaseId)
@@ -294,11 +255,7 @@ export class SupabaseAddressService {
    * 프록시 구매 주소 업데이트
    */
   static async updateProxyPurchaseAddress(addressId: string, updates: ProxyPurchaseAddressUpdate): Promise<ProxyPurchaseAddressRow | null> {
-    const supabase = supabaseAdmin()
-    if (!supabase) {
-      console.error('Supabase admin client not initialized')
-      return null
-    }
+    const supabaseClient = supabase()
 
     // undefined 값 제거
     const updateData = { ...updates }
@@ -308,7 +265,7 @@ export class SupabaseAddressService {
       }
     })
 
-    const { data, error } = await supabase
+    const { data, error } = await supabaseClient
       .from('proxy_purchase_addresses')
       .update(updateData)
       .eq('id', addressId)
@@ -325,10 +282,12 @@ export class SupabaseAddressService {
 
   /**
    * 사용자 주소를 프록시 구매 주소로 복사
+   * email 필드는 별도로 제공해야 함 (user_addresses 테이블에 email 없음)
    */
   static async copyUserAddressToProxyPurchase(
     userAddressId: string, 
-    proxyPurchaseId: string
+    proxyPurchaseId: string,
+    email: string
   ): Promise<ProxyPurchaseAddressRow | null> {
     const userAddress = await this.getUserAddressById(userAddressId)
     
@@ -340,6 +299,7 @@ export class SupabaseAddressService {
     const proxyAddressData: ProxyPurchaseAddressInsert = {
       proxy_purchase_id: proxyPurchaseId,
       recipient_name: userAddress.name,
+      email: email,
       phone_number: userAddress.phone,
       address: userAddress.address,
       detail_address: userAddress.address_detail || '',

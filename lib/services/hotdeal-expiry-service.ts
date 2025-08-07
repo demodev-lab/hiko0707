@@ -1,4 +1,4 @@
-import { supabaseAdmin } from '@/lib/supabase/client'
+import { supabase } from '@/lib/supabase/client'
 import chalk from 'chalk'
 
 export interface ExpiryStats {
@@ -32,9 +32,9 @@ export class HotDealExpiryService {
    * 만료된 핫딜들을 자동으로 처리합니다
    */
   static async processExpiredDeals(config: ExpiryConfig = {}): Promise<ExpiryStats> {
-    const supabase = supabaseAdmin()
-    if (!supabase) {
-      throw new Error('Supabase admin client not available')
+    const supabaseClient = supabase()
+    if (!supabaseClient) {
+      throw new Error('Supabase client not available')
     }
 
     const finalConfig = { ...this.DEFAULT_CONFIG, ...config }
@@ -50,7 +50,7 @@ export class HotDealExpiryService {
 
     try {
       // 1. 전체 활성 핫딜 개수 확인
-      const { count: totalCount, error: countError } = await supabase
+      const { count: totalCount, error: countError } = await supabaseClient
         .from('hot_deals')
         .select('id', { count: 'exact', head: true })
         .eq('status', 'active')
@@ -74,7 +74,7 @@ export class HotDealExpiryService {
         console.log(chalk.gray(`배치 ${batch + 1}/${totalBatches} 처리 중...`))
 
         // 배치 데이터 조회 (만료 상태 계산 포함)
-        const { data: hotdeals, error: batchError } = await supabase
+        const { data: hotdeals, error: batchError } = await supabaseClient
           .from('hot_deals')
           .select('id, title, end_date, status')
           .eq('status', 'active')
@@ -101,7 +101,7 @@ export class HotDealExpiryService {
               stats.expired++
               
               if (!finalConfig.dryRun) {
-                const { error: updateError } = await supabase
+                const { error: updateError } = await supabaseClient
                   .from('hot_deals')
                   .update({ 
                     status: 'ended',
@@ -155,13 +155,13 @@ export class HotDealExpiryService {
    * 만료 예정 핫딜 목록을 조회합니다
    */
   static async getExpiringSoonDeals(hours: number = 24, limit: number = 50) {
-    const supabase = supabaseAdmin()
-    if (!supabase) {
-      throw new Error('Supabase admin client not available')
+    const supabaseClient = supabase()
+    if (!supabaseClient) {
+      throw new Error('Supabase client not available')
     }
 
     try {
-      const { data, error } = await supabase
+      const { data, error } = await supabaseClient
         .from('hot_deals')
         .select('id, title, category, end_date, views, like_count')
         .eq('status', 'active')
@@ -185,9 +185,9 @@ export class HotDealExpiryService {
    * 만료 통계를 조회합니다
    */
   static async getExpiryStatistics() {
-    const supabase = supabaseAdmin()
-    if (!supabase) {
-      throw new Error('Supabase admin client not available')
+    const supabaseClient = supabase()
+    if (!supabaseClient) {
+      throw new Error('Supabase client not available')
     }
 
     try {
@@ -198,19 +198,19 @@ export class HotDealExpiryService {
         expiredTodayResult
       ] = await Promise.all([
         // 활성 핫딜
-        supabase
+        supabaseClient
           .from('hot_deals')
           .select('id', { count: 'exact', head: true })
           .eq('status', 'active'),
         
         // 만료된 핫딜
-        supabase
+        supabaseClient
           .from('hot_deals')
           .select('id', { count: 'exact', head: true })
           .eq('status', 'ended'),
         
         // 24시간 내 만료 예정
-        supabase
+        supabaseClient
           .from('hot_deals')
           .select('id', { count: 'exact', head: true })
           .eq('status', 'active')
@@ -218,7 +218,7 @@ export class HotDealExpiryService {
           .lte('end_date', new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()),
         
         // 오늘 만료된 핫딜
-        supabase
+        supabaseClient
           .from('hot_deals')
           .select('id', { count: 'exact', head: true })
           .eq('status', 'ended')
@@ -246,14 +246,14 @@ export class HotDealExpiryService {
    * 핫딜의 만료 시간을 연장합니다
    */
   static async extendExpiry(hotdealId: string, additionalHours: number = 24): Promise<boolean> {
-    const supabase = supabaseAdmin()
-    if (!supabase) {
-      throw new Error('Supabase admin client not available')
+    const supabaseClient = supabase()
+    if (!supabaseClient) {
+      throw new Error('Supabase client not available')
     }
 
     try {
       // 현재 핫딜 정보 조회
-      const { data: hotdeal, error: fetchError } = await supabase
+      const { data: hotdeal, error: fetchError } = await supabaseClient
         .from('hot_deals')
         .select('id, title, end_date, status')
         .eq('id', hotdealId)
@@ -268,7 +268,7 @@ export class HotDealExpiryService {
       const newEndDate = new Date(currentEndDate.getTime() + additionalHours * 60 * 60 * 1000)
 
       // 만료 시간 업데이트
-      const { error: updateError } = await supabase
+      const { error: updateError } = await supabaseClient
         .from('hot_deals')
         .update({
           end_date: newEndDate.toISOString(),
@@ -293,15 +293,15 @@ export class HotDealExpiryService {
    * 만료된 핫딜을 다시 활성화합니다
    */
   static async reactivateExpiredDeal(hotdealId: string, extendHours: number = 168): Promise<boolean> {
-    const supabase = supabaseAdmin()
-    if (!supabase) {
-      throw new Error('Supabase admin client not available')
+    const supabaseClient = supabase()
+    if (!supabaseClient) {
+      throw new Error('Supabase client not available')
     }
 
     try {
       const newEndDate = new Date(Date.now() + extendHours * 60 * 60 * 1000)
       
-      const { error } = await supabase
+      const { error } = await supabaseClient
         .from('hot_deals')
         .update({
           status: 'active',

@@ -1,4 +1,4 @@
-import { supabaseAdmin } from '@/lib/supabase/client'
+import { supabase } from '@/lib/supabase/client'
 import type { Database } from '@/database.types'
 
 // Supabase 테이블 타입 정의
@@ -18,9 +18,9 @@ export class SupabaseCommentService {
    * 새 댓글 생성
    */
   static async createComment(commentData: Omit<CommentInsert, 'created_at' | 'updated_at'>): Promise<CommentRow | null> {
-    const supabase = supabaseAdmin()
-    if (!supabase) {
-      console.error('Supabase admin client not initialized')
+    const supabaseClient = supabase()
+    if (!supabaseClient) {
+      console.error('Supabase client not initialized')
       return null
     }
     
@@ -32,7 +32,7 @@ export class SupabaseCommentService {
       updated_at: new Date().toISOString()
     }
 
-    const { data, error } = await supabase
+    const { data, error } = await supabaseClient
       .from('hot_deal_comments')
       .insert(insertData)
       .select(`
@@ -66,13 +66,13 @@ export class SupabaseCommentService {
     offset?: number
     includeDeleted?: boolean
   }): Promise<CommentRow[]> {
-    const supabase = supabaseAdmin()
-    if (!supabase) {
-      console.error('Supabase admin client not initialized')
+    const supabaseClient = supabase()
+    if (!supabaseClient) {
+      console.error('Supabase client not initialized')
       return []
     }
     
-    let query = supabase
+    let query = supabaseClient
       .from('hot_deal_comments')
       .select(`
         *,
@@ -136,13 +136,13 @@ export class SupabaseCommentService {
     limit?: number
     offset?: number
   }): Promise<CommentRow[]> {
-    const supabase = supabaseAdmin()
-    if (!supabase) {
-      console.error('Supabase admin client not initialized')
+    const supabaseClient = supabase()
+    if (!supabaseClient) {
+      console.error('Supabase client not initialized')
       return []
     }
     
-    let query = supabase
+    let query = supabaseClient
       .from('hot_deal_comments')
       .select(`
         *,
@@ -191,13 +191,13 @@ export class SupabaseCommentService {
    * 특정 댓글의 답글 조회
    */
   static async getReplies(parentCommentId: string): Promise<CommentRow[]> {
-    const supabase = supabaseAdmin()
-    if (!supabase) {
-      console.error('Supabase admin client not initialized')
+    const supabaseClient = supabase()
+    if (!supabaseClient) {
+      console.error('Supabase client not initialized')
       return []
     }
 
-    const { data, error } = await supabase
+    const { data, error } = await supabaseClient
       .from('hot_deal_comments')
       .select(`
         *,
@@ -223,9 +223,9 @@ export class SupabaseCommentService {
    * 댓글 수정
    */
   static async updateComment(commentId: string, updates: Pick<CommentUpdate, 'content'>): Promise<CommentRow | null> {
-    const supabase = supabaseAdmin()
-    if (!supabase) {
-      console.error('Supabase admin client not initialized')
+    const supabaseClient = supabase()
+    if (!supabaseClient) {
+      console.error('Supabase client not initialized')
       return null
     }
 
@@ -234,7 +234,7 @@ export class SupabaseCommentService {
       updated_at: new Date().toISOString()
     }
 
-    const { data, error } = await supabase
+    const { data, error } = await supabaseClient
       .from('hot_deal_comments')
       .update(updateData)
       .eq('id', commentId)
@@ -260,13 +260,13 @@ export class SupabaseCommentService {
    * 댓글 소프트 삭제
    */
   static async deleteComment(commentId: string): Promise<boolean> {
-    const supabase = supabaseAdmin()
-    if (!supabase) {
-      console.error('Supabase admin client not initialized')
+    const supabaseClient = supabase()
+    if (!supabaseClient) {
+      console.error('Supabase client not initialized')
       return false
     }
 
-    const { data, error } = await supabase
+    const { data, error } = await supabaseClient
       .from('hot_deal_comments')
       .update({
         is_deleted: true,
@@ -289,14 +289,14 @@ export class SupabaseCommentService {
    * 댓글 좋아요 추가
    */
   static async likeComment(commentId: string, userId: string): Promise<CommentLikeRow | null> {
-    const supabase = supabaseAdmin()
-    if (!supabase) {
-      console.error('Supabase admin client not initialized')
+    const supabaseClient = supabase()
+    if (!supabaseClient) {
+      console.error('Supabase client not initialized')
       return null
     }
 
     // 이미 좋아요 했는지 확인
-    const { data: existingLike } = await supabase
+    const { data: existingLike } = await supabaseClient
       .from('comment_likes')
       .select('id')
       .eq('comment_id', commentId)
@@ -315,7 +315,7 @@ export class SupabaseCommentService {
       created_at: new Date().toISOString()
     }
 
-    const { data: newLike, error: likeError } = await supabase
+    const { data: newLike, error: likeError } = await supabaseClient
       .from('comment_likes')
       .insert(likeData)
       .select()
@@ -336,13 +336,13 @@ export class SupabaseCommentService {
    * 댓글 좋아요 제거
    */
   static async unlikeComment(commentId: string, userId: string): Promise<boolean> {
-    const supabase = supabaseAdmin()
-    if (!supabase) {
-      console.error('Supabase admin client not initialized')
+    const supabaseClient = supabase()
+    if (!supabaseClient) {
+      console.error('Supabase client not initialized')
       return false
     }
 
-    const { data, error } = await supabase
+    const { data, error } = await supabaseClient
       .from('comment_likes')
       .delete()
       .eq('comment_id', commentId)
@@ -367,20 +367,20 @@ export class SupabaseCommentService {
    * 댓글 좋아요 카운트 업데이트
    */
   static async updateCommentLikeCount(commentId: string): Promise<void> {
-    const supabase = supabaseAdmin()
-    if (!supabase) {
-      console.error('Supabase admin client not initialized')
+    const supabaseClient = supabase()
+    if (!supabaseClient) {
+      console.error('Supabase client not initialized')
       return
     }
 
     // 현재 좋아요 수 카운트
-    const { count } = await supabase
+    const { count } = await supabaseClient
       .from('comment_likes')
       .select('id', { count: 'exact' })
       .eq('comment_id', commentId)
 
     // 댓글의 like_count 업데이트
-    await supabase
+    await supabaseClient
       .from('hot_deal_comments')
       .update({ 
         like_count: count || 0,
@@ -393,13 +393,13 @@ export class SupabaseCommentService {
    * 사용자의 댓글 좋아요 여부 확인
    */
   static async isCommentLikedByUser(commentId: string, userId: string): Promise<boolean> {
-    const supabase = supabaseAdmin()
-    if (!supabase) {
-      console.error('Supabase admin client not initialized')
+    const supabaseClient = supabase()
+    if (!supabaseClient) {
+      console.error('Supabase client not initialized')
       return false
     }
 
-    const { data, error } = await supabase
+    const { data, error } = await supabaseClient
       .from('comment_likes')
       .select('id')
       .eq('comment_id', commentId)
@@ -420,13 +420,13 @@ export class SupabaseCommentService {
     limit?: number
     offset?: number
   }): Promise<CommentRow[]> {
-    const supabase = supabaseAdmin()
-    if (!supabase) {
-      console.error('Supabase admin client not initialized')
+    const supabaseClient = supabase()
+    if (!supabaseClient) {
+      console.error('Supabase client not initialized')
       return []
     }
     
-    let query = supabase
+    let query = supabaseClient
       .from('hot_deal_comments')
       .select(`
         *,
@@ -474,15 +474,15 @@ export class SupabaseCommentService {
     recent_comments: number // 최근 24시간
     most_liked_comment?: CommentRow
   } | null> {
-    const supabase = supabaseAdmin()
-    if (!supabase) {
-      console.error('Supabase admin client not initialized')
+    const supabaseClient = supabase()
+    if (!supabaseClient) {
+      console.error('Supabase client not initialized')
       return null
     }
 
     try {
       // 전체 댓글 수
-      let totalQuery = supabase
+      let totalQuery = supabaseClient
         .from('hot_deal_comments')
         .select('id', { count: 'exact' })
         .eq('is_deleted', false)
@@ -495,7 +495,7 @@ export class SupabaseCommentService {
 
       // 최근 24시간 댓글 수
       const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
-      let recentQuery = supabase
+      let recentQuery = supabaseClient
         .from('hot_deal_comments')
         .select('id', { count: 'exact' })
         .eq('is_deleted', false)
@@ -508,7 +508,7 @@ export class SupabaseCommentService {
       const { count: recentComments } = await recentQuery
 
       // 가장 좋아요가 많은 댓글
-      let mostLikedQuery = supabase
+      let mostLikedQuery = supabaseClient
         .from('hot_deal_comments')
         .select(`
           *,

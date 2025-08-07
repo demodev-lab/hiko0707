@@ -19,7 +19,7 @@ export async function getCurrentUser() {
     id: user.id,
     email: user.emailAddresses[0]?.emailAddress || '',
     name: user.firstName ? `${user.firstName} ${user.lastName || ''}`.trim() : user.username || '',
-    role: (user.publicMetadata?.role as string) || 'member',
+    role: (user.publicMetadata?.role as string) || 'customer',
     createdAt: new Date(user.createdAt),
     updatedAt: new Date(user.updatedAt)
   }

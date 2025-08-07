@@ -32,7 +32,7 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
       email: '',
       password: '',
       confirmPassword: '',
-      role: 'member',
+      role: 'customer',
     },
   })
 
@@ -170,7 +170,7 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
-                  <SelectItem value="member">{t('auth.member')}</SelectItem>
+                  <SelectItem value="customer">{t('auth.customer')}</SelectItem>
                   <SelectItem value="admin">{t('auth.admin')}</SelectItem>
                 </SelectContent>
               </Select>

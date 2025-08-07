@@ -1,8 +1,11 @@
+// ⚠️ DEPRECATED: profiles 테이블이 Supabase에 존재하지 않음
+// 이 서비스는 사용하지 마세요. 프로필 정보는 users 테이블에서 관리됩니다.
+
 import { supabase as getSupabaseClient } from '@/lib/supabase/client'
 import type { AddressRow, AddressInsert, AddressUpdate } from '@/lib/types/supabase'
 import type { UserProfile, UserAddress } from '@/types/user'
 
-// profiles 테이블이 아직 존재하지 않으므로 임시 타입 정의
+// ⚠️ WARNING: profiles 테이블이 존재하지 않으므로 이 서비스는 작동하지 않습니다
 type ProfileRow = {
   id: string
   user_id: string
@@ -41,7 +44,7 @@ type ProfileUpdate = {
 
 export class SupabaseProfileService {
   /**
-   * 사용자 프로필 조회
+   * @deprecated profiles 테이블이 존재하지 않음 - 사용 금지
    */
   static async getProfile(userId: string): Promise<UserProfile | null> {
     const supabase = getSupabaseClient()
@@ -60,7 +63,7 @@ export class SupabaseProfileService {
   }
 
   /**
-   * 사용자 프로필 생성
+   * @deprecated profiles 테이블이 존재하지 않음 - 사용 금지
    */
   static async createProfile(userId: string, profileData: Partial<UserProfile>): Promise<UserProfile | null> {
     const supabase = getSupabaseClient()
@@ -90,7 +93,7 @@ export class SupabaseProfileService {
   }
 
   /**
-   * 사용자 프로필 업데이트
+   * @deprecated profiles 테이블이 존재하지 않음 - 사용 금지
    */
   static async updateProfile(userId: string, updates: Partial<UserProfile>): Promise<UserProfile | null> {
     const supabase = getSupabaseClient()

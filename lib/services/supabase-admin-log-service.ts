@@ -1,4 +1,4 @@
-import { supabaseAdmin } from '@/lib/supabase/client'
+import { supabase } from '@/lib/supabase/client'
 import type { Database } from '@/database.types'
 
 // Supabase 테이블 타입 정의
@@ -27,11 +27,7 @@ export class SupabaseAdminLogService {
     user_agent?: string
     session_id?: string
   }): Promise<AdminActivityLogRow | null> {
-    const supabase = supabaseAdmin()
-    if (!supabase) {
-      console.error('Supabase admin client not initialized')
-      return null
-    }
+    const supabaseClient = supabase()
 
     const logData: AdminActivityLogInsert = {
       admin_id: data.admin_id,
@@ -48,7 +44,7 @@ export class SupabaseAdminLogService {
       created_at: new Date().toISOString()
     }
 
-    const { data: createdLog, error } = await supabase
+    const { data: createdLog, error } = await supabaseClient
       .from('admin_activity_logs')
       .insert(logData)
       .select()
@@ -76,13 +72,9 @@ export class SupabaseAdminLogService {
     sortBy?: 'created_at' | 'action'
     sortOrder?: 'asc' | 'desc'
   }): Promise<(AdminActivityLogRow & { admin: { name: string; email: string } })[]> {
-    const supabase = supabaseAdmin()
-    if (!supabase) {
-      console.error('Supabase admin client not initialized')
-      return []
-    }
+    const supabaseClient = supabase()
 
-    let query = supabase
+    let query = supabaseClient
       .from('admin_activity_logs')
       .select(`
         *,
@@ -150,13 +142,9 @@ export class SupabaseAdminLogService {
       offset?: number
     }
   ): Promise<AdminActivityLogRow[]> {
-    const supabase = supabaseAdmin()
-    if (!supabase) {
-      console.error('Supabase admin client not initialized')
-      return []
-    }
+    const supabaseClient = supabase()
 
-    let query = supabase
+    let query = supabaseClient
       .from('admin_activity_logs')
       .select('*')
       .eq('entity_type', entityType)
@@ -195,14 +183,10 @@ export class SupabaseAdminLogService {
     most_active_hours: { hour: number; count: number }[]
     entities_modified: number
   } | null> {
-    const supabase = supabaseAdmin()
-    if (!supabase) {
-      console.error('Supabase admin client not initialized')
-      return null
-    }
+    const supabaseClient = supabase()
 
     try {
-      let query = supabase
+      let query = supabaseClient
         .from('admin_activity_logs')
         .select('*')
 
@@ -219,7 +203,7 @@ export class SupabaseAdminLogService {
       }
 
       // 전체 액션 수
-      const { count: totalActions } = await supabase
+      const { count: totalActions } = await supabaseClient
         .from('admin_activity_logs')
         .select('*', { count: 'exact', head: true })
 
@@ -298,13 +282,9 @@ export class SupabaseAdminLogService {
       offset?: number
     }
   ): Promise<AdminActivityLogRow[]> {
-    const supabase = supabaseAdmin()
-    if (!supabase) {
-      console.error('Supabase admin client not initialized')
-      return []
-    }
+    const supabaseClient = supabase()
 
-    let query = supabase
+    let query = supabaseClient
       .from('admin_activity_logs')
       .select('*')
       .or(`action.ilike.%${searchTerm}%,details::text.ilike.%${searchTerm}%`)
@@ -354,11 +334,7 @@ export class SupabaseAdminLogService {
     limit?: number
     offset?: number
   }): Promise<AdminActivityLogRow[]> {
-    const supabase = supabaseAdmin()
-    if (!supabase) {
-      console.error('Supabase admin client not initialized')
-      return []
-    }
+    const supabaseClient = supabase()
 
     const securityActions = [
       'user_delete',
@@ -371,7 +347,7 @@ export class SupabaseAdminLogService {
       'password_reset'
     ]
 
-    let query = supabase
+    let query = supabaseClient
       .from('admin_activity_logs')
       .select('*')
       .in('action', securityActions)
@@ -411,17 +387,13 @@ export class SupabaseAdminLogService {
     deleted_count: number
     error?: string
   }> {
-    const supabase = supabaseAdmin()
-    if (!supabase) {
-      console.error('Supabase admin client not initialized')
-      return { deleted_count: 0, error: 'Supabase admin client not initialized' }
-    }
+    const supabaseClient = supabase()
 
     const cutoffDate = new Date()
     cutoffDate.setDate(cutoffDate.getDate() - daysOld)
 
     // 먼저 삭제될 로그 개수 확인
-    const { count, error: countError } = await supabase
+    const { count, error: countError } = await supabaseClient
       .from('admin_activity_logs')
       .select('*', { count: 'exact', head: true })
       .lt('created_at', cutoffDate.toISOString())
@@ -439,7 +411,7 @@ export class SupabaseAdminLogService {
       'system_setting_change'
     ]
 
-    const { error: deleteError } = await supabase
+    const { error: deleteError } = await supabaseClient
       .from('admin_activity_logs')
       .delete()
       .lt('created_at', cutoffDate.toISOString())
@@ -470,14 +442,10 @@ export class SupabaseAdminLogService {
     detailed_logs: AdminActivityLogRow[]
     admin_summary: { admin_id: string; name: string; action_count: number }[]
   } | null> {
-    const supabase = supabaseAdmin()
-    if (!supabase) {
-      console.error('Supabase admin client not initialized')
-      return null
-    }
+    const supabaseClient = supabase()
 
     try {
-      let query = supabase
+      let query = supabaseClient
         .from('admin_activity_logs')
         .select(`
           *,

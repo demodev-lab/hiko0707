@@ -55,7 +55,7 @@ export const createMockUser = (overrides = {}) => ({
   id: '1',
   email: 'test@example.com',
   name: 'Test User',
-  role: 'member',
+  role: 'customer',
   language: 'ko',
   createdAt: new Date().toISOString(),
   updatedAt: new Date().toISOString(),
