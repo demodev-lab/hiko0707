@@ -364,18 +364,61 @@ export function useSupabaseBuyForMe() {
     const proxyRequest = await SupabaseOrderService.getOrderById(requestId)
     if (!proxyRequest) return null
 
-    const [payment, address] = await Promise.all([
+    const [payment, address, proxyAddress] = await Promise.all([
       SupabasePaymentService.getPaymentsByRequest(requestId),
       proxyRequest.shipping_address_id 
         ? SupabaseAddressService.getUserAddressById(proxyRequest.shipping_address_id)
-        : null
+        : null,
+      // proxy_purchase_addresses에서 고객 정보 가져오기
+      SupabaseAddressService.getProxyPurchaseAddress(requestId)
     ])
 
-    // quotes와 status_history는 현재 Supabase 스키마에 없음
-    const quote = null
-    const statusHistory: any[] = []
+    // proxy_purchase_addresses 테이블에서 고객 정보를 우선적으로 사용
+    let finalAddress = address
+    let shippingInfo = null
+    
+    if (proxyAddress) {
+      // proxy_purchase_addresses 정보를 UserAddressRow 형식으로 변환
+      finalAddress = {
+        id: proxyAddress.id,
+        user_id: proxyRequest.user_id,
+        name: proxyAddress.recipient_name,
+        phone: proxyAddress.phone_number,
+        post_code: '', // proxy_purchase_addresses에는 우편번호가 없음
+        address: proxyAddress.address,
+        address_detail: proxyAddress.detail_address || '',
+        is_default: false,
+        created_at: proxyAddress.created_at || new Date().toISOString(),
+        updated_at: proxyAddress.created_at || new Date().toISOString()
+      } as UserAddressRow
+      
+      // shippingInfo에 email 포함
+      shippingInfo = {
+        name: proxyAddress.recipient_name,
+        phone: proxyAddress.phone_number,
+        email: proxyAddress.email,
+        postalCode: '',
+        address: proxyAddress.address,
+        detailAddress: proxyAddress.detail_address || ''
+      }
+    }
 
-    return mapSupabaseToLocalFormat(proxyRequest, payment?.[0] || null, address, quote, statusHistory)
+    // quotes는 getOrderById에서 이미 조회됨 (proxy_purchase_quotes 테이블)
+    const quotes = (proxyRequest as any).quotes
+    const quote = quotes && quotes.length > 0 ? quotes[0] : null
+    
+    // status_history도 getOrderById에서 이미 조회됨
+    const statusHistory = (proxyRequest as any).status_history || []
+
+    // mapSupabaseToLocalFormat 호출 시 shippingInfo를 직접 전달
+    const result = mapSupabaseToLocalFormat(proxyRequest, payment?.[0] || null, finalAddress, quote, statusHistory)
+    
+    // proxy_purchase_addresses의 email 정보 포함
+    if (shippingInfo && result) {
+      result.shippingInfo = shippingInfo
+    }
+    
+    return result
   }, [])
 
   // 견적 승인
@@ -609,7 +652,7 @@ export function useSupabaseBuyForMeAdmin() {
     return requestsWithDetails
   }, [])
 
-  // 견적서 작성 (현재는 단순 상태 업데이트만)
+  // 견적서 작성
   const createQuoteMutation = useMutation({
     mutationFn: async ({ 
       requestId, 
@@ -618,23 +661,43 @@ export function useSupabaseBuyForMeAdmin() {
       requestId: string
       quote: BuyForMeRequest['quote'] 
     }) => {
-      // 상태를 quote_sent로 업데이트
+      if (!quote) throw new Error('견적 정보가 필요합니다.')
+      
+      // 1. proxy_purchase_quotes 테이블에 견적 생성
+      const createdQuote = await SupabaseOrderService.createQuote({
+        request_id: requestId,
+        product_cost: quote.finalProductPrice,
+        domestic_shipping: quote.domesticShippingFee || 0,
+        international_shipping: 0, // 현재는 국내 배송만 지원
+        fee: quote.serviceFee,
+        total_amount: quote.totalAmount,
+        payment_method: quote.paymentMethod || 'card',
+        approval_state: 'pending',
+        valid_until: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(), // 7일 유효
+        notes: quote.notes || null,
+        notification: quote.paymentLink || null // paymentLink를 notification 필드에 저장
+      })
+      
+      if (!createdQuote) throw new Error('견적서 생성에 실패했습니다.')
+
+      // 2. 상태를 quote_sent로 업데이트
       const updatedRequest = await SupabaseOrderService.updateOrderStatus(
         requestId, 
         'quote_sent',
-        currentUser?.id || 'system'
+        currentUser?.id || 'system',
+        '견적서 발송됨'
       )
       
-      if (!updatedRequest) throw new Error('견적서 작성에 실패했습니다.')
+      if (!updatedRequest) throw new Error('상태 업데이트에 실패했습니다.')
 
-      // 사용자에게 알림 발송
+      // 3. 사용자에게 알림 발송
       await SupabaseNotificationService.createNotification(
         updatedRequest.user_id,
         '견적서 발송',
-        '요청하신 상품의 견적서가 발송되었습니다.'
+        '요청하신 상품의 견적서가 발송되었습니다. 견적서를 확인하고 승인해주세요.'
       )
 
-      // 관리자 로그 기록
+      // 4. 관리자 로그 기록
       if (currentUser) {
         await SupabaseAdminLogService.createAdminLog({
           admin_id: currentUser.id,
@@ -643,8 +706,10 @@ export function useSupabaseBuyForMeAdmin() {
           entity_type: 'proxy_purchases_request',
           entity_id: requestId,
           details: {
-            quote_amount: quote?.totalAmount || 0,
-            payment_method: quote?.paymentMethod || 'unknown'
+            quote_id: createdQuote.id,
+            quote_amount: quote.totalAmount,
+            service_fee: quote.serviceFee,
+            payment_method: quote.paymentMethod || 'unknown'
           }
         })
       }

@@ -77,7 +77,7 @@ export class SupabaseAddressService {
       .select('*')
       .eq('user_id', userId)
       .eq('is_default', true)
-      .single()
+      .maybeSingle()
 
     if (error) {
       console.error('기본 주소 조회 실패:', error)
@@ -302,8 +302,7 @@ export class SupabaseAddressService {
       email: email,
       phone_number: userAddress.phone,
       address: userAddress.address,
-      detail_address: userAddress.address_detail || '',
-      email: '' // 이메일은 별도로 받아야 함
+      detail_address: userAddress.address_detail || ''
     }
 
     return await this.createProxyPurchaseAddress(proxyAddressData)

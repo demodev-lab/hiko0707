@@ -1,17 +1,4 @@
-import { supabase as getSupabaseClient } from '@/lib/supabase/client'
-
-// Onboarding state structure
-export interface OnboardingState {
-  has_seen_welcome?: boolean
-  has_completed_tour?: boolean
-  current_step?: number
-  skip_count?: number
-  last_visit?: string
-  settings_viewed?: boolean
-  profile_completed?: boolean
-}
-
-// TypeScript interface with camelCase for client-side use
+// TypeScript interface for onboarding state
 export interface ClientOnboardingState {
   hasSeenWelcome: boolean
   hasCompletedTour: boolean
@@ -29,33 +16,16 @@ const STORAGE_KEYS = {
 
 export class SupabaseOnboardingService {
   /**
-   * Get onboarding state with dual support (Supabase + localStorage fallback)
+   * Get onboarding state (localStorage only)
    */
   static async getOnboardingState(userId?: string): Promise<ClientOnboardingState> {
-    // If user is authenticated, try Supabase first
-    if (userId) {
-      try {
-        const supabase = getSupabaseClient()
-        const { data, error } = await supabase
-          .from('profiles')
-          .select('preferences')
-          .eq('user_id', userId)
-          .single()
-
-        if (!error && data && data.preferences?.onboarding) {
-          return this.convertToClientFormat(data.preferences.onboarding)
-        }
-      } catch (error) {
-        console.error('Failed to get onboarding state from Supabase:', error)
-      }
-    }
-
-    // Fallback to localStorage
+    // Always use localStorage for onboarding state
+    // This is a UI preference that doesn't need server sync
     return this.getOnboardingStateFromStorage()
   }
 
   /**
-   * Update onboarding state with dual support
+   * Update onboarding state (localStorage only)
    */
   static async updateOnboardingState(
     updates: Partial<ClientOnboardingState>,
@@ -64,17 +34,7 @@ export class SupabaseOnboardingService {
     const current = await this.getOnboardingState(userId)
     const updated = { ...current, ...updates, lastVisit: new Date().toISOString() }
 
-    // If user is authenticated, update Supabase
-    if (userId) {
-      try {
-        const dbFormat = this.convertToDbFormat(updated)
-        await this.updateOnboardingStateInSupabase(userId, dbFormat)
-      } catch (error) {
-        console.error('Failed to update onboarding state in Supabase:', error)
-      }
-    }
-
-    // Always update localStorage as fallback/cache
+    // Save to localStorage only
     this.saveOnboardingStateToStorage(updated)
     return updated
   }
@@ -84,16 +44,8 @@ export class SupabaseOnboardingService {
    */
   static async resetOnboarding(userId?: string): Promise<ClientOnboardingState> {
     const defaultState = this.getDefaultOnboardingState()
-
-    if (userId) {
-      try {
-        const dbFormat = this.convertToDbFormat(defaultState)
-        await this.updateOnboardingStateInSupabase(userId, dbFormat)
-      } catch (error) {
-        console.error('Failed to reset onboarding state in Supabase:', error)
-      }
-    }
-
+    
+    // Save to localStorage only
     this.saveOnboardingStateToStorage(defaultState)
     return defaultState
   }
@@ -154,40 +106,6 @@ export class SupabaseOnboardingService {
     return !state.hasSeenWelcome || (!state.hasCompletedTour && state.skipCount < 3)
   }
 
-  /**
-   * Update onboarding state in Supabase
-   */
-  private static async updateOnboardingStateInSupabase(
-    userId: string,
-    onboardingState: OnboardingState
-  ): Promise<void> {
-    const supabase = getSupabaseClient()
-    
-    // Get existing preferences
-    const { data: existingData } = await supabase
-      .from('profiles')
-      .select('preferences')
-      .eq('user_id', userId)
-      .single()
-
-    const existingPreferences = existingData?.preferences || {}
-    const updatedPreferences = {
-      ...existingPreferences,
-      onboarding: onboardingState
-    }
-
-    const { error } = await supabase
-      .from('profiles')
-      .update({ 
-        preferences: updatedPreferences,
-        updated_at: new Date().toISOString()
-      })
-      .eq('user_id', userId)
-
-    if (error) {
-      throw new Error(`Failed to update onboarding state: ${error.message}`)
-    }
-  }
 
   /**
    * Get onboarding state from localStorage
@@ -216,35 +134,6 @@ export class SupabaseOnboardingService {
     }
   }
 
-  /**
-   * Convert database format (snake_case) to client format (camelCase)
-   */
-  private static convertToClientFormat(dbState: OnboardingState): ClientOnboardingState {
-    return {
-      hasSeenWelcome: dbState.has_seen_welcome || false,
-      hasCompletedTour: dbState.has_completed_tour || false,
-      currentStep: dbState.current_step || 0,
-      skipCount: dbState.skip_count || 0,
-      lastVisit: dbState.last_visit || new Date().toISOString(),
-      settingsViewed: dbState.settings_viewed || false,
-      profileCompleted: dbState.profile_completed || false,
-    }
-  }
-
-  /**
-   * Convert client format (camelCase) to database format (snake_case)
-   */
-  private static convertToDbFormat(clientState: ClientOnboardingState): OnboardingState {
-    return {
-      has_seen_welcome: clientState.hasSeenWelcome,
-      has_completed_tour: clientState.hasCompletedTour,
-      current_step: clientState.currentStep,
-      skip_count: clientState.skipCount,
-      last_visit: clientState.lastVisit,
-      settings_viewed: clientState.settingsViewed,
-      profile_completed: clientState.profileCompleted,
-    }
-  }
 
   /**
    * Get default onboarding state

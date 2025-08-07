@@ -3,7 +3,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useUser } from '@clerk/nextjs'
-import { SupabasePreferencesService } from '@/lib/services/supabase-preferences-service'
 import { debounce } from 'lodash'
 
 interface SearchSuggestion {
@@ -140,19 +139,13 @@ export function useRecentSearches() {
   const { user } = useUser()
   const queryClient = useQueryClient()
 
-  // Fetch recent searches from Supabase or localStorage
+  // Fetch recent searches from localStorage only
   const { data: recentSearches = [], isLoading } = useQuery({
     queryKey: ['recent-searches', user?.id],
     queryFn: async () => {
-      if (user?.id) {
-        // Authenticated user - fetch from Supabase
-        const preferences = await SupabasePreferencesService.getPreferences(user.id)
-        return preferences.recent_searches || []
-      } else {
-        // Non-authenticated user - use localStorage
-        const stored = localStorage.getItem('recentSearches')
-        return stored ? JSON.parse(stored) : []
-      }
+      // Always use localStorage for recent searches
+      const stored = localStorage.getItem('recentSearches')
+      return stored ? JSON.parse(stored) : []
     },
     staleTime: 5 * 60 * 1000, // 5 minutes
   })
@@ -160,17 +153,12 @@ export function useRecentSearches() {
   // Add recent search mutation
   const addRecentSearchMutation = useMutation({
     mutationFn: async (search: string) => {
-      if (user?.id) {
-        // Authenticated user - save to Supabase
-        await SupabasePreferencesService.addRecentSearch(user.id, search)
-      } else {
-        // Non-authenticated user - save to localStorage
-        const stored = localStorage.getItem('recentSearches')
-        const current = stored ? JSON.parse(stored) : []
-        const filtered = current.filter((s: string) => s !== search)
-        const updated = [search, ...filtered].slice(0, 10)
-        localStorage.setItem('recentSearches', JSON.stringify(updated))
-      }
+      // Always save to localStorage
+      const stored = localStorage.getItem('recentSearches')
+      const current = stored ? JSON.parse(stored) : []
+      const filtered = current.filter((s: string) => s !== search)
+      const updated = [search, ...filtered].slice(0, 10)
+      localStorage.setItem('recentSearches', JSON.stringify(updated))
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['recent-searches', user?.id] })
@@ -180,16 +168,11 @@ export function useRecentSearches() {
   // Remove recent search mutation
   const removeRecentSearchMutation = useMutation({
     mutationFn: async (search: string) => {
-      if (user?.id) {
-        // Authenticated user - remove from Supabase
-        await SupabasePreferencesService.removeRecentSearch(user.id, search)
-      } else {
-        // Non-authenticated user - remove from localStorage
-        const stored = localStorage.getItem('recentSearches')
-        const current = stored ? JSON.parse(stored) : []
-        const updated = current.filter((s: string) => s !== search)
-        localStorage.setItem('recentSearches', JSON.stringify(updated))
-      }
+      // Always remove from localStorage
+      const stored = localStorage.getItem('recentSearches')
+      const current = stored ? JSON.parse(stored) : []
+      const updated = current.filter((s: string) => s !== search)
+      localStorage.setItem('recentSearches', JSON.stringify(updated))
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['recent-searches', user?.id] })
@@ -199,13 +182,8 @@ export function useRecentSearches() {
   // Clear recent searches mutation
   const clearRecentSearchesMutation = useMutation({
     mutationFn: async () => {
-      if (user?.id) {
-        // Authenticated user - clear in Supabase
-        await SupabasePreferencesService.clearRecentSearches(user.id)
-      } else {
-        // Non-authenticated user - clear localStorage
-        localStorage.removeItem('recentSearches')
-      }
+      // Always clear localStorage
+      localStorage.removeItem('recentSearches')
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['recent-searches', user?.id] })

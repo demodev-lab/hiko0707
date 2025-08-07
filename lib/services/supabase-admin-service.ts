@@ -405,29 +405,11 @@ export class SupabaseAdminService {
 
   /**
    * Buy-for-me 요청 상태별 개수 조회
+   * RPC가 없으므로 직접 집계하는 방식으로 변경
    */
   static async getBuyForMeStatusCounts(): Promise<Record<string, number>> {
-    const supabase = getSupabaseClient()
-    
-    try {
-      const { data, error } = await supabase
-        .rpc('get_buyforx_status_counts')
-      
-      if (error) {
-        console.error('상태별 개수 RPC 실패:', error)
-        // 폴백: 직접 집계
-        return await this.getBuyForMeStatusCountsFallback()
-      }
-      
-      // RPC 결과를 Record<string, number> 형태로 변환
-      return (data || []).reduce((acc: Record<string, number>, item: any) => {
-        acc[item.status] = item.count
-        return acc
-      }, {})
-    } catch (error) {
-      console.error('상태별 개수 조회 실패:', error)
-      return await this.getBuyForMeStatusCountsFallback()
-    }
+    // RPC가 없으므로 직접 집계 방식 사용
+    return await this.getBuyForMeStatusCountsFallback()
   }
 
   /**

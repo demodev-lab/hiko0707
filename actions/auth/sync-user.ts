@@ -22,7 +22,7 @@ export async function syncClerkUserToSupabase() {
     // Check if user already exists
     const { data: existingUser, error: fetchError } = await supabase
       .from('users')
-      .select('id')
+      .select('id, role')
       .eq('clerk_user_id', user.id)
       .single()
 
@@ -33,13 +33,26 @@ export async function syncClerkUserToSupabase() {
     }
 
     if (existingUser) {
-      // Update last login time
+      // Get role from Clerk privateMetadata
+      const clerkRole = (user.privateMetadata?.role as string) || 'customer'
+      
+      // Check if role needs to be synced
+      const needsRoleUpdate = existingUser.role !== clerkRole
+      
+      // Update last login time and sync role if needed
+      const updateData: any = {
+        last_logined_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      }
+      
+      if (needsRoleUpdate) {
+        updateData.role = clerkRole
+        console.log(`Syncing role from Clerk (${clerkRole}) to Supabase for user ${user.id}`)
+      }
+      
       const { error: updateError } = await supabase
         .from('users')
-        .update({
-          last_logined_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        })
+        .update(updateData)
         .eq('clerk_user_id', user.id)
 
       if (updateError) {
@@ -47,17 +60,20 @@ export async function syncClerkUserToSupabase() {
         return { success: false, error: 'Failed to update user' }
       }
 
-      return { success: true, isNewUser: false }
+      return { success: true, isNewUser: false, roleUpdated: needsRoleUpdate }
     }
 
     // Create new user
+    // Get role from Clerk privateMetadata or use default
+    const clerkRole = (user.privateMetadata?.role as string) || 'customer'
+    
     const userData = {
       clerk_user_id: user.id,
       email: user.emailAddresses[0]?.emailAddress || '',
       name: `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.username || 'Unknown',
       phone: user.phoneNumbers[0]?.phoneNumber || null,
       preferred_language: 'ko', // Default language
-      role: 'customer', // Default role (customer or admin only)
+      role: clerkRole, // Use role from Clerk metadata
       status: 'active',
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),

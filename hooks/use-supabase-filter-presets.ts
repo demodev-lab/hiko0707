@@ -3,7 +3,6 @@
 import { useCallback } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useUser } from '@clerk/nextjs'
-import { SupabasePreferencesService } from '@/lib/services/supabase-preferences-service'
 import { toast } from 'sonner'
 
 export interface FilterPreset {
@@ -28,23 +27,17 @@ export function useSupabaseFilterPresets() {
   const { user } = useUser()
   const queryClient = useQueryClient()
 
-  // Fetch filter presets from Supabase or localStorage
+  // Fetch filter presets from localStorage only
   const { data: presets = [], isLoading } = useQuery({
     queryKey: ['filter-presets', user?.id],
     queryFn: async () => {
-      if (user?.id) {
-        // Authenticated user - fetch from Supabase
-        const preferences = await SupabasePreferencesService.getPreferences(user.id)
-        return preferences.filter_presets || getDefaultPresets()
-      } else {
-        // Non-authenticated user - use localStorage
-        try {
-          const stored = localStorage.getItem(STORAGE_KEY)
-          return stored ? JSON.parse(stored) : getDefaultPresets()
-        } catch (error) {
-          console.error('Failed to load filter presets:', error)
-          return getDefaultPresets()
-        }
+      // Always use localStorage for filter presets
+      try {
+        const stored = localStorage.getItem(STORAGE_KEY)
+        return stored ? JSON.parse(stored) : getDefaultPresets()
+      } catch (error) {
+        console.error('Failed to load filter presets:', error)
+        return getDefaultPresets()
       }
     },
     staleTime: 10 * 60 * 1000, // 10 minutes
@@ -60,20 +53,11 @@ export function useSupabaseFilterPresets() {
         createdAt: new Date().toISOString(),
       }
 
-      if (user?.id) {
-        // Authenticated user - save to Supabase
-        const result = await SupabasePreferencesService.saveFilterPreset(user.id, newPreset)
-        if (!result) {
-          throw new Error('Failed to save preset')
-        }
-        return result
-      } else {
-        // Non-authenticated user - save to localStorage
-        const current = presets
-        const updated = [newPreset, ...current].slice(0, MAX_PRESETS)
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(updated))
-        return newPreset
-      }
+      // Always save to localStorage
+      const current = presets
+      const updated = [newPreset, ...current].slice(0, MAX_PRESETS)
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(updated))
+      return newPreset
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['filter-presets', user?.id] })
@@ -88,14 +72,9 @@ export function useSupabaseFilterPresets() {
   // Delete preset mutation
   const deletePresetMutation = useMutation({
     mutationFn: async (id: string) => {
-      if (user?.id) {
-        // Authenticated user - delete from Supabase
-        await SupabasePreferencesService.deleteFilterPreset(user.id, id)
-      } else {
-        // Non-authenticated user - delete from localStorage
-        const updated = presets.filter((p: FilterPreset) => p.id !== id)
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(updated))
-      }
+      // Always delete from localStorage
+      const updated = presets.filter((p: FilterPreset) => p.id !== id)
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(updated))
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['filter-presets', user?.id] })
@@ -110,21 +89,12 @@ export function useSupabaseFilterPresets() {
   // Update preset mutation
   const updatePresetMutation = useMutation({
     mutationFn: async ({ id, updates }: { id: string; updates: Partial<FilterPreset> }) => {
-      if (user?.id) {
-        // Authenticated user - update in Supabase
-        const result = await SupabasePreferencesService.updateFilterPreset(user.id, id, updates)
-        if (!result) {
-          throw new Error('Failed to update preset')
-        }
-        return result
-      } else {
-        // Non-authenticated user - update in localStorage
-        const updated = presets.map((p: FilterPreset) => 
-          p.id === id ? { ...p, ...updates } : p
-        )
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(updated))
-        return updated.find((p: FilterPreset) => p.id === id)
-      }
+      // Always update in localStorage
+      const updated = presets.map((p: FilterPreset) => 
+        p.id === id ? { ...p, ...updates } : p
+      )
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(updated))
+      return updated.find((p: FilterPreset) => p.id === id)
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['filter-presets', user?.id] })

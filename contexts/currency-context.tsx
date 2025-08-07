@@ -1,7 +1,7 @@
 'use client'
 
 import { createContext, useContext, ReactNode } from 'react'
-import { useSupabaseCurrency } from '@/hooks/use-supabase-currency'
+import { useCurrency } from '@/hooks/use-currency'
 import { Currency } from '@/lib/services/currency-service'
 
 interface CurrencyContextType {
@@ -15,14 +15,12 @@ interface CurrencyContextType {
   getRate: (from: string, to?: string) => number | null
   changeCurrency: (currencyCode: string) => void
   refreshRates: () => Promise<void>
-  isCurrencyChanging: boolean
-  currencyChangeError: Error | null
 }
 
 const CurrencyContext = createContext<CurrencyContextType | undefined>(undefined)
 
 export function CurrencyProvider({ children }: { children: ReactNode }) {
-  const currencyHook = useSupabaseCurrency({
+  const currencyHook = useCurrency({
     defaultCurrency: 'KRW',
     autoRefresh: true,
     refreshInterval: 30 * 60 * 1000 // 30분

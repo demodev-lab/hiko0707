@@ -38,34 +38,16 @@ export class SupabaseChatService {
   }
 
   /**
-   * 모든 채팅 세션 조회
+   * 모든 채팅 세션 조회 (localStorage only)
    */
   async getSessions(): Promise<ChatSession[]> {
     try {
-      const user = await getCurrentUser()
-      
-      if (user) {
-        // Supabase에서 사용자 채팅 세션 조회
-        const { data, error } = await supabase()
-          .from('user_profiles')
-          .select('preferences')
-          .eq('user_id', user.id)
-          .single()
-
-        if (error) {
-          console.error('Supabase 채팅 세션 조회 오류:', error)
-          return this.getLocalSessions()
-        }
-
-        const chatSessions = data?.preferences?.chat_sessions || []
-        return this.deserializeSessions(chatSessions)
-      } else {
-        // 비인증 사용자는 localStorage 사용
-        return this.getLocalSessions()
-      }
+      // Always use localStorage for chat sessions
+      // This is temporary UI state that doesn't need server persistence
+      return this.getLocalSessions()
     } catch (error) {
       console.error('getSessions 오류:', error)
-      return this.getLocalSessions()
+      return []
     }
   }
 
@@ -83,182 +65,40 @@ export class SupabaseChatService {
   }
 
   /**
-   * 새 채팅 세션 생성
+   * 새 채팅 세션 생성 (localStorage only)
    */
   async createSession(session: ChatSession): Promise<boolean> {
     try {
-      const user = await getCurrentUser()
-      
-      if (user) {
-        // 현재 preferences 조회
-        const { data: currentData, error: fetchError } = await supabase()
-          .from('user_profiles')
-          .select('preferences')
-          .eq('user_id', user.id)
-          .single()
-
-        if (fetchError) {
-          console.error('현재 preferences 조회 오류:', fetchError)
-          this.createLocalSession(session)
-          return false
-        }
-
-        // chat_sessions 추가
-        const currentPreferences = currentData?.preferences || {}
-        const currentSessions = currentPreferences.chat_sessions || []
-        
-        const serializedSession = this.serializeSession(session)
-        const updatedSessions = [...currentSessions, serializedSession]
-        
-        const updatedPreferences = {
-          ...currentPreferences,
-          chat_sessions: updatedSessions
-        }
-
-        const { error: updateError } = await supabase()
-          .from('user_profiles')
-          .update({ 
-            preferences: updatedPreferences,
-            updated_at: new Date().toISOString()
-          })
-          .eq('user_id', user.id)
-
-        if (updateError) {
-          console.error('채팅 세션 생성 오류:', updateError)
-          this.createLocalSession(session)
-          return false
-        }
-
-        return true
-      } else {
-        // 비인증 사용자는 localStorage 사용
-        this.createLocalSession(session)
-        return true
-      }
+      this.createLocalSession(session)
+      return true
     } catch (error) {
       console.error('createSession 오류:', error)
-      this.createLocalSession(session)
       return false
     }
   }
 
   /**
-   * 채팅 세션 업데이트
+   * 채팅 세션 업데이트 (localStorage only)
    */
   async updateSession(session: ChatSession): Promise<boolean> {
     try {
-      const user = await getCurrentUser()
-      
-      if (user) {
-        // 현재 preferences 조회
-        const { data: currentData, error: fetchError } = await supabase()
-          .from('user_profiles')
-          .select('preferences')
-          .eq('user_id', user.id)
-          .single()
-
-        if (fetchError) {
-          console.error('현재 preferences 조회 오류:', fetchError)
-          this.updateLocalSession(session)
-          return false
-        }
-
-        // chat_sessions에서 해당 세션 업데이트
-        const currentPreferences = currentData?.preferences || {}
-        const currentSessions = currentPreferences.chat_sessions || []
-        
-        const serializedSession = this.serializeSession(session)
-        const updatedSessions = currentSessions.map((s: any) => 
-          s.id === session.id ? serializedSession : s
-        )
-        
-        const updatedPreferences = {
-          ...currentPreferences,
-          chat_sessions: updatedSessions
-        }
-
-        const { error: updateError } = await supabase()
-          .from('user_profiles')
-          .update({ 
-            preferences: updatedPreferences,
-            updated_at: new Date().toISOString()
-          })
-          .eq('user_id', user.id)
-
-        if (updateError) {
-          console.error('채팅 세션 업데이트 오류:', updateError)
-          this.updateLocalSession(session)
-          return false
-        }
-
-        return true
-      } else {
-        // 비인증 사용자는 localStorage 사용
-        this.updateLocalSession(session)
-        return true
-      }
+      this.updateLocalSession(session)
+      return true
     } catch (error) {
       console.error('updateSession 오류:', error)
-      this.updateLocalSession(session)
       return false
     }
   }
 
   /**
-   * 채팅 세션 삭제
+   * 채팅 세션 삭제 (localStorage only)
    */
   async deleteSession(sessionId: string): Promise<boolean> {
     try {
-      const user = await getCurrentUser()
-      
-      if (user) {
-        // 현재 preferences 조회
-        const { data: currentData, error: fetchError } = await supabase()
-          .from('user_profiles')
-          .select('preferences')
-          .eq('user_id', user.id)
-          .single()
-
-        if (fetchError) {
-          console.error('현재 preferences 조회 오류:', fetchError)
-          this.deleteLocalSession(sessionId)
-          return false
-        }
-
-        // chat_sessions에서 해당 세션 제거
-        const currentPreferences = currentData?.preferences || {}
-        const currentSessions = currentPreferences.chat_sessions || []
-        
-        const updatedSessions = currentSessions.filter((s: any) => s.id !== sessionId)
-        
-        const updatedPreferences = {
-          ...currentPreferences,
-          chat_sessions: updatedSessions
-        }
-
-        const { error: updateError } = await supabase()
-          .from('user_profiles')
-          .update({ 
-            preferences: updatedPreferences,
-            updated_at: new Date().toISOString()
-          })
-          .eq('user_id', user.id)
-
-        if (updateError) {
-          console.error('채팅 세션 삭제 오류:', updateError)
-          this.deleteLocalSession(sessionId)
-          return false
-        }
-
-        return true
-      } else {
-        // 비인증 사용자는 localStorage 사용
-        this.deleteLocalSession(sessionId)
-        return true
-      }
+      this.deleteLocalSession(sessionId)
+      return true
     } catch (error) {
       console.error('deleteSession 오류:', error)
-      this.deleteLocalSession(sessionId)
       return false
     }
   }

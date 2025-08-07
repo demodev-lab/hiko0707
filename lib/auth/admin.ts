@@ -10,8 +10,8 @@ export async function requireAdmin() {
 
   const user = await currentUser()
   
-  // Clerk의 publicMetadata에서 role 확인
-  const role = user?.publicMetadata?.role as string | undefined
+  // Clerk의 privateMetadata에서 role 확인 (더 안전)
+  const role = user?.privateMetadata?.role as string | undefined
   
   if (role !== 'admin') {
     redirect('/')
@@ -28,7 +28,7 @@ export async function isAdmin() {
   }
 
   const user = await currentUser()
-  const role = user?.publicMetadata?.role as string | undefined
+  const role = user?.privateMetadata?.role as string | undefined
   
   return role === 'admin'
 }
